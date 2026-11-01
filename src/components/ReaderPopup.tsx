@@ -29,6 +29,13 @@ export interface ReaderPopupProps {
   chapterLabel: string;
   /** Jumlah kamus aktif saat ini */
   activeDictCount: number;
+  /** Gambar hasil crop gelembung manga (opsional, untuk sentence mining manga) */
+  bubbleImageBlob?: Blob | null;
+  /** Daftar kandidat kalimat bila gelembung manga memuat lebih dari satu kalimat */
+  candidateSentences?: Array<{
+    label: string;
+    sentenceHighlightedHtml: string;
+  }>;
   /** Callback saat kartu berhasil ditambahkan ke deck */
   onCardMined: (word: string, deckTitle: string) => void;
   /** Callback untuk membuka modal Kelola Kamus jika belum ada kamus */
@@ -57,6 +64,8 @@ export default function ReaderPopup({
   bookTitle,
   chapterLabel,
   activeDictCount,
+  bubbleImageBlob,
+  candidateSentences,
   onCardMined,
   onOpenDictManager,
   onClose,
@@ -90,6 +99,9 @@ export default function ReaderPopup({
   const [customSentenceHtml, setCustomSentenceHtml] = useState(
     extractedSentence.sentenceHighlightedHtml,
   );
+  const [selectedCandidateIdx, setSelectedCandidateIdx] = useState(0);
+  const [includeBubbleImage, setIncludeBubbleImage] = useState(true);
+  const [bubblePreviewUrl, setBubblePreviewUrl] = useState<string | null>(null);
   const [customNote, setCustomNote] = useState(
     chapterLabel && chapterLabel !== bookTitle
       ? `${bookTitle} • ${chapterLabel}`
@@ -97,6 +109,16 @@ export default function ReaderPopup({
   );
 
   const popupRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!bubbleImageBlob) {
+      setBubblePreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(bubbleImageBlob);
+    setBubblePreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [bubbleImageBlob]);
 
   // Sinkronkan arti default saat pengguna berpindah tab entri hasil kamus
   useEffect(() => {
@@ -107,6 +129,7 @@ export default function ReaderPopup({
 
   useEffect(() => {
     setCustomSentenceHtml(extractedSentence.sentenceHighlightedHtml);
+    setSelectedCandidateIdx(0);
   }, [extractedSentence.sentenceHighlightedHtml]);
 
   useEffect(() => {
@@ -182,6 +205,8 @@ export default function ReaderPopup({
         translation: `Sumber: ${sourceLabel}`,
         subdeck: bookTitle,
         tags: ["mined", bookTitle],
+        imageBlob:
+          includeBubbleImage && bubbleImageBlob ? bubbleImageBlob : undefined,
       });
 
       // Catat juga ke riwayat di halaman Sentence Mining
@@ -524,6 +549,51 @@ export default function ReaderPopup({
                     </button>
                   </div>
 
+                  {/* Pilihan kalimat jika gelembung memuat lebih dari satu kalimat */}
+                  {candidateSentences && candidateSentences.length > 1 && (
+                    <div className="space-y-1.5 pt-1 border-t border-black/5">
+                      <span
+                        className="text-[11px] font-semibold block"
+                        style={{ color: "var(--ink-3)" }}
+                      >
+                        Pilih Kalimat dari Gelembung Dialog:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {candidateSentences.map((c, idx) => {
+                          const isSelected = selectedCandidateIdx === idx;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCandidateIdx(idx);
+                                setCustomSentenceHtml(
+                                  c.sentenceHighlightedHtml,
+                                );
+                              }}
+                              className="px-2.5 py-1 rounded-lg border text-[11.5px] text-left transition cursor-pointer max-w-full truncate"
+                              style={{
+                                borderColor: isSelected
+                                  ? "var(--accent, #c24e34)"
+                                  : "var(--line, #e6e0d6)",
+                                background: isSelected
+                                  ? "rgba(194, 78, 52, 0.12)"
+                                  : "var(--bg-canvas, #faf7f2)",
+                                color: isSelected
+                                  ? "var(--accent, #c24e34)"
+                                  : "var(--ink)",
+                                fontWeight: isSelected ? 600 : 400,
+                              }}
+                              title={c.label}
+                            >
+                              {c.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {!editingFields ? (
                     <p
                       lang="ja"
@@ -593,6 +663,47 @@ export default function ReaderPopup({
                     </div>
                   )}
                 </div>
+
+                {/* Pratinjau Gambar Gelembung Dialog & Opsi Sertakan Gambar */}
+                {bubblePreviewUrl && (
+                  <div
+                    className="mt-3 rounded-xl border p-3 space-y-2"
+                    style={{
+                      background: "var(--surface, #fff)",
+                      borderColor: "var(--line, #e6e0d6)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none text-[12px] font-medium">
+                        <input
+                          type="checkbox"
+                          checked={includeBubbleImage}
+                          onChange={(e) =>
+                            setIncludeBubbleImage(e.target.checked)
+                          }
+                          className="rounded accent-[#c24e34] cursor-pointer"
+                        />
+                        <span>Sertakan gambar gelembung dialog pada kartu</span>
+                      </label>
+                      <span
+                        className="text-[11px] font-mono"
+                        style={{ color: "var(--ink-3)" }}
+                      >
+                        WebP ~800px
+                      </span>
+                    </div>
+
+                    {includeBubbleImage && (
+                      <div className="max-h-36 overflow-hidden rounded-lg border border-black/10 bg-black/5 flex items-center justify-center p-1.5">
+                        <img
+                          src={bubblePreviewUrl}
+                          alt="Crop gelembung dialog manga"
+                          className="max-h-32 object-contain rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </>

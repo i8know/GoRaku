@@ -88,10 +88,10 @@ export default function ReviewPage() {
     // Queue is intentionally built once per deck; SRS updates during the session must not reshuffle it.
   }, [deck?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Resolve media blobs for the current card.
+  // Resolve media blobs for the current card (supports both .apkg media and manga bubble crops).
   useEffect(() => {
     setMedia({});
-    if (!card || !deck || deck.source !== "apkg") return;
+    if (!card || !deck) return;
     let alive = true;
     const urls: string[] = [];
     (async () => {

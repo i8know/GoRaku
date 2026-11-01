@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DictionaryManagerModal from "../components/DictionaryManagerModal";
+import MangaManageModal from "../components/MangaManageModal";
 import {
   addNovelFile,
   deleteNovel,
@@ -12,9 +13,15 @@ import {
   type BookRecord,
   type DictionaryRecord,
 } from "../lib/lexiconDb";
+import {
+  addMangaArchiveFile,
+  addMangaImagesOrFolder,
+  createSampleMangaCbzFile,
+  isValidMangaImageEntry,
+} from "../lib/mangaStorage";
 import { Button, Icon, PageHead, Tabs } from "../ui";
 
-const FORMAT_TABS = ["Semua", "EPUB", "TXT"] as const;
+const FORMAT_TABS = ["Semua", "Novel", "Manga", "EPUB", "TXT", "CBZ / Gambar"] as const;
 type FormatTab = (typeof FORMAT_TABS)[number];
 
 const BOOK_SORTS = [
@@ -26,6 +33,98 @@ const BOOK_SORTS = [
 type BookSort = (typeof BOOK_SORTS)[number];
 
 const TONE_CLASSES = ["novel", "kitchen", "anime", "manga", "family", "ghibli"];
+
+export function isMangaBook(book: BookRecord): boolean {
+  return (
+    book.type === "manga" ||
+    book.format === "cbz" ||
+    book.format === "zip" ||
+    book.format === "images"
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function formatBadgeLabel(book: BookRecord): string {
+  if (isMangaBook(book)) {
+    const fmt =
+      book.format === "images" ? "GAMBAR" : book.format.toUpperCase();
+    return `MANGA • ${fmt}`;
+  }
+  return `NOVEL • ${book.format.toUpperCase()}${book.encoding ? ` (${book.encoding.toUpperCase()})` : ""}`;
+}
+
+function getBookReaderPath(book: BookRecord): string {
+  return isMangaBook(book) ? `/manga/${book.id}` : `/library/${book.id}`;
+}
+
+/**
+ * Mengekstrak seluruh berkas (termasuk isi folder rekursif bila pengguna menyeret folder)
+ * dari event Drag-and-Drop (`DataTransfer`).
+ */
+async function extractFilesFromDataTransfer(
+  dataTransfer: DataTransfer,
+): Promise<File[]> {
+  const items = dataTransfer.items ? Array.from(dataTransfer.items) : [];
+  const webkitEntries = items
+    .map((item) =>
+      typeof item.webkitGetAsEntry === "function" ? item.webkitGetAsEntry() : null,
+    )
+    .filter((entry): entry is FileSystemEntry => entry !== null);
+
+  if (webkitEntries.some((e) => e.isDirectory)) {
+    const collected: File[] = [];
+
+    const traverseEntry = async (
+      entry: FileSystemEntry,
+      parentPath: string,
+    ): Promise<void> => {
+      if (entry.isFile) {
+        const fileEntry = entry as FileSystemFileEntry;
+        const file = await new Promise<File>((resolve, reject) => {
+          fileEntry.file(resolve, reject);
+        });
+        const relPath = parentPath ? `${parentPath}/${file.name}` : file.name;
+        try {
+          Object.defineProperty(file, "webkitRelativePath", {
+            value: relPath,
+            configurable: true,
+          });
+        } catch {
+          // Abaikan bila properti read-only
+        }
+        collected.push(file);
+      } else if (entry.isDirectory) {
+        const dirEntry = entry as FileSystemDirectoryEntry;
+        const reader = dirEntry.createReader();
+        const subEntries: FileSystemEntry[] = [];
+        while (true) {
+          const batch = await new Promise<FileSystemEntry[]>((resolve, reject) => {
+            reader.readEntries(resolve, reject);
+          });
+          if (!batch || batch.length === 0) break;
+          subEntries.push(...batch);
+        }
+        const nextParent = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+        for (const sub of subEntries) {
+          await traverseEntry(sub, nextParent);
+        }
+      }
+    };
+
+    for (const rootEntry of webkitEntries) {
+      await traverseEntry(rootEntry, "");
+    }
+    if (collected.length > 0) return collected;
+  }
+
+  return Array.from(dataTransfer.files || []);
+}
 
 function BookCover({
   book,
@@ -52,7 +151,9 @@ function BookCover({
     };
   }, [book.coverBlob]);
 
-  const tone = TONE_CLASSES[index % TONE_CLASSES.length];
+  const tone = isMangaBook(book)
+    ? "manga"
+    : TONE_CLASSES[index % TONE_CLASSES.length];
   const kanji = extractCoverKanji(book.title);
 
   return (
@@ -108,8 +209,10 @@ export default function LibraryPage({
   const [dictModalOpen, setDictModalOpen] = useState(false);
   const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
+  const [managingBook, setManagingBook] = useState<BookRecord | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const folderInputRef = useRef<HTMLInputElement | null>(null);
 
   const refreshBooks = useCallback(async () => {
     setLoading(true);
@@ -118,7 +221,7 @@ export default function LibraryPage({
       setBooks(list);
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Gagal memuat daftar novel.",
+        err instanceof Error ? err.message : "Gagal memuat daftar perpustakaan.",
       );
     } finally {
       setLoading(false);
@@ -132,8 +235,14 @@ export default function LibraryPage({
 
   const activeDictCount = dictionaries.filter((d) => d.enabled).length;
 
-  const handleFilesSelected = async (files: FileList | File[]) => {
-    const arr = Array.from(files);
+  /**
+   * Memproses berkas yang dipilih atau diseret ke Perpustakaan:
+   * - Berkas .epub / .txt -> ditambahkan sebagai Novel
+   * - Berkas .cbz / .zip -> ditambahkan sebagai Manga (dibaca secara malas)
+   * - Kumpulan berkas gambar (.jpg/.png/.webp) atau satu folder -> digabung sebagai 1 item Manga
+   */
+  const handleFilesSelected = async (filesInput: FileList | File[]) => {
+    const arr = Array.from(filesInput);
     if (arr.length === 0) return;
 
     setUploading(true);
@@ -141,17 +250,82 @@ export default function LibraryPage({
     let addedCount = 0;
 
     try {
-      for (const file of arr) {
-        const record = await addNovelFile(file);
+      const novelFiles: File[] = [];
+      const mangaArchives: File[] = [];
+      const looseOrFolderFiles: File[] = [];
+
+      for (const f of arr) {
+        const lower = f.name.toLowerCase();
+        const relPath = f.webkitRelativePath || "";
+
+        // Jika berasal dari pemilihan folder (webkitRelativePath berisi '/'),
+        // kelompokkan ke dalam pemroses folder manga kecuali jika itu berkas .cbz/.epub sendiri
+        if (relPath.includes("/") && !lower.endsWith(".epub") && !lower.endsWith(".cbz") && !lower.endsWith(".zip")) {
+          looseOrFolderFiles.push(f);
+          continue;
+        }
+
+        if (lower.endsWith(".pdf")) {
+          throw new Error(
+            "Format PDF tidak didukung. Silakan unggah novel (.epub/.txt) atau manga (.cbz/.zip/gambar JPG, PNG, WebP).",
+          );
+        }
+
+        if (lower.endsWith(".epub") || lower.endsWith(".txt")) {
+          novelFiles.push(f);
+        } else if (lower.endsWith(".cbz") || lower.endsWith(".zip")) {
+          mangaArchives.push(f);
+        } else if (
+          isValidMangaImageEntry(f.name) ||
+          lower === "comicinfo.xml"
+        ) {
+          looseOrFolderFiles.push(f);
+        } else {
+          looseOrFolderFiles.push(f);
+        }
+      }
+
+      // 1. Proses berkas novel (.epub / .txt)
+      for (const novelFile of novelFiles) {
+        const record = await addNovelFile(novelFile);
         addedCount++;
         notify(`Novel "${record.title}" (${record.format.toUpperCase()}) ditambahkan`);
       }
+
+      // 2. Proses berkas arsip manga (.cbz / .zip)
+      for (const archiveFile of mangaArchives) {
+        const record = await addMangaArchiveFile(archiveFile);
+        addedCount++;
+        notify(
+          `Manga "${record.title}" (${record.pageCount} halaman) ditambahkan`,
+        );
+      }
+
+      // 3. Proses kumpulan berkas gambar atau folder
+      if (looseOrFolderFiles.length > 0) {
+        const hasValidImage = looseOrFolderFiles.some((f) =>
+          isValidMangaImageEntry(f.webkitRelativePath || f.name),
+        );
+        if (!hasValidImage && novelFiles.length === 0 && mangaArchives.length === 0) {
+          throw new Error(
+            "Tidak ditemukan berkas yang didukung. Gunakan .epub/.txt untuk novel, atau .cbz/.zip/gambar (JPG, PNG, WebP) untuk manga.",
+          );
+        }
+        if (hasValidImage) {
+          const record = await addMangaImagesOrFolder(looseOrFolderFiles);
+          addedCount++;
+          notify(
+            `Manga "${record.title}" (${record.pageCount} halaman) ditambahkan`,
+          );
+        }
+      }
+
       if (addedCount > 0) {
         await refreshBooks();
       }
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Gagal menambahkan berkas novel.";
+        err instanceof Error ? err.message : "Gagal menambahkan berkas ke perpustakaan.";
       setErrorMsg(msg);
       notify(msg);
     } finally {
@@ -178,6 +352,25 @@ export default function LibraryPage({
     }
   };
 
+  const handleAddSampleManga = async () => {
+    setUploading(true);
+    setErrorMsg(null);
+    try {
+      const cbzFile = await createSampleMangaCbzFile();
+      const rec = await addMangaArchiveFile(cbzFile);
+      await refreshBooks();
+      notify(
+        `Manga sampel "${rec.title}" (${rec.pageCount} halaman) siap dibaca!`,
+      );
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error ? err.message : "Gagal membuat manga sampel.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleDeleteBook = async (book: BookRecord) => {
     if (deletingBookId) return;
     setDeletingBookId(book.id);
@@ -187,7 +380,7 @@ export default function LibraryPage({
       await refreshBooks();
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Gagal menghapus novel.",
+        err instanceof Error ? err.message : "Gagal menghapus koleksi.",
       );
     } finally {
       setDeletingBookId(null);
@@ -196,10 +389,14 @@ export default function LibraryPage({
 
   const filteredBooks = useMemo(() => {
     const filtered = books.filter((b) => {
+      const isManga = isMangaBook(b);
+      if (formatTab === "Novel" && isManga) return false;
+      if (formatTab === "Manga" && !isManga) return false;
       if (formatTab === "EPUB" && b.format !== "epub") return false;
       if (formatTab === "TXT" && b.format !== "txt") return false;
+      if (formatTab === "CBZ / Gambar" && !isManga) return false;
       if (q.trim()) {
-        const hay = `${b.title} ${b.author}`.toLowerCase();
+        const hay = `${b.title} ${b.author} ${b.volume ?? ""}`.toLowerCase();
         if (!hay.includes(q.trim().toLowerCase())) return false;
       }
       return true;
@@ -209,7 +406,9 @@ export default function LibraryPage({
       if (sortBy === "Progres Baca") return (b.progress ?? 0) - (a.progress ?? 0);
       if (sortBy === "Kata Ditambang") return (b.minedCount ?? 0) - (a.minedCount ?? 0);
       if (sortBy === "Judul (A-Z)") return a.title.localeCompare(b.title, "ja");
-      return (b.updatedAt ?? b.addedAt ?? 0) - (a.updatedAt ?? a.addedAt ?? 0);
+      const tA = a.lastReadAt ?? a.addedAt;
+      const tB = b.lastReadAt ?? b.addedAt;
+      return tB.localeCompare(tA);
     });
   }, [books, formatTab, sortBy, q]);
 
@@ -218,10 +417,10 @@ export default function LibraryPage({
   return (
     <>
       <PageHead
-        eyebrow="PERPUSTAKAAN NOVEL & IMMERSION"
+        eyebrow="PERPUSTAKAAN NOVEL, MANGA & SENTENCE MINING"
         title="Perpustakaan"
         accent="読書"
-        copy="Unggah novel EPUB atau TXT milikmu, baca langsung di browser, klik kata untuk membuka kamus Yomitan, dan tambang kalimat ke deck."
+        copy="Unggah novel (EPUB/TXT) atau manga (CBZ/ZIP/Gambar) milikmu, baca langsung di browser, gunakan OCR gelembung dialog & kamus Yomitan, lalu tambang kalimat ke deck."
       >
         <div className="flex items-center gap-2.5 flex-wrap">
           <Button
@@ -231,20 +430,48 @@ export default function LibraryPage({
             <Icon name="book" size={16} /> Kelola Kamus ({activeDictCount})
           </Button>
           <Button
+            className="outline-button"
+            disabled={uploading}
+            onClick={() => folderInputRef.current?.click()}
+          >
+            <Icon name="upload" size={16} /> Pilih Folder Manga
+          </Button>
+          <Button
             className="pg-primary"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
           >
             <Icon name="plus" size={17} />{" "}
-            {uploading ? "Memproses..." : "Tambah Novel (EPUB/TXT)"}
+            {uploading ? "Memproses..." : "Tambah Novel / Manga"}
           </Button>
         </div>
       </PageHead>
 
+      {/* Input Berkas (.epub, .txt, .cbz, .zip, atau multi-gambar .jpg/.png/.webp) */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".epub,.txt,application/epub+zip,text/plain"
+        accept=".epub,.txt,.cbz,.zip,.jpg,.jpeg,.png,.webp,application/epub+zip,application/vnd.comicbook+zip,application/zip,text/plain,image/jpeg,image/png,image/webp"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) {
+            void handleFilesSelected(e.target.files);
+            e.target.value = "";
+          }
+        }}
+      />
+
+      {/* Input Satu Folder (webkitdirectory) untuk Manga */}
+      <input
+        ref={(el) => {
+          folderInputRef.current = el;
+          if (el) {
+            el.setAttribute("webkitdirectory", "");
+            el.setAttribute("directory", "");
+          }
+        }}
+        type="file"
         multiple
         className="hidden"
         onChange={(e) => {
@@ -259,6 +486,16 @@ export default function LibraryPage({
         open={dictModalOpen}
         onClose={() => setDictModalOpen(false)}
         onDictionariesChanged={setDictionaries}
+      />
+
+      <MangaManageModal
+        book={managingBook}
+        onClose={() => setManagingBook(null)}
+        onSaved={(newTitle) => {
+          setManagingBook(null);
+          notify(`Perubahan pada "${newTitle}" disimpan`);
+          void refreshBooks();
+        }}
       />
 
       {/* Pesan Error */}
@@ -282,32 +519,43 @@ export default function LibraryPage({
         </div>
       )}
 
-      {/* Hero: Novel Terakhir Dibaca */}
+      {/* Hero: Item Terakhir Dibaca */}
       {heroBook && (
         <section className="lb-hero">
           <BookCover book={heroBook} index={0} className="lb-cover" />
           <div className="lb-hero-body">
             <p className="eyebrow light">
-              LANJUTKAN MEMBACA • {heroBook.format.toUpperCase()}
-              {heroBook.encoding ? ` (${heroBook.encoding.toUpperCase()})` : ""}
+              LANJUTKAN MEMBACA • {formatBadgeLabel(heroBook)}
             </p>
-            <h2>{heroBook.title}</h2>
+            <div className="flex items-center gap-2">
+              <h2>{heroBook.title}</h2>
+              <button
+                type="button"
+                onClick={() => setManagingBook(heroBook)}
+                className="p-1.5 rounded-lg opacity-80 hover:opacity-100 transition"
+                title="Edit judul atau urutan halaman"
+                aria-label={`Edit ${heroBook.title}`}
+              >
+                <Icon name="edit" size={15} />
+              </button>
+            </div>
             <p className="lb-en">
-              {heroBook.author} •{" "}
-              {(heroBook.fileSize / 1024).toFixed(1)} KB
+              {heroBook.author}
+              {heroBook.volume ? ` • ${heroBook.volume}` : ""} •{" "}
+              {isMangaBook(heroBook)
+                ? `Hal. ${(heroBook.currentPage ?? 0) + 1} dari ${heroBook.pageCount ?? 0} (${formatFileSize(heroBook.fileSize)})`
+                : formatFileSize(heroBook.fileSize)}
             </p>
             <div className="lb-hero-prog">
               <div className="progress">
                 <i style={{ width: `${heroBook.progress}%` }} />
               </div>
-              <span>
-                {heroBook.progress}% selesai
-              </span>
+              <span>{heroBook.progress}% selesai</span>
             </div>
             <div className="lb-hero-actions">
               <Button
                 className="primary-light"
-                onClick={() => navigate(`/library/${heroBook.id}`)}
+                onClick={() => navigate(getBookReaderPath(heroBook))}
               >
                 {heroBook.progress > 0 ? "Lanjutkan Membaca" : "Mulai Membaca"}{" "}
                 <Icon name="arrow" size={17} />
@@ -328,11 +576,12 @@ export default function LibraryPage({
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
-        onDrop={(e) => {
+        onDrop={async (e) => {
           e.preventDefault();
           setIsDragging(false);
-          if (e.dataTransfer.files?.length) {
-            void handleFilesSelected(e.dataTransfer.files);
+          const droppedFiles = await extractFilesFromDataTransfer(e.dataTransfer);
+          if (droppedFiles.length > 0) {
+            await handleFilesSelected(droppedFiles);
           }
         }}
         className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-all flex flex-col sm:flex-row items-center justify-between gap-4"
@@ -353,26 +602,40 @@ export default function LibraryPage({
           </div>
           <div>
             <div className="text-[14px] font-semibold">
-              Seret &amp; lepas berkas novel <code>.epub</code> atau{" "}
-              <code>.txt</code> ke sini
+              Seret &amp; lepas novel (<code>.epub</code>, <code>.txt</code>) atau
+              manga (<code>.cbz</code>, <code>.zip</code>, gambar, atau folder)
             </div>
             <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
-              Disimpan sepenuhnya di IndexedDB browser Anda (mendukung UTF-8,
-              Shift_JIS, EUC-JP, dan furigana <code>&lt;ruby&gt;</code>).
+              Arsip manga disimpan sebagai Blob lokal dan dibaca secara malas (lazy)
+              per halaman dengan natural sort otomatis.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <Button
+            className="outline-button"
+            disabled={uploading}
+            onClick={() => void handleAddSampleManga()}
+          >
+            <Icon name="sparkle" size={15} /> Manga Contoh (CBZ)
+          </Button>
           {books.length === 0 && (
             <Button
               className="outline-button"
               disabled={uploading}
               onClick={() => void handleAddSampleNovel()}
             >
-              <Icon name="sparkle" size={15} /> Muat Novel Contoh
+              <Icon name="sparkle" size={15} /> Novel Contoh
             </Button>
           )}
+          <Button
+            className="outline-button"
+            disabled={uploading}
+            onClick={() => folderInputRef.current?.click()}
+          >
+            <Icon name="upload" size={15} /> Pilih Folder
+          </Button>
           <Button
             className="outline-button"
             disabled={uploading}
@@ -392,7 +655,7 @@ export default function LibraryPage({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as BookSort)}
-              aria-label="Urutkan novel"
+              aria-label="Urutkan koleksi"
             >
               {BOOK_SORTS.map((s) => (
                 <option key={s} value={s}>
@@ -406,13 +669,13 @@ export default function LibraryPage({
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Cari judul atau penulis novel..."
+              placeholder="Cari judul atau penulis..."
             />
           </label>
         </div>
       </section>
 
-      {/* Grid Kartu Buku */}
+      {/* Grid Kartu Buku & Manga */}
       {loading ? (
         <p className="pg-empty">Memuat koleksi perpustakaan...</p>
       ) : filteredBooks.length === 0 ? (
@@ -426,23 +689,29 @@ export default function LibraryPage({
           <p className="text-[15px] font-semibold">
             {books.length === 0
               ? "Rak Perpustakaan masih kosong"
-              : "Tidak ada novel yang cocok dengan pencarian"}
+              : "Tidak ada koleksi yang cocok dengan filter"}
           </p>
           <p
             className="text-[13px] mt-1 max-w-md mx-auto"
             style={{ color: "var(--ink-3)" }}
           >
             {books.length === 0
-              ? "Tambahkan berkas novel EPUB atau TXT milikmu, atau coba novel pendek contoh untuk menguji fitur klik kamus & sentence mining."
+              ? "Tambahkan berkas novel (.epub/.txt) atau manga (.cbz/.zip/kumpulan gambar/folder), atau muat contoh untuk menguji fitur pembaca dan sentence mining."
               : "Coba ubah kata kunci pencarian atau tab filter format di atas."}
           </p>
           {books.length === 0 && (
-            <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
               <Button
                 className="pg-primary"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Icon name="upload" size={16} /> Unggah EPUB / TXT
+                <Icon name="upload" size={16} /> Unggah Novel / Manga
+              </Button>
+              <Button
+                className="outline-button"
+                onClick={() => void handleAddSampleManga()}
+              >
+                <Icon name="sparkle" size={16} /> Coba Manga Contoh
               </Button>
               <Button
                 className="outline-button"
@@ -455,55 +724,103 @@ export default function LibraryPage({
         </div>
       ) : (
         <div className="lb-grid">
-          {filteredBooks.map((book, idx) => (
-            <article className="lb-card" key={book.id}>
-              <BookCover book={book} index={idx}>
-                <em>
-                  {book.format.toUpperCase()}
-                  {book.encoding ? ` • ${book.encoding.toUpperCase()}` : ""}
-                </em>
-                <button
-                  type="button"
-                  className="lb-save"
-                  aria-label={`Hapus ${book.title}`}
-                  title="Hapus novel dari perpustakaan"
-                  disabled={deletingBookId === book.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void handleDeleteBook(book);
-                  }}
-                >
-                  <Icon name="trash" size={15} />
-                </button>
-              </BookCover>
+          {filteredBooks.map((book, idx) => {
+            const isManga = isMangaBook(book);
+            return (
+              <article className="lb-card" key={book.id}>
+                <BookCover book={book} index={idx}>
+                  <em>{formatBadgeLabel(book)}</em>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      className="lb-save"
+                      style={{ right: "2.65rem" }}
+                      aria-label={`Edit ${book.title}`}
+                      title={
+                        isManga
+                          ? "Edit judul & urutan halaman manga"
+                          : "Edit judul novel"
+                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setManagingBook(book);
+                      }}
+                    >
+                      <Icon name="edit" size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className="lb-save"
+                      aria-label={`Hapus ${book.title}`}
+                      title="Hapus dari perpustakaan"
+                      disabled={deletingBookId === book.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleDeleteBook(book);
+                      }}
+                    >
+                      <Icon name="trash" size={15} />
+                    </button>
+                  </div>
+                </BookCover>
 
-              <h3 className="truncate" title={book.title}>
-                {book.title}
-              </h3>
-              <p className="truncate" title={book.author}>
-                {book.author}
-              </p>
-              <div className="progress">
-                <i style={{ width: `${book.progress}%` }} />
-              </div>
-              <div className="lb-meta">
-                <span>{book.progress}% selesai</span>
-                <span>{(book.fileSize / 1024).toFixed(0)} KB</span>
-              </div>
-              <div className="lb-foot">
-                <span title="Jumlah kalimat yang ditambang">
-                  <Icon name="mine" size={14} /> {book.minedCount ?? 0} kartu
-                </span>
-                <Button
-                  className="deck-open"
-                  onClick={() => navigate(`/library/${book.id}`)}
-                >
-                  {book.progress === 0 ? "Mulai" : "Lanjutkan"}{" "}
-                  <Icon name="arrow" size={15} />
-                </Button>
-              </div>
-            </article>
-          ))}
+                <div className="flex items-center justify-between gap-1">
+                  <h3 className="truncate" title={book.title}>
+                    {book.title}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setManagingBook(book)}
+                    className="p-1 rounded opacity-60 hover:opacity-100 shrink-0"
+                    title={
+                      isManga
+                        ? "Edit judul & urutan halaman"
+                        : "Edit judul"
+                    }
+                    aria-label={`Ubah judul ${book.title}`}
+                  >
+                    <Icon name="edit" size={13} />
+                  </button>
+                </div>
+
+                <p className="truncate" title={book.author}>
+                  {book.author}
+                  {book.volume ? ` • ${book.volume}` : ""}
+                </p>
+                <div className="progress">
+                  <i style={{ width: `${book.progress}%` }} />
+                </div>
+                <div className="lb-meta">
+                  {isManga ? (
+                    <>
+                      <span>
+                        Hal. {(book.currentPage ?? 0) + 1}/{book.pageCount ?? 0} (
+                        {book.progress}%)
+                      </span>
+                      <span>{book.pageCount ?? 0} halaman</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{book.progress}% selesai</span>
+                      <span>{formatFileSize(book.fileSize)}</span>
+                    </>
+                  )}
+                </div>
+                <div className="lb-foot">
+                  <span title="Jumlah kalimat yang ditambang">
+                    <Icon name="mine" size={14} /> {book.minedCount ?? 0} kartu
+                  </span>
+                  <Button
+                    className="deck-open"
+                    onClick={() => navigate(getBookReaderPath(book))}
+                  >
+                    {book.progress === 0 ? "Mulai" : "Lanjutkan"}{" "}
+                    <Icon name="arrow" size={15} />
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </>

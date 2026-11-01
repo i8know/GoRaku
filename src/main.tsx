@@ -13,6 +13,7 @@ import ReviewPage from './pages/Review'
 import MiningPage from './pages/Mining'
 import LibraryPage from './pages/Library'
 import ReaderPage from './pages/Reader'
+import MangaReaderPage from './pages/MangaReader'
 import ProgressPage from './pages/Progress'
 import ProfilePage from './pages/Profile'
 import SettingsPage from './pages/Settings'
@@ -58,6 +59,7 @@ function AppRoutes() {
           <Route path="/mining" element={<MiningPage notify={notify} />} />
           <Route path="/library" element={<LibraryPage onAdd={() => {}} notify={notify} />} />
           <Route path="/library/:bookId" element={<ReaderPage notify={notify} />} />
+          <Route path="/manga/:bookId" element={<MangaReaderPage notify={notify} />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage notify={notify} />} />

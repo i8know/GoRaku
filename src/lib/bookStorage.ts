@@ -301,6 +301,7 @@ export async function addNovelFile(
 
     const record: BookRecord = {
       id,
+      type: "novel",
       title,
       author,
       format: "txt",
@@ -315,10 +316,19 @@ export async function addNovelFile(
     };
 
     const blob = new Blob([buffer], { type: "text/plain" });
-    await db.transaction("rw", db.books, db.bookFiles, async () => {
-      await db.books.put(record);
-      await db.bookFiles.put({ bookId: id, blob });
-    });
+    try {
+      await db.transaction("rw", db.books, db.bookFiles, async () => {
+        await db.books.put(record);
+        await db.bookFiles.put({ bookId: id, blob });
+      });
+    } catch (err) {
+      if (isQuotaExceededError(err)) {
+        throw new Error(
+          "Kuota penyimpanan browser penuh. Hapus beberapa buku atau manga yang sudah selesai dibaca, lalu coba lagi.",
+        );
+      }
+      throw err;
+    }
 
     return record;
   }
@@ -342,6 +352,7 @@ export async function addNovelFile(
 
     const record: BookRecord = {
       id,
+      type: "novel",
       title,
       author,
       format: "epub",
@@ -364,6 +375,11 @@ export async function addNovelFile(
 
     return record;
   } catch (err) {
+    if (isQuotaExceededError(err)) {
+      throw new Error(
+        "Kuota penyimpanan browser penuh. Hapus beberapa buku atau manga yang sudah selesai dibaca, lalu coba lagi.",
+      );
+    }
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(
       `Gagal membuka berkas EPUB "${file.name}": ${msg || "Arsip EPUB rusak atau tidak valid."}`,
@@ -441,17 +457,55 @@ export async function incrementNovelMinedCount(
   });
 }
 
+export function isQuotaExceededError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { name?: string; message?: string; inner?: unknown };
+  const name = (e.name ?? "").toLowerCase();
+  const msg = (e.message ?? "").toLowerCase();
+  if (
+    name.includes("quotaexceeded") ||
+    msg.includes("quota") ||
+    msg.includes("storage full") ||
+    msg.includes("disk full")
+  ) {
+    return true;
+  }
+  if (e.inner) return isQuotaExceededError(e.inner);
+  return false;
+}
+
 /**
- * Menghapus novel beserta Blob berkasnya dari IndexedDB.
+ * Memperbarui judul buku atau manga di Perpustakaan.
+ */
+export async function updateBookTitle(
+  bookId: string,
+  newTitle: string,
+  db: LexiconDatabase = lexiconDb,
+): Promise<void> {
+  const trimmed = newTitle.trim();
+  if (!trimmed) {
+    throw new Error("Judul tidak boleh kosong.");
+  }
+  await db.books.update(bookId, { title: trimmed });
+}
+
+/**
+ * Menghapus novel atau manga beserta seluruh berkas halaman dan cache OCR-nya dari IndexedDB.
  */
 export async function deleteNovel(
   bookId: string,
   db: LexiconDatabase = lexiconDb,
 ): Promise<void> {
-  await db.transaction("rw", db.books, db.bookFiles, async () => {
-    await db.books.delete(bookId);
-    await db.bookFiles.delete(bookId);
-  });
+  await db.transaction(
+    "rw",
+    [db.books, db.bookFiles, db.mangaPages, db.ocrCache],
+    async () => {
+      await db.books.delete(bookId);
+      await db.bookFiles.delete(bookId);
+      await db.mangaPages.where("bookId").equals(bookId).delete();
+      await db.ocrCache.where("bookId").equals(bookId).delete();
+    },
+  );
 }
 
 /**

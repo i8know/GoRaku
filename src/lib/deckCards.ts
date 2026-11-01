@@ -2,9 +2,10 @@
 // and the SRS store (schedules) in sync. UI code should go through these helpers
 // instead of calling deckDb directly.
 
-import { deleteCards, getCards, getDeckMediaCount, listStoredDeckIds, putCards, type StoredCard } from "./deckDb";
+import { deleteCards, getCards, getDeckMediaCount, listStoredDeckIds, putCards, putMedia, type StoredCard } from "./deckDb";
 import { sanitizeInline, toPlain } from "./ankiText";
 import { toHiragana } from "./kana";
+import { compressBubbleImageForCard } from "./mangaCoordinates";
 import { SEED_TOTALS, useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -245,20 +246,36 @@ export async function getDeckDuplicateKeys(deckId: string): Promise<Set<string>>
 
 /**
  * Menyimpan kartu hasil Sentence Mining ke deck tujuan menggunakan model `StoredCard`
- * yang sudah ada, dengan mempertahankan tag inline aman (`<b>kata</b>` pada kalimat sumber).
+ * yang sudah ada, dengan mempertahankan tag inline aman (`<b>kata</b>` pada kalimat sumber)
+ * serta menyimpan gambar gelembung manga terkompresi (opsional) ke store `media` yang sama
+ * dengan media hasil impor deck.
  */
 export async function addMinedCardToDeck(
   deckId: string,
-  draft: CardDraft & { subdeck?: string },
+  draft: CardDraft & { subdeck?: string; imageBlob?: Blob },
 ): Promise<StoredCard> {
+  const cardId = newId() + Math.random().toString(36).slice(2, 4);
+  let imageMediaName: string | undefined;
+
+  if (draft.imageBlob && draft.imageBlob.size > 0) {
+    const compressed = await compressBubbleImageForCard(
+      draft.imageBlob,
+      800,
+      0.8,
+    );
+    imageMediaName = `manga-bubble-${cardId}.${compressed.ext}`;
+    await putMedia(deckId, [[imageMediaName, compressed.blob]]);
+  }
+
   const card: StoredCard = {
-    id: newId() + Math.random().toString(36).slice(2, 4),
+    id: cardId,
     deckId,
     word: draft.word.trim(),
     reading: draft.reading.trim(),
     meaning: sanitizeInline(draft.meaning.trim().replace(/\r?\n/g, "<br>")),
     sentence: sanitizeInline(draft.sentence.trim().replace(/\r?\n/g, "<br>")),
     translation: textToHtml(draft.translation),
+    image: imageMediaName,
     subdeck: draft.subdeck?.trim() ?? "",
     tags: draft.tags,
   };

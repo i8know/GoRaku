@@ -72,32 +72,74 @@ export interface TermMetaRecord {
   data: unknown;
 }
 
+export type MediaItemType = "novel" | "manga";
+export type BookFormat = "epub" | "txt" | "cbz" | "zip" | "images";
+
 /**
- * Metadata novel di Perpustakaan (Tahap 3 & 4).
+ * Metadata novel atau manga di Perpustakaan.
  */
 export interface BookRecord {
   id: string;
+  type?: MediaItemType; // "novel" | "manga" (default "novel" untuk data versi 1)
   title: string;
   author: string;
-  format: "epub" | "txt";
+  volume?: string; // Nomor/nama volume opsional (mis. dari ComicInfo.xml)
+  format: BookFormat;
   encoding?: string;
   coverBlob?: Blob;
   fileSize: number;
   totalChars?: number;
+  pageCount?: number; // Jumlah halaman untuk manga
+  currentPage?: number; // Indeks halaman terakhir dibaca (0-based) untuk manga
+  readingDirection?: "rtl" | "ltr"; // Default "rtl" untuk manga
+  pageOrder?: string[]; // Urutan nama entri halaman manga (natural sort / manual)
   progress: number; // 0..100
-  lastLocation?: string; // EPUB CFI atau offset karakter TXT
+  lastLocation?: string; // EPUB CFI, offset karakter TXT, atau "page:N" untuk manga
   addedAt: string;
   lastReadAt?: string;
   minedCount: number;
 }
 
 /**
- * Blob berkas buku disimpan di tabel terpisah agar query daftar buku
- * di halaman Perpustakaan tidak memuat puluhan MB berkas ke memori.
+ * Blob berkas buku/arsip (.epub, .txt, .cbz, .zip) disimpan di tabel terpisah
+ * agar query daftar item di halaman Perpustakaan tidak memuat seluruh arsip ke memori.
  */
 export interface BookFileRecord {
   bookId: string;
   blob: Blob;
+}
+
+/**
+ * Menyimpan berkas gambar per halaman untuk manga yang diimpor dari
+ * pemilihan beberapa berkas gambar atau satu folder (webkitdirectory).
+ * Dengan kunci gabungan `[bookId+pageName]`, setiap halaman dibaca secara
+ * malas (lazy) satu per satu saat dibutuhkan tanpa memuat seluruh folder ke RAM.
+ */
+export interface MangaPageRecord {
+  bookId: string;
+  pageName: string;
+  blob: Blob;
+}
+
+/**
+ * Menyimpan cache hasil OCR per (bookId, pageIndex, bbox) agar tidak perlu
+ * menjalankan ulang OCR ketika membuka kembali halaman yang sama.
+ */
+export interface OcrCacheRecord {
+  id?: number;
+  bookId: string;
+  pageIndex: number;
+  bbox: {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
+  lang: "jpn" | "jpn_vert";
+  rawText: string;
+  text: string;
+  confidence?: number;
+  createdAt: string;
 }
 
 export class LexiconDatabase extends Dexie {
@@ -107,6 +149,8 @@ export class LexiconDatabase extends Dexie {
   termMeta!: Table<TermMetaRecord, number>;
   books!: Table<BookRecord, string>;
   bookFiles!: Table<BookFileRecord, string>;
+  mangaPages!: Table<MangaPageRecord, [string, string]>;
+  ocrCache!: Table<OcrCacheRecord, number>;
 
   constructor(dbName = "ma-immersion-lexicon") {
     super(dbName);
@@ -119,6 +163,33 @@ export class LexiconDatabase extends Dexie {
       books: "id, format, addedAt, lastReadAt",
       bookFiles: "bookId",
     });
+
+    this.version(2)
+      .stores({
+        dictionaries: "++id, title, enabled, priority",
+        terms: "++id, dictId, expression, reading",
+        tags: "++id, dictId, [dictId+name]",
+        termMeta: "++id, dictId, expression",
+        books: "id, type, format, addedAt, lastReadAt",
+        bookFiles: "bookId",
+        mangaPages: "[bookId+pageName], bookId",
+        ocrCache: "++id, [bookId+pageIndex], bookId",
+      })
+      .upgrade((tx) => {
+        return tx
+          .table("books")
+          .toCollection()
+          .modify((book: BookRecord) => {
+            if (!book.type) {
+              book.type =
+                book.format === "cbz" ||
+                book.format === "zip" ||
+                book.format === "images"
+                  ? "manga"
+                  : "novel";
+            }
+          });
+      });
   }
 }
 

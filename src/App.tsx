@@ -146,20 +146,35 @@ export default function App() {
     }
   };
 
-  // Combine user's real uploaded novels with sample immersion sources
+  // Combine user's real uploaded novels & mangas with sample immersion sources
   const displaySources = useMemo(() => {
-    const userNovelRows = books.slice(0, 2).map((b) => ({
-      id: `book-${b.id}`,
-      type: `Novel (${b.format.toUpperCase()})`,
-      title: b.title,
-      detail: `${b.author || "Tanpa Penulis"} • ${Math.round((b.progress || 0) * 100)}% dibaca`,
-      art: "novel" as const,
-      kanji: extractCoverKanji(b.title),
-      sentence: "「クリックして読書と文脈マイニングを続けましょう。」",
-      translation: "Klik untuk melanjutkan membaca novel & menambang kalimat baru.",
-      targetPath: `/library/${b.id}`,
-    }));
-    return [...userNovelRows, ...defaultSources].slice(0, 3);
+    const userBookRows = books.slice(0, 2).map((b) => {
+      const isManga =
+        b.type === "manga" ||
+        b.format === "cbz" ||
+        b.format === "zip" ||
+        b.format === "images";
+      return {
+        id: `book-${b.id}`,
+        type: isManga
+          ? `Manga (${b.format === "images" ? "GAMBAR" : b.format.toUpperCase()})`
+          : `Novel (${b.format.toUpperCase()})`,
+        title: b.title,
+        detail: isManga
+          ? `${b.author || "Manga Lokal"} • Hal. ${(b.currentPage ?? 0) + 1}/${b.pageCount ?? 0} (${b.progress ?? 0}%)`
+          : `${b.author || "Tanpa Penulis"} • ${b.progress ?? 0}% dibaca`,
+        art: "novel" as const,
+        kanji: extractCoverKanji(b.title),
+        sentence: isManga
+          ? "「マンガの吹き出しをOCRして文脈マイニングを続けましょう。」"
+          : "「クリックして読書と文脈マイニングを続けましょう。」",
+        translation: isManga
+          ? "Klik untuk melanjutkan membaca manga & menambang kalimat dari gelembung dialog."
+          : "Klik untuk melanjutkan membaca novel & menambang kalimat baru.",
+        targetPath: isManga ? `/manga/${b.id}` : `/library/${b.id}`,
+      };
+    });
+    return [...userBookRows, ...defaultSources].slice(0, 3);
   }, [books]);
 
   const activeDayStat = WEEK_DATA[hoveredDay ?? todayWeekIdx];
