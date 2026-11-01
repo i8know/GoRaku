@@ -1,0 +1,11 @@
+{
+  "title": "語楽",
+  "description": "Enhance Japanese learning with customizable decks and sentence mining from novels, manga, anime, and videos for immersive language practice.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
