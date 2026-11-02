@@ -72,6 +72,7 @@ button { cursor: pointer; }
 .app-shell.is-collapsed .quote-card,
 .app-shell.is-collapsed .sb-quick-section,
 .app-shell.is-collapsed .sb-goal-expanded,
+.app-shell.is-collapsed .sb-status-expanded,
 .app-shell.is-collapsed .user-profile-info { display: none; }
 .app-shell.is-collapsed .sidebar-collapse-btn { margin-left: 0; }
 .app-shell.is-collapsed .nav-item { justify-content: center; padding: 12px; }

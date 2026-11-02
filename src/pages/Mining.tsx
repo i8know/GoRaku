@@ -9,10 +9,10 @@ import { extractSentenceAround } from "../lib/sentenceExtractor";
 import { speakJapanese } from "../lib/tts";
 
 type Tok = { t: string; r?: string; m?: string; lv?: string };
-type PresetKey = "Novel" | "Manga" | "Anime" | "YouTube";
+type PresetKey = "Novel" | "Manga";
 type Src = { title: string; where: string; tone: string; tr: string; tokens: Tok[]; pos: string; frac: number };
 
-const sources = ["Novel", "Manga", "Anime", "YouTube", "Teks Bebas"] as const;
+const sources = ["Novel", "Manga", "Teks Bebas"] as const;
 type SrcKey = (typeof sources)[number];
 
 const data: Record<PresetKey, Src> = {
@@ -29,22 +29,6 @@ const data: Record<PresetKey, Src> = {
     tr: "Kalau tidak menyerah, pasti akan tersampaikan.",
     tokens: [
       { t: "諦めなければ", r: "あきらめなければ", m: "jika tidak menyerah", lv: "N2" }, { t: "、" }, { t: "きっと", r: "きっと", m: "pasti", lv: "N3" }, { t: "届く", r: "とどく", m: "sampai; tersampaikan", lv: "N3" }, { t: "。" },
-    ],
-  },
-  Anime: {
-    title: "葬送のフリーレン", where: "Episode 04 • 12:31", tone: "anime", frac: 0.42, pos: "Subtitle 31 dari 74",
-    tr: "Umur manusia itu pendek, ya.",
-    tokens: [
-      { t: "人間", r: "にんげん", m: "manusia", lv: "N4" }, { t: "の" }, { t: "寿命", r: "じゅみょう", m: "umur; masa hidup", lv: "N2" }, { t: "は" },
-      { t: "短い", r: "みじかい", m: "pendek", lv: "N4" }, { t: "んだね" }, { t: "。" },
-    ],
-  },
-  YouTube: {
-    title: "東京の朝ルーティン", where: "08:24", tone: "video", frac: 0.28, pos: "Subtitle 19 dari 68",
-    tr: "Aku suka waktu pagi yang tenang.",
-    tokens: [
-      { t: "朝", r: "あさ", m: "pagi", lv: "N5" }, { t: "は" }, { t: "静かな", r: "しずかな", m: "tenang", lv: "N4" }, { t: "時間", r: "じかん", m: "waktu", lv: "N5" },
-      { t: "が" }, { t: "好き", r: "すき", m: "suka", lv: "N5" }, { t: "です" }, { t: "。" },
     ],
   },
 };

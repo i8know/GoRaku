@@ -87,7 +87,7 @@ const SEEDS: Record<string, Seed[]> = {
 const SEED_FLAG = "ma-seed-v1";
 
 async function seedStarterDecks(): Promise<void> {
-  if (localStorage.getItem(SEED_FLAG)) return;
+  if (typeof localStorage !== "undefined" && localStorage.getItem(SEED_FLAG)) return;
   const decks = useAppStore.getState().decks;
   for (const [deckId, rows] of Object.entries(SEEDS)) {
     if (!decks.some((d) => d.id === deckId && d.source === "manual" && d.total === SEED_TOTALS[deckId])) continue;
@@ -110,7 +110,9 @@ async function seedStarterDecks(): Promise<void> {
     const orphans = Object.keys(useReviewStore.getState().srsCards[deckId] ?? {}).filter((id) => !valid.has(id));
     useReviewStore.getState().forgetCards(deckId, orphans);
   }
-  localStorage.setItem(SEED_FLAG, "1");
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(SEED_FLAG, "1");
+  }
 }
 
 function commonSubdeckRoot(subdecks: string[]): string {

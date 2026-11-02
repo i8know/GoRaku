@@ -54,11 +54,11 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 export function Button({
-  children, className = "", onClick, ariaLabel, type = "button", disabled,
+  children, className = "", onClick, ariaLabel, type = "button", disabled, style,
 }: {
-  children: ReactNode; className?: string; onClick?: () => void; ariaLabel?: string; type?: "button" | "submit"; disabled?: boolean;
+  children: ReactNode; className?: string; onClick?: () => void; ariaLabel?: string; type?: "button" | "submit"; disabled?: boolean; style?: React.CSSProperties;
 }) {
-  return <button type={type} className={className} onClick={onClick} aria-label={ariaLabel} disabled={disabled}>{children}</button>;
+  return <button type={type} className={className} onClick={onClick} aria-label={ariaLabel} disabled={disabled} style={style}>{children}</button>;
 }
 
 export function PageHead({ eyebrow, title, accent, copy, children }: { eyebrow: string; title: string; accent?: string; copy: string; children?: ReactNode }) {

@@ -174,7 +174,7 @@ const PILLAR_CARDS: {
     icon: "mine",
     tag: "SENTENCE MINING",
     title: "1-Click Popup & Studio Teks",
-    desc: "Klik kata di novel atau tempel subtitle anime di Studio Teks Bebas untuk membuat kartu lengkap dengan kalimat sumber.",
+    desc: "Klik kata di novel, deteksi teks dialog manga, atau gunakan Studio Teks Bebas untuk membuat kartu lengkap dengan kalimat sumber.",
     highlights: ["Dialog 「...」 Tidak Terpotong", "Deteksi Kartu Ganda", "Audio Pengucapan ja-JP"],
   },
   {

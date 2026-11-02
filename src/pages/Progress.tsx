@@ -29,7 +29,7 @@ const jlpt = [
   { lv: "N2", p: 9, n: "140 / 1.600" }, { lv: "N1", p: 0, n: "0 / 2.600" },
 ];
 const sourcesMix = [
-  { n: "Novel", p: 38, c: "#233c35" }, { n: "Anime", p: 29, c: "#d95b43" }, { n: "Manga", p: 21, c: "#52667b" }, { n: "YouTube", p: 12, c: "#c9a867" },
+  { n: "Novel", p: 58, c: "#233c35" }, { n: "Manga", p: 42, c: "#52667b" },
 ];
 const forecast = [44, 31, 52, 27, 38, 60, 22];
 const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];

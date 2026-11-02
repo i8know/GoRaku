@@ -41,9 +41,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 /* ===== Sentence mining ===== */
 .mn-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; margin-bottom: 40px; }
 .mn-stage { position: relative; overflow: hidden; border-radius: 18px; padding: 26px 32px 24px; color: #fff; background: #233c35; min-height: 380px; display: flex; flex-direction: column; }
-.mn-stage.anime { background: linear-gradient(150deg, #3c5662, #223540); }
 .mn-stage.manga { background: linear-gradient(150deg, #34406a, #1f2742); }
-.mn-stage.video { background: linear-gradient(150deg, #2c4a43, #1c2c28); }
 .mn-stage::after { content: ''; position: absolute; width: 260px; height: 260px; right: -90px; bottom: -120px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 0 0 34px rgba(255,255,255,.03), 0 0 0 35px rgba(255,255,255,.1); pointer-events: none; }
 .mn-stage-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; }
 .mn-badge { display: inline-block; padding: 3px 9px; border-radius: 10px; background: #d95b43; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }

@@ -26,25 +26,25 @@ const defaultSources = [
     targetPath: "/library",
   },
   {
-    id: "sample-anime",
-    type: "Anime",
-    title: "葬送のフリーレン",
-    detail: "Episode 04 • 12 kalimat",
-    art: "anime",
-    kanji: "旅",
-    sentence: "「人間の寿命は短いんだね。」",
-    translation: "Umur manusia itu pendek, ya.",
-    targetPath: "/mining",
+    id: "sample-manga",
+    type: "Manga",
+    title: "よつばと！",
+    detail: "Volume 01 • Balon dialog",
+    art: "novel",
+    kanji: "日常",
+    sentence: "「いつでも今日が、いちばん楽しい日。」",
+    translation: "Hari ini selalu menjadi hari yang paling menyenangkan.",
+    targetPath: "/library",
   },
   {
-    id: "sample-video",
-    type: "YouTube",
-    title: "東京の朝ルーティン",
-    detail: "08:24 • 5 kalimat",
-    art: "video",
-    kanji: "朝",
-    sentence: "「朝は静かな時間が好きです。」",
-    translation: "Aku suka waktu pagi yang tenang.",
+    id: "sample-custom",
+    type: "Teks Bebas",
+    title: "Catatan Harian",
+    detail: "Studio Teks & Kamus",
+    art: "novel",
+    kanji: "言葉",
+    sentence: "「新しい言葉を覚えるのはとても楽しい。」",
+    translation: "Mempelajari kosakata baru itu sangat menyenangkan.",
     targetPath: "/mining",
   },
 ];
@@ -393,10 +393,9 @@ export default function App() {
             <p className="modal-copy">Ubah konten Jepang favoritmu menjadi materi belajar kontekstual.</p>
             <div className="source-options">
               {[
-                { label: "Novel / EPUB & TXT", path: "/library", icon: "book" as const },
-                { label: "Manga Studio", path: "/mining", icon: "cards" as const },
-                { label: "Anime / Subtitle", path: "/mining", icon: "play" as const },
-                { label: "YouTube / Teks Bebas", path: "/mining", icon: "mine" as const },
+                { label: "Novel (EPUB & TXT)", path: "/library", icon: "book" as const },
+                { label: "Manga & Dialog OCR", path: "/library", icon: "cards" as const },
+                { label: "Studio Teks Bebas & Kamus", path: "/mining", icon: "mine" as const },
               ].map((item) => (
                 <Button
                   key={item.label}

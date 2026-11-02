@@ -169,8 +169,8 @@ export default function MangaOcrPanel({
     const lookupRes = await lookup(clickableText, utf16Index);
 
     const matchLen =
-      lookupRes.matchLength > 0
-        ? lookupRes.matchLength
+      lookupRes.matchedLength > 0
+        ? lookupRes.matchedLength
         : (chars[charIdx]?.length ?? 1);
     const matchedText =
       lookupRes.matchedText ||
@@ -213,7 +213,7 @@ export default function MangaOcrPanel({
 
       // 3. Tiap kalimat individual lain yang ada di gelembung tersebut
       bubbleSentences.forEach((s, idx) => {
-        if (s !== extractedSentence.sentence) {
+        if (s !== extractedSentence.sentencePlain) {
           candidateSentences.push({
             label: `Kalimat ${idx + 1}: ${s.length > 16 ? s.slice(0, 16) + "…" : s}`,
             sentenceHighlightedHtml: s,
@@ -229,7 +229,7 @@ export default function MangaOcrPanel({
         bottom: rect.bottom,
       },
       matchedText,
-      results: lookupRes.items,
+      results: lookupRes.results,
       extractedSentence,
       candidateSentences:
         candidateSentences.length > 1 ? candidateSentences : undefined,
