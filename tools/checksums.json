@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-11-03T20:00:00Z",
+  "datasets": {
+    "jmdict_e": {
+      "fileName": "JMdict_e.gz",
+      "url": "http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "format": "xml.gz",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Electronic Dictionary Research and Development Group (EDRDG)",
+      "sha256": "dynamic_daily_release"
+    },
+    "kanjidic2": {
+      "fileName": "kanjidic2.xml.gz",
+      "url": "http://ftp.edrdg.org/pub/Nihongo/kanjidic2.xml.gz",
+      "format": "xml.gz",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Electronic Dictionary Research and Development Group (EDRDG)",
+      "sha256": "dynamic_weekly_release"
+    },
+    "tatoeba_jpn_sentences": {
+      "fileName": "jpn_sentences.tsv.bz2",
+      "url": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2",
+      "format": "tsv.bz2",
+      "license": "CC BY 2.0 FR",
+      "attribution": "Tatoeba.org community contributors",
+      "sha256": "dynamic_weekly_release"
+    },
+    "tatoeba_ind_sentences": {
+      "fileName": "ind_sentences.tsv.bz2",
+      "url": "https://downloads.tatoeba.org/exports/per_language/ind/ind_sentences.tsv.bz2",
+      "format": "tsv.bz2",
+      "license": "CC BY 2.0 FR",
+      "attribution": "Tatoeba.org community contributors",
+      "sha256": "dynamic_weekly_release"
+    },
+    "tatoeba_jpn_ind_links": {
+      "fileName": "jpn-ind_links.tsv.bz2",
+      "url": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn-ind_links.tsv.bz2",
+      "format": "tsv.bz2",
+      "license": "CC BY 2.0 FR",
+      "attribution": "Tatoeba.org community contributors",
+      "sha256": "dynamic_weekly_release"
+    }
+  }
+}
+

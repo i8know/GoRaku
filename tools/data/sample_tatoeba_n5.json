@@ -1,0 +1,183 @@
+[
+  {
+    "tatoeba_jpn_id": 141973,
+    "jpn_text": "私は本を読みます。",
+    "tatoeba_ind_id": 921401,
+    "ind_text": "Saya membaca buku.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["本", "読みます", "私"]
+  },
+  {
+    "tatoeba_jpn_id": 141980,
+    "jpn_text": "毎日学校で日本語を勉強します。",
+    "tatoeba_ind_id": 921405,
+    "ind_text": "Setiap hari saya belajar bahasa Jepang di sekolah.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["毎日", "学校", "日本語", "勉強します"]
+  },
+  {
+    "tatoeba_jpn_id": 142010,
+    "jpn_text": "朝ご飯にパンを食べました。",
+    "tatoeba_ind_id": 921415,
+    "ind_text": "Saya makan roti untuk sarapan.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["食べました", "朝"]
+  },
+  {
+    "tatoeba_jpn_id": 142022,
+    "jpn_text": "冷たい水を飲みました。",
+    "tatoeba_ind_id": 921420,
+    "ind_text": "Saya meminum air dingin.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["水", "飲みました"]
+  },
+  {
+    "tatoeba_jpn_id": 142035,
+    "jpn_text": "電車で東京へ行きます。",
+    "tatoeba_ind_id": 921430,
+    "ind_text": "Saya pergi ke Tokyo dengan kereta listrik.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["電車", "行きます", "東京"]
+  },
+  {
+    "tatoeba_jpn_id": 142048,
+    "jpn_text": "昨日友達と映画を見ました。",
+    "tatoeba_ind_id": 921438,
+    "ind_text": "Kemarin saya menonton film bersama teman.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["昨日", "友達", "映画", "見ました"]
+  },
+  {
+    "tatoeba_jpn_id": 142055,
+    "jpn_text": "先生の話をよく聞きます。",
+    "tatoeba_ind_id": 921445,
+    "ind_text": "Mendengarkan perkataan guru dengan baik.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["先生", "話", "聞きます"]
+  },
+  {
+    "tatoeba_jpn_id": 142062,
+    "jpn_text": "母に手紙を書きました。",
+    "tatoeba_ind_id": 921450,
+    "ind_text": "Saya menulis surat untuk ibu.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["母", "手紙", "書きました"]
+  },
+  {
+    "tatoeba_jpn_id": 142070,
+    "jpn_text": "店で新しい車を買いました。",
+    "tatoeba_ind_id": 921460,
+    "ind_text": "Membeli mobil baru di toko.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["店", "新しい", "車", "買いました"]
+  },
+  {
+    "tatoeba_jpn_id": 142081,
+    "jpn_text": "机の上に本があります。",
+    "tatoeba_ind_id": 921471,
+    "ind_text": "Ada buku di atas meja.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["上", "本", "あります"]
+  },
+  {
+    "tatoeba_jpn_id": 142095,
+    "jpn_text": "庭に白い犬がいます。",
+    "tatoeba_ind_id": 921485,
+    "ind_text": "Ada anjing putih di halaman.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["白い", "犬", "います"]
+  },
+  {
+    "tatoeba_jpn_id": 142102,
+    "jpn_text": "毎朝七時に起きます。",
+    "tatoeba_ind_id": 921490,
+    "ind_text": "Setiap pagi saya bangun pada jam tujuh.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["毎朝", "起きます"]
+  },
+  {
+    "tatoeba_jpn_id": 142115,
+    "jpn_text": "午後五時に家へ帰ります。",
+    "tatoeba_ind_id": 921505,
+    "ind_text": "Saya pulang ke rumah jam lima sore.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["家", "帰ります"]
+  },
+  {
+    "tatoeba_jpn_id": 142128,
+    "jpn_text": "部屋の中で音楽を聞きます。",
+    "tatoeba_ind_id": 921515,
+    "ind_text": "Mendengarkan musik di dalam kamar.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["部屋", "中", "音楽", "聞きます"]
+  },
+  {
+    "tatoeba_jpn_id": 142139,
+    "jpn_text": "あの高い山は富士山です。",
+    "tatoeba_ind_id": 921525,
+    "ind_text": "Gunung yang tinggi itu adalah Gunung Fuji.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["高い", "山"]
+  },
+  {
+    "tatoeba_jpn_id": 142145,
+    "jpn_text": "この小さい魚は赤いです。",
+    "tatoeba_ind_id": 921530,
+    "ind_text": "Ikan kecil ini berwarna merah.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["小さい", "魚", "赤いです"]
+  },
+  {
+    "tatoeba_jpn_id": 142155,
+    "jpn_text": "図書館で友達と話しました。",
+    "tatoeba_ind_id": 921540,
+    "ind_text": "Saya berbicara dengan teman di perpustakaan.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["友達", "話しました"]
+  },
+  {
+    "tatoeba_jpn_id": 142162,
+    "jpn_text": "明日友達が日本に来ます。",
+    "tatoeba_ind_id": 921545,
+    "ind_text": "Besok teman saya akan datang ke Jepang.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["明日", "日本", "来ます"]
+  },
+  {
+    "tatoeba_jpn_id": 142170,
+    "jpn_text": "今日はお茶を飲みます。",
+    "tatoeba_ind_id": 921555,
+    "ind_text": "Hari ini saya minum teh.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["今日", "お茶", "飲みます"]
+  },
+  {
+    "tatoeba_jpn_id": 142185,
+    "jpn_text": "会社の前で父に会いました。",
+    "tatoeba_ind_id": 921568,
+    "ind_text": "Saya bertemu ayah di depan kantor.",
+    "contributor": "Tatoeba_Community",
+    "license": "CC BY 2.0 FR",
+    "target_words": ["会社", "前", "父", "会いました"]
+  }
+]
+

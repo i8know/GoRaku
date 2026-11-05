@@ -1,0 +1,75 @@
+[
+  {
+    "id": "rule_wo_transitive",
+    "name": "Partikel を (Objek Penderita)",
+    "particle": "を",
+    "distractors": ["に", "で", "が"],
+    "description": "Menandai objek langsung dari kata kerja transitif (minumu, taberu, yomu, kaku, kiku, kau, miru).",
+    "keywords": ["飲む", "食べる", "読む", "書く", "聞く", "見る", "買う", "勉強する", "作る"],
+    "example": "水を飲む"
+  },
+  {
+    "id": "rule_ni_animate_existence",
+    "name": "Partikel に (Keberadaan Benda Hidup: いる)",
+    "particle": "に",
+    "distractors": ["で", "を", "へ"],
+    "description": "Menandai tempat keberadaan makhluk hidup (orang/hewan) bersama kata kerja いる.",
+    "keywords": ["いる", "います", "いた", "いました"],
+    "example": "庭に犬がいる"
+  },
+  {
+    "id": "rule_ni_inanimate_existence",
+    "name": "Partikel に (Keberadaan Benda Mati: ある)",
+    "particle": "に",
+    "distractors": ["で", "を", "へ"],
+    "description": "Menandai tempat keberadaan benda mati bersama kata kerja ある.",
+    "keywords": ["ある", "あります", "あった", "ありました"],
+    "example": "机の上に本がある"
+  },
+  {
+    "id": "rule_de_action_location",
+    "name": "Partikel で (Lokasi Berlangsungnya Aksi)",
+    "particle": "で",
+    "distractors": ["に", "を", "へ"],
+    "description": "Menandai tempat terjadinya suatu aktivitas dinamis.",
+    "keywords": ["勉強する", "食べる", "遊ぶ", "買う", "働く", "読む", "話す"],
+    "example": "図書館で勉強する"
+  },
+  {
+    "id": "rule_ni_time",
+    "name": "Partikel に (Waktu Spesifik)",
+    "particle": "に",
+    "distractors": ["で", "を", "は"],
+    "description": "Menandai waktu tertentu yang memuat angka (jam, hari, tanggal, bulan).",
+    "keywords": ["時", "曜日", "日", "月", "年"],
+    "example": "七時に起きる"
+  },
+  {
+    "id": "rule_he_motion_destination",
+    "name": "Partikel へ/に (Arah & Tujuan Perpindahan)",
+    "particle": "へ",
+    "distractors": ["で", "を", "が"],
+    "description": "Menandai arah pergerakan atau tujuan dengan kata kerja perpindahan (行く, 来る, 帰る).",
+    "keywords": ["行く", "行きます", "来る", "来ます", "帰る", "帰ります"],
+    "example": "日本へ行く"
+  },
+  {
+    "id": "rule_de_means_tool",
+    "name": "Partikel で (Alat / Sarana / Transportasi)",
+    "particle": "で",
+    "distractors": ["に", "を", "と"],
+    "description": "Menandai alat, media, atau sarana transportasi yang dipakai untuk melakukan sesuatu.",
+    "keywords": ["電車", "車", "バス", "ペン", "箸", "日本語", "英語"],
+    "example": "電車で行く"
+  },
+  {
+    "id": "rule_to_companion",
+    "name": "Partikel と (Bersama / Teman Aktivitas)",
+    "particle": "と",
+    "distractors": ["に", "で", "を"],
+    "description": "Menandai orang atau teman yang diajak melakukan suatu aktivitas bersama.",
+    "keywords": ["友達", "家族", "先生", "母", "父"],
+    "example": "友達と話す"
+  }
+]
+

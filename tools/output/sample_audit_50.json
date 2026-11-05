@@ -1,0 +1,2719 @@
+{
+  "sampleSize": 50,
+  "seed": 42,
+  "generatedAt": "2026-11-03T13:56:49.211Z",
+  "sourcePackId": "jlpt-n5-seed-pack-v1",
+  "sourcePackVersion": "1.0.0",
+  "distributionByType": {
+    "G1_KANJI_READING": 13,
+    "G2_KANJI_WRITING": 15,
+    "G3_PARTICLES": 6,
+    "G4_CONTEXT_VOCAB": 16
+  },
+  "samples": [
+    {
+      "id": "q-g2-001",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "私は<u>ほん</u>を読みます。",
+      "options": [
+        "休",
+        "本",
+        "木",
+        "体"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "私",
+          "rt": "わたし"
+        },
+        {
+          "text": "はほんを"
+        },
+        {
+          "text": "読",
+          "rt": "よ"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "本",
+        "reading": "ほん",
+        "meaningEn": "book",
+        "translationId": "Saya membaca buku.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'ほん'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1360010",
+        "tatoeba_jpn_id": 141973,
+        "tatoeba_ind_id": 921401,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-020",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "机の（　★　）に本があります。",
+      "options": [
+        "家",
+        "病院",
+        "上",
+        "左"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "机",
+          "rt": "つくえ"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "に"
+        },
+        {
+          "text": "本",
+          "rt": "ほん"
+        },
+        {
+          "text": "があります。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "上",
+        "reading": "うえ",
+        "meaningEn": "above, on, up",
+        "translationId": "Ada buku di atas meja.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '上' (atas / above, on, up)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1317580",
+        "tatoeba_jpn_id": 142081,
+        "tatoeba_ind_id": 921471,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g1-014",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "電車で<u>東京</u>へ行きます。",
+      "options": [
+        "とうきょう",
+        "どうきょうい",
+        "どうきょう",
+        "とぎょう"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "電車",
+          "rt": "でんしゃ"
+        },
+        {
+          "text": "で東京へ"
+        },
+        {
+          "text": "行",
+          "rt": "い"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "東京",
+        "reading": "とうきょう",
+        "meaningEn": "Tokyo",
+        "translationId": "Saya pergi ke Tokyo dengan kereta listrik.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142035) dan kosakata dari JMdict (Seq: 1445720)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1445720",
+        "tatoeba_jpn_id": 142035,
+        "tatoeba_ind_id": 921430,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g2-043",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "この<u>ちいさい</u>魚は赤いです。",
+      "options": [
+        "木",
+        "日",
+        "大",
+        "小さい"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "このちいさい"
+        },
+        {
+          "text": "魚",
+          "rt": "さかな"
+        },
+        {
+          "text": "は"
+        },
+        {
+          "text": "赤",
+          "rt": "あか"
+        },
+        {
+          "text": "いです。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "小さい",
+        "reading": "ちいさい",
+        "meaningEn": "small, little",
+        "translationId": "Ikan kecil ini berwarna merah.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'ちいさい'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1369790",
+        "tatoeba_jpn_id": 142145,
+        "tatoeba_ind_id": 921530,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g1-056",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "会社の前で<u>父</u>に会いました。",
+      "options": [
+        "ちち",
+        "ぶ",
+        "ぢちう",
+        "じちい"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "会社",
+          "rt": "かいしゃ"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "前",
+          "rt": "まえ"
+        },
+        {
+          "text": "で父に"
+        },
+        {
+          "text": "会",
+          "rt": "あ"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "父",
+        "reading": "ちち",
+        "meaningEn": "father",
+        "translationId": "Saya bertemu ayah di depan kantor.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142185) dan kosakata dari JMdict (Seq: 1419740)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1419740",
+        "tatoeba_jpn_id": 142185,
+        "tatoeba_ind_id": 921568,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g1-051",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "<u>今日</u>はお茶を飲みます。",
+      "options": [
+        "ぎょ",
+        "ぎょう",
+        "きっょう",
+        "きょう"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "今日はお"
+        },
+        {
+          "text": "茶",
+          "rt": "ちゃ"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "飲",
+          "rt": "の"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "今日",
+        "reading": "きょう",
+        "meaningEn": "today",
+        "translationId": "Hari ini saya minum teh.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142170) dan kosakata dari JMdict (Seq: 1524310)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1524310",
+        "tatoeba_jpn_id": 142170,
+        "tatoeba_ind_id": 921555,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g4-007",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "冷たい（　★　）を飲みました。",
+      "options": [
+        "東京",
+        "学校",
+        "水",
+        "今日"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "冷",
+          "rt": "つめ"
+        },
+        {
+          "text": "たい"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "飲",
+          "rt": "の"
+        },
+        {
+          "text": "みました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "水",
+        "reading": "みず",
+        "meaningEn": "water",
+        "translationId": "Saya meminum air dingin.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '水' (air / water)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1295220",
+        "tatoeba_jpn_id": 142022,
+        "tatoeba_ind_id": 921420,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-036",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "（　★　）はお茶を飲みます。",
+      "options": [
+        "車",
+        "時間",
+        "今日",
+        "前"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "はお"
+        },
+        {
+          "text": "茶",
+          "rt": "ちゃ"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "飲",
+          "rt": "の"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "今日",
+        "reading": "きょう",
+        "meaningEn": "today",
+        "translationId": "Hari ini saya minum teh.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '今日' (hari ini / today)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1524310",
+        "tatoeba_jpn_id": 142170,
+        "tatoeba_ind_id": 921555,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g3-008",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "店（　★　）新しい車を買いました。",
+      "options": [
+        "を",
+        "と",
+        "に",
+        "で"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "店",
+          "rt": "みせ"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "新",
+          "rt": "あたら"
+        },
+        {
+          "text": "しい"
+        },
+        {
+          "text": "車",
+          "rt": "くるま"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "買",
+          "rt": "か"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "で",
+        "reading": "で",
+        "meaningEn": "Particle 'で' (Partikel で (Alat / Sarana / Transportasi))",
+        "translationId": "Membeli mobil baru di toko.",
+        "grammarPoint": "Partikel で (Alat / Sarana / Transportasi)",
+        "notes": "Menandai alat, media, atau sarana transportasi yang dipakai untuk melakukan sesuatu. Contoh: 電車で行く"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 142070,
+        "tatoeba_ind_id": 921460,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g1-003",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "<u>私</u>は本を読みます。",
+      "options": [
+        "わたじう",
+        "わだじ",
+        "わたしう",
+        "わたし"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "私は"
+        },
+        {
+          "text": "本",
+          "rt": "ほん"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "読",
+          "rt": "よ"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "私",
+        "reading": "わたし",
+        "meaningEn": "I, me",
+        "translationId": "Saya membaca buku.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 141973) dan kosakata dari JMdict (Seq: 1303970)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1303970",
+        "tatoeba_jpn_id": 141973,
+        "tatoeba_ind_id": 921401,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g3-006",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "昨日友達（　★　）映画を見ました。",
+      "options": [
+        "と",
+        "に",
+        "を",
+        "で"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "昨日",
+          "rt": "きのう"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "映画",
+          "rt": "えいが"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "見",
+          "rt": "み"
+        },
+        {
+          "text": "ました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "と",
+        "reading": "と",
+        "meaningEn": "Particle 'と' (Partikel と (Bersama / Teman Aktivitas))",
+        "translationId": "Kemarin saya menonton film bersama teman.",
+        "grammarPoint": "Partikel と (Bersama / Teman Aktivitas)",
+        "notes": "Menandai orang atau teman yang diajak melakukan suatu aktivitas bersama. Contoh: 友達と話す"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 142048,
+        "tatoeba_ind_id": 921438,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g2-057",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "会社の前で父に<u>あいました</u>。",
+      "options": [
+        "会いました",
+        "合いました",
+        "全いました",
+        "今いました"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "会社",
+          "rt": "かいしゃ"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "前",
+          "rt": "まえ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "父",
+          "rt": "ちち"
+        },
+        {
+          "text": "にあいました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "会いました",
+        "reading": "あいました",
+        "meaningEn": "company, firm",
+        "translationId": "Saya bertemu ayah di depan kantor.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'あいました'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1203870",
+        "tatoeba_jpn_id": 142185,
+        "tatoeba_ind_id": 921568,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-035",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "明日友達が（　★　）に来ます。",
+      "options": [
+        "富士山",
+        "日本",
+        "映画",
+        "水"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "明日",
+          "rt": "あした"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "が"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "に"
+        },
+        {
+          "text": "来",
+          "rt": "き"
+        },
+        {
+          "text": "ます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "日本",
+        "reading": "にほん",
+        "meaningEn": "Japan",
+        "translationId": "Besok teman saya akan datang ke Jepang.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '日本' (Jepang / Japan)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1539210",
+        "tatoeba_jpn_id": 142162,
+        "tatoeba_ind_id": 921545,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-017",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "（　★　）で新しい車を買いました。",
+      "options": [
+        "今日",
+        "店",
+        "庭",
+        "山"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "新",
+          "rt": "あたら"
+        },
+        {
+          "text": "しい"
+        },
+        {
+          "text": "車",
+          "rt": "くるま"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "買",
+          "rt": "か"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "店",
+        "reading": "みせ",
+        "meaningEn": "shop, store",
+        "translationId": "Membeli mobil baru di toko.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '店' (toko / shop, store)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1295240",
+        "tatoeba_jpn_id": 142070,
+        "tatoeba_ind_id": 921460,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-029",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "あの（　★　）山は富士山です。",
+      "options": [
+        "古い",
+        "高い",
+        "大きい",
+        "赤い"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "あの"
+        },
+        {
+          "text": "高",
+          "rt": "たか"
+        },
+        {
+          "text": "い"
+        },
+        {
+          "text": "山",
+          "rt": "やま"
+        },
+        {
+          "text": "は"
+        },
+        {
+          "text": "富士山",
+          "rt": "ふじさん"
+        },
+        {
+          "text": "です。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "高い",
+        "reading": "たかい",
+        "meaningEn": "tall, expensive, high",
+        "translationId": "Gunung yang tinggi itu adalah Gunung Fuji.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '高い' (tinggi, mahal / tall, expensive, high)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1537060",
+        "tatoeba_jpn_id": 142139,
+        "tatoeba_ind_id": 921525,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-012",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "昨日友達と（　★　）を見ました。",
+      "options": [
+        "映画",
+        "毎朝",
+        "パン",
+        "母"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "昨日",
+          "rt": "きのう"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "と"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "見",
+          "rt": "み"
+        },
+        {
+          "text": "ました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "映画",
+        "reading": "えいが",
+        "meaningEn": "movie, film",
+        "translationId": "Kemarin saya menonton film bersama teman.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '映画' (film / movie, film)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1198640",
+        "tatoeba_jpn_id": 142048,
+        "tatoeba_ind_id": 921438,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g2-004",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "<u>まいにち</u>学校で日本語を勉強します。",
+      "options": [
+        "毎白",
+        "海日",
+        "毎日",
+        "母日"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "まいにち"
+        },
+        {
+          "text": "学校",
+          "rt": "がっこう"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "日本語",
+          "rt": "にほんご"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "勉強",
+          "rt": "べんきょう"
+        },
+        {
+          "text": "します。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "毎日",
+        "reading": "まいにち",
+        "meaningEn": "every day",
+        "translationId": "Setiap hari saya belajar bahasa Jepang di sekolah.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'まいにち'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1535740",
+        "tatoeba_jpn_id": 141980,
+        "tatoeba_ind_id": 921405,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-010",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "（　★　）友達と映画を見ました。",
+      "options": [
+        "会社",
+        "昨日",
+        "父",
+        "本"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "と"
+        },
+        {
+          "text": "映画",
+          "rt": "えいが"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "見",
+          "rt": "み"
+        },
+        {
+          "text": "ました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "昨日",
+        "reading": "きのう",
+        "meaningEn": "yesterday",
+        "translationId": "Kemarin saya menonton film bersama teman.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '昨日' (kemarin / yesterday)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1271120",
+        "tatoeba_jpn_id": 142048,
+        "tatoeba_ind_id": 921438,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g1-023",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "母に<u>手紙</u>を書きました。",
+      "options": [
+        "てがみ",
+        "でがみう",
+        "てがうみ",
+        "てかみ"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "母",
+          "rt": "はは"
+        },
+        {
+          "text": "に手紙を"
+        },
+        {
+          "text": "書",
+          "rt": "か"
+        },
+        {
+          "text": "きました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "手紙",
+        "reading": "てがみ",
+        "meaningEn": "letter",
+        "translationId": "Saya menulis surat untuk ibu.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142062) dan kosakata dari JMdict (Seq: 1537570)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1537570",
+        "tatoeba_jpn_id": 142062,
+        "tatoeba_ind_id": 921450,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g4-009",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "電車で（　★　）へ行きます。",
+      "options": [
+        "電話",
+        "東京",
+        "日本語",
+        "写真"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "電車",
+          "rt": "でんしゃ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "へ"
+        },
+        {
+          "text": "行",
+          "rt": "い"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "東京",
+        "reading": "とうきょう",
+        "meaningEn": "Tokyo",
+        "translationId": "Saya pergi ke Tokyo dengan kereta listrik.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '東京' (Tokyo / Tokyo)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1445720",
+        "tatoeba_jpn_id": 142035,
+        "tatoeba_ind_id": 921430,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g3-017",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "会社の前で父（　★　）会いました。",
+      "options": [
+        "へ",
+        "を",
+        "に",
+        "で"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "会社",
+          "rt": "かいしゃ"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "前",
+          "rt": "まえ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "父",
+          "rt": "ちち"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "会",
+          "rt": "あ"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "に",
+        "reading": "に",
+        "meaningEn": "Particle 'に' (Partikel に (Keberadaan Benda Hidup: いる))",
+        "translationId": "Saya bertemu ayah di depan kantor.",
+        "grammarPoint": "Partikel に (Keberadaan Benda Hidup: いる)",
+        "notes": "Menandai tempat keberadaan makhluk hidup (orang/hewan) bersama kata kerja いる. Contoh: 庭に犬がいる"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 142185,
+        "tatoeba_ind_id": 921568,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g2-028",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "店で新しい車を<u>かいました</u>。",
+      "options": [
+        "買いました",
+        "貴いました",
+        "貸いました",
+        "員いました"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "店",
+          "rt": "みせ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "新",
+          "rt": "あたら"
+        },
+        {
+          "text": "しい"
+        },
+        {
+          "text": "車",
+          "rt": "くるま"
+        },
+        {
+          "text": "をかいました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "買いました",
+        "reading": "かいました",
+        "meaningEn": "to buy",
+        "translationId": "Membeli mobil baru di toko.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'かいました'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1539150",
+        "tatoeba_jpn_id": 142070,
+        "tatoeba_ind_id": 921460,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g2-051",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "<u>きょう</u>はお茶を飲みます。",
+      "options": [
+        "今目",
+        "今白",
+        "今日",
+        "今田"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "きょうはお"
+        },
+        {
+          "text": "茶",
+          "rt": "ちゃ"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "飲",
+          "rt": "の"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "今日",
+        "reading": "きょう",
+        "meaningEn": "today",
+        "translationId": "Hari ini saya minum teh.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'きょう'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1524310",
+        "tatoeba_jpn_id": 142170,
+        "tatoeba_ind_id": 921555,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g3-001",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "私は本（　★　）読みます。",
+      "options": [
+        "を",
+        "が",
+        "に",
+        "で"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "私",
+          "rt": "わたし"
+        },
+        {
+          "text": "は"
+        },
+        {
+          "text": "本",
+          "rt": "ほん"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "読",
+          "rt": "よ"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "を",
+        "reading": "を",
+        "meaningEn": "Particle 'を' (Partikel を (Objek Penderita))",
+        "translationId": "Saya membaca buku.",
+        "grammarPoint": "Partikel を (Objek Penderita)",
+        "notes": "Menandai objek langsung dari kata kerja transitif (minumu, taberu, yomu, kaku, kiku, kau, miru). Contoh: 水を飲む"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 141973,
+        "tatoeba_ind_id": 921401,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g3-011",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "毎朝七時（　★　）起きます。",
+      "options": [
+        "で",
+        "は",
+        "を",
+        "に"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "毎朝",
+          "rt": "まいあさ"
+        },
+        {
+          "text": "七",
+          "rt": "しち"
+        },
+        {
+          "text": "時",
+          "rt": "じ"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "起",
+          "rt": "お"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "に",
+        "reading": "に",
+        "meaningEn": "Particle 'に' (Partikel に (Waktu Spesifik))",
+        "translationId": "Setiap pagi saya bangun pada jam tujuh.",
+        "grammarPoint": "Partikel に (Waktu Spesifik)",
+        "notes": "Menandai waktu tertentu yang memuat angka (jam, hari, tanggal, bulan). Contoh: 七時に起きる"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 142102,
+        "tatoeba_ind_id": 921490,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g2-029",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "机の<u>うえ</u>に本があります。",
+      "options": [
+        "止",
+        "正",
+        "上",
+        "下"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "机",
+          "rt": "つくえ"
+        },
+        {
+          "text": "のうえに"
+        },
+        {
+          "text": "本",
+          "rt": "ほん"
+        },
+        {
+          "text": "があります。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "上",
+        "reading": "うえ",
+        "meaningEn": "above, on, up",
+        "translationId": "Ada buku di atas meja.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'うえ'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1317580",
+        "tatoeba_jpn_id": 142081,
+        "tatoeba_ind_id": 921471,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g2-014",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "電車で<u>とうきょう</u>へ行きます。",
+      "options": [
+        "車京",
+        "東京",
+        "東高",
+        "陳京"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "電車",
+          "rt": "でんしゃ"
+        },
+        {
+          "text": "でとうきょうへ"
+        },
+        {
+          "text": "行",
+          "rt": "い"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "東京",
+        "reading": "とうきょう",
+        "meaningEn": "Tokyo",
+        "translationId": "Saya pergi ke Tokyo dengan kereta listrik.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'とうきょう'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1445720",
+        "tatoeba_jpn_id": 142035,
+        "tatoeba_ind_id": 921430,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g2-048",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "<u>あした</u>友達が日本に来ます。",
+      "options": [
+        "明日",
+        "明目",
+        "明田",
+        "明白"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "あした"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "が"
+        },
+        {
+          "text": "日本",
+          "rt": "にほん"
+        },
+        {
+          "text": "に"
+        },
+        {
+          "text": "来",
+          "rt": "き"
+        },
+        {
+          "text": "ます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "明日",
+        "reading": "あした",
+        "meaningEn": "tomorrow",
+        "translationId": "Besok teman saya akan datang ke Jepang.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'あした'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1524270",
+        "tatoeba_jpn_id": 142162,
+        "tatoeba_ind_id": 921545,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g1-017",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "昨日友達と<u>映画</u>を見ました。",
+      "options": [
+        "えいかう",
+        "えっいか",
+        "えいうか",
+        "えいが"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "昨日",
+          "rt": "きのう"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "と映画を"
+        },
+        {
+          "text": "見",
+          "rt": "み"
+        },
+        {
+          "text": "ました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "映画",
+        "reading": "えいが",
+        "meaningEn": "movie, film",
+        "translationId": "Kemarin saya menonton film bersama teman.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142048) dan kosakata dari JMdict (Seq: 1198640)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1198640",
+        "tatoeba_jpn_id": 142048,
+        "tatoeba_ind_id": 921438,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g2-034",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "毎朝七時に<u>おきます</u>。",
+      "options": [
+        "趣きます",
+        "起きます",
+        "走きます",
+        "超きます"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "毎朝",
+          "rt": "まいあさ"
+        },
+        {
+          "text": "七",
+          "rt": "しち"
+        },
+        {
+          "text": "時",
+          "rt": "じ"
+        },
+        {
+          "text": "におきます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "起きます",
+        "reading": "おきます",
+        "meaningEn": "to wake up, to get up",
+        "translationId": "Setiap pagi saya bangun pada jam tujuh.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'おきます'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1211750",
+        "tatoeba_jpn_id": 142102,
+        "tatoeba_ind_id": 921490,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-004",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "毎日（　★　）で日本語を勉強します。",
+      "options": [
+        "学校",
+        "図書館",
+        "友達",
+        "私"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "毎日",
+          "rt": "まいにち"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "日本語",
+          "rt": "にほんご"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "勉強",
+          "rt": "べんきょう"
+        },
+        {
+          "text": "します。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "学校",
+        "reading": "がっこう",
+        "meaningEn": "school",
+        "translationId": "Setiap hari saya belajar bahasa Jepang di sekolah.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '学校' (sekolah / school)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1198940",
+        "tatoeba_jpn_id": 141980,
+        "tatoeba_ind_id": 921405,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-027",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "部屋の（　★　）で音楽を聞きます。",
+      "options": [
+        "後ろ",
+        "机",
+        "日本語",
+        "中"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "部屋",
+          "rt": "へや"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "音楽",
+          "rt": "おんがく"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "聞",
+          "rt": "き"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "中",
+        "reading": "なか",
+        "meaningEn": "inside, middle",
+        "translationId": "Mendengarkan musik di dalam kamar.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '中' (dalam, tengah / inside, middle)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1429980",
+        "tatoeba_jpn_id": 142128,
+        "tatoeba_ind_id": 921515,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g1-057",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "会社の前で父に<u>会いました</u>。",
+      "options": [
+        "がい",
+        "あっいましだ",
+        "あいましたい",
+        "あいました"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "会社",
+          "rt": "かいしゃ"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "前",
+          "rt": "まえ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "父",
+          "rt": "ちち"
+        },
+        {
+          "text": "に会いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "会いました",
+        "reading": "あいました",
+        "meaningEn": "company, firm",
+        "translationId": "Saya bertemu ayah di depan kantor.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142185) dan kosakata dari JMdict (Seq: 1203870)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1203870",
+        "tatoeba_jpn_id": 142185,
+        "tatoeba_ind_id": 921568,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g1-034",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "毎朝七時に<u>起きます</u>。",
+      "options": [
+        "おぎまうす",
+        "おっぎます",
+        "おぎます",
+        "おきます"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "毎朝",
+          "rt": "まいあさ"
+        },
+        {
+          "text": "七",
+          "rt": "しち"
+        },
+        {
+          "text": "時",
+          "rt": "じ"
+        },
+        {
+          "text": "に起きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "起きます",
+        "reading": "おきます",
+        "meaningEn": "to wake up, to get up",
+        "translationId": "Setiap pagi saya bangun pada jam tujuh.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142102) dan kosakata dari JMdict (Seq: 1211750)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1211750",
+        "tatoeba_jpn_id": 142102,
+        "tatoeba_ind_id": 921490,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g4-013",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "（　★　）の話をよく聞きます。",
+      "options": [
+        "上",
+        "東京",
+        "先生",
+        "図書館"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "の"
+        },
+        {
+          "text": "話",
+          "rt": "はなし"
+        },
+        {
+          "text": "をよく"
+        },
+        {
+          "text": "聞",
+          "rt": "き"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "先生",
+        "reading": "せんせい",
+        "meaningEn": "teacher",
+        "translationId": "Mendengarkan perkataan guru dengan baik.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '先生' (guru, dokter / teacher)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1372690",
+        "tatoeba_jpn_id": 142055,
+        "tatoeba_ind_id": 921445,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g1-042",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "あの高い<u>山</u>は富士山です。",
+      "options": [
+        "せん",
+        "さん",
+        "やまう",
+        "やま"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "あの"
+        },
+        {
+          "text": "高",
+          "rt": "たか"
+        },
+        {
+          "text": "い山は富士山です。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "山",
+        "reading": "やま",
+        "meaningEn": "mountain",
+        "translationId": "Gunung yang tinggi itu adalah Gunung Fuji.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142139) dan kosakata dari JMdict (Seq: 1324700)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1324700",
+        "tatoeba_jpn_id": 142139,
+        "tatoeba_ind_id": 921525,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g2-003",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "<u>わたし</u>は本を読みます。",
+      "options": [
+        "禾",
+        "和",
+        "私",
+        "利"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "わたしは"
+        },
+        {
+          "text": "本",
+          "rt": "ほん"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "読",
+          "rt": "よ"
+        },
+        {
+          "text": "みます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "私",
+        "reading": "わたし",
+        "meaningEn": "I, me",
+        "translationId": "Saya membaca buku.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'わたし'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1303970",
+        "tatoeba_jpn_id": 141973,
+        "tatoeba_ind_id": 921401,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g2-006",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "毎日学校で<u>にほんご</u>を勉強します。",
+      "options": [
+        "日本誤",
+        "日体語",
+        "日本語",
+        "日本話"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "毎日",
+          "rt": "まいにち"
+        },
+        {
+          "text": "学校",
+          "rt": "がっこう"
+        },
+        {
+          "text": "でにほんごを"
+        },
+        {
+          "text": "勉強",
+          "rt": "べんきょう"
+        },
+        {
+          "text": "します。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "日本語",
+        "reading": "にほんご",
+        "meaningEn": "Japanese language",
+        "translationId": "Setiap hari saya belajar bahasa Jepang di sekolah.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'にほんご'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1358280",
+        "tatoeba_jpn_id": 141980,
+        "tatoeba_ind_id": 921405,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-033",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "図書館で（　★　）と話しました。",
+      "options": [
+        "会社",
+        "電話",
+        "友達",
+        "今日"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "図書館",
+          "rt": "としょかん"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "と"
+        },
+        {
+          "text": "話",
+          "rt": "はな"
+        },
+        {
+          "text": "しました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "友達",
+        "reading": "ともだち",
+        "meaningEn": "friend",
+        "translationId": "Saya berbicara dengan teman di perpustakaan.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '友達' (teman, sahabat / friend)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1538670",
+        "tatoeba_jpn_id": 142155,
+        "tatoeba_ind_id": 921540,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-005",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "毎日学校で（　★　）を勉強します。",
+      "options": [
+        "日本語",
+        "毎朝",
+        "家",
+        "ご飯"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "毎日",
+          "rt": "まいにち"
+        },
+        {
+          "text": "学校",
+          "rt": "がっこう"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "勉強",
+          "rt": "べんきょう"
+        },
+        {
+          "text": "します。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "日本語",
+        "reading": "にほんご",
+        "meaningEn": "Japanese language",
+        "translationId": "Setiap hari saya belajar bahasa Jepang di sekolah.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '日本語' (bahasa Jepang / Japanese language)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1358280",
+        "tatoeba_jpn_id": 141980,
+        "tatoeba_ind_id": 921405,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g4-018",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "店で（　★　）車を買いました。",
+      "options": [
+        "古い",
+        "新しい",
+        "小さい",
+        "大きい"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "店",
+          "rt": "みせ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "新",
+          "rt": "あたら"
+        },
+        {
+          "text": "しい"
+        },
+        {
+          "text": "車",
+          "rt": "くるま"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "買",
+          "rt": "か"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "新しい",
+        "reading": "あたらしい",
+        "meaningEn": "new",
+        "translationId": "Membeli mobil baru di toko.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '新しい' (baru / new)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1369160",
+        "tatoeba_jpn_id": 142070,
+        "tatoeba_ind_id": 921460,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g2-053",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "今日はお茶を<u>のみます</u>。",
+      "options": [
+        "飯みます",
+        "食みます",
+        "飲みます",
+        "飾みます"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "今日",
+          "rt": "きょう"
+        },
+        {
+          "text": "はお"
+        },
+        {
+          "text": "茶",
+          "rt": "ちゃ"
+        },
+        {
+          "text": "をのみます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "飲みます",
+        "reading": "のみます",
+        "meaningEn": "to drink",
+        "translationId": "Hari ini saya minum teh.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'のみます'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1165270",
+        "tatoeba_jpn_id": 142170,
+        "tatoeba_ind_id": 921555,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g4-031",
+      "type": "G4_CONTEXT_VOCAB",
+      "level": "N5",
+      "prompt": "この（　★　）魚は赤いです。",
+      "options": [
+        "小さい",
+        "高い",
+        "長い",
+        "冷たい"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "この"
+        },
+        {
+          "text": "小",
+          "rt": "ちい"
+        },
+        {
+          "text": "さい"
+        },
+        {
+          "text": "魚",
+          "rt": "さかな"
+        },
+        {
+          "text": "は"
+        },
+        {
+          "text": "赤",
+          "rt": "あか"
+        },
+        {
+          "text": "いです。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "小さい",
+        "reading": "ちいさい",
+        "meaningEn": "small, little",
+        "translationId": "Ikan kecil ini berwarna merah.",
+        "notes": "Pemilihan kata sesuai konteks: kata yang paling tepat untuk mengisi kalimat adalah '小さい' (kecil / small, little)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1369790",
+        "tatoeba_jpn_id": 142145,
+        "tatoeba_ind_id": 921530,
+        "generator": "G4_CONTEXT_VOCAB_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia."
+      }
+    },
+    {
+      "id": "q-g1-055",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "会社の<u>前</u>で父に会いました。",
+      "options": [
+        "ぜん",
+        "まえい",
+        "まうえ",
+        "まえ"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "会社",
+          "rt": "かいしゃ"
+        },
+        {
+          "text": "の前で"
+        },
+        {
+          "text": "父",
+          "rt": "ちち"
+        },
+        {
+          "text": "に"
+        },
+        {
+          "text": "会",
+          "rt": "あ"
+        },
+        {
+          "text": "いました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "前",
+        "reading": "まえ",
+        "meaningEn": "in front, before",
+        "translationId": "Saya bertemu ayah di depan kantor.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142185) dan kosakata dari JMdict (Seq: 1374520)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1374520",
+        "tatoeba_jpn_id": 142185,
+        "tatoeba_ind_id": 921568,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g3-015",
+      "type": "G3_PARTICLES",
+      "level": "N5",
+      "prompt": "明日友達が日本（　★　）来ます。",
+      "options": [
+        "を",
+        "で",
+        "は",
+        "に"
+      ],
+      "correctIndex": 3,
+      "rubyNodes": [
+        {
+          "text": "明日",
+          "rt": "あした"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "が"
+        },
+        {
+          "text": "日本",
+          "rt": "にほん"
+        },
+        {
+          "text": "（　★　）"
+        },
+        {
+          "text": "来",
+          "rt": "き"
+        },
+        {
+          "text": "ます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "に",
+        "reading": "に",
+        "meaningEn": "Particle 'に' (Partikel に (Waktu Spesifik))",
+        "translationId": "Besok teman saya akan datang ke Jepang.",
+        "grammarPoint": "Partikel に (Waktu Spesifik)",
+        "notes": "Menandai waktu tertentu yang memuat angka (jam, hari, tanggal, bulan). Contoh: 七時に起きる"
+      },
+      "provenance": {
+        "tatoeba_jpn_id": 142162,
+        "tatoeba_ind_id": 921545,
+        "generator": "G3_PARTICLE_GRAMMAR_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah."
+      }
+    },
+    {
+      "id": "q-g2-013",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "電車で東京へ<u>いきます</u>。",
+      "options": [
+        "術きます",
+        "行きます",
+        "得きます",
+        "待きます"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "電車",
+          "rt": "でんしゃ"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "東京",
+          "rt": "とうきょう"
+        },
+        {
+          "text": "へいきます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "行きます",
+        "reading": "いきます",
+        "meaningEn": "to go",
+        "translationId": "Saya pergi ke Tokyo dengan kereta listrik.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'いきます'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1208920",
+        "tatoeba_jpn_id": 142035,
+        "tatoeba_ind_id": 921430,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g2-017",
+      "type": "G2_KANJI_WRITING",
+      "level": "N5",
+      "prompt": "昨日友達と<u>えいが</u>を見ました。",
+      "options": [
+        "英画",
+        "映画",
+        "明画",
+        "映昼"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "昨日",
+          "rt": "きのう"
+        },
+        {
+          "text": "友達",
+          "rt": "ともだち"
+        },
+        {
+          "text": "とえいがを"
+        },
+        {
+          "text": "見",
+          "rt": "み"
+        },
+        {
+          "text": "ました。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "映画",
+        "reading": "えいが",
+        "meaningEn": "movie, film",
+        "translationId": "Kemarin saya menonton film bersama teman.",
+        "notes": "Soal penulisan kanji N5: memilih bentuk kanji yang tepat untuk 'えいが'."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1198640",
+        "tatoeba_jpn_id": 142048,
+        "tatoeba_ind_id": 921438,
+        "generator": "G2_KANJI_WRITING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "draft",
+        "notes": "Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia."
+      }
+    },
+    {
+      "id": "q-g1-043",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "この<u>小さい</u>魚は赤いです。",
+      "options": [
+        "ちいさい",
+        "ぢいさい",
+        "ちっいさい",
+        "ぢいさ"
+      ],
+      "correctIndex": 0,
+      "rubyNodes": [
+        {
+          "text": "この小さい"
+        },
+        {
+          "text": "魚",
+          "rt": "さかな"
+        },
+        {
+          "text": "は"
+        },
+        {
+          "text": "赤",
+          "rt": "あか"
+        },
+        {
+          "text": "いです。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "小さい",
+        "reading": "ちいさい",
+        "meaningEn": "small, little",
+        "translationId": "Ikan kecil ini berwarna merah.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142145) dan kosakata dari JMdict (Seq: 1369790)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1369790",
+        "tatoeba_jpn_id": 142145,
+        "tatoeba_ind_id": 921530,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g1-032",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "庭に白い<u>犬</u>がいます。",
+      "options": [
+        "けん",
+        "げん",
+        "いぬ",
+        "いぬい"
+      ],
+      "correctIndex": 2,
+      "rubyNodes": [
+        {
+          "text": "庭",
+          "rt": "にわ"
+        },
+        {
+          "text": "に"
+        },
+        {
+          "text": "白",
+          "rt": "しろ"
+        },
+        {
+          "text": "い犬がいます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "犬",
+        "reading": "いぬ",
+        "meaningEn": "dog",
+        "translationId": "Ada anjing putih di halaman.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142095) dan kosakata dari JMdict (Seq: 1446700)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1446700",
+        "tatoeba_jpn_id": 142095,
+        "tatoeba_ind_id": 921485,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    },
+    {
+      "id": "q-g1-037",
+      "type": "G1_KANJI_READING",
+      "level": "N5",
+      "prompt": "<u>部屋</u>の中で音楽を聞きます。",
+      "options": [
+        "べうや",
+        "へや",
+        "べやい",
+        "べや"
+      ],
+      "correctIndex": 1,
+      "rubyNodes": [
+        {
+          "text": "部屋の"
+        },
+        {
+          "text": "中",
+          "rt": "なか"
+        },
+        {
+          "text": "で"
+        },
+        {
+          "text": "音楽",
+          "rt": "おんがく"
+        },
+        {
+          "text": "を"
+        },
+        {
+          "text": "聞",
+          "rt": "き"
+        },
+        {
+          "text": "きます。"
+        }
+      ],
+      "explanation": {
+        "targetWord": "部屋",
+        "reading": "へや",
+        "meaningEn": "room",
+        "translationId": "Mendengarkan musik di dalam kamar.",
+        "notes": "Soal orisinal bertingkat JLPT N5. Kalimat bersumber dari Tatoeba (ID: 142128) dan kosakata dari JMdict (Seq: 1165600)."
+      },
+      "provenance": {
+        "jmdict_ent_seq": "1165600",
+        "tatoeba_jpn_id": 142128,
+        "tatoeba_ind_id": 921515,
+        "generator": "G1_KANJI_READING_GENERATOR",
+        "generator_version": "1.0.0",
+        "seed": 42
+      },
+      "review": {
+        "status": "approved",
+        "notes": "Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar."
+      }
+    }
+  ]
+}

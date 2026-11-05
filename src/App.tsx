@@ -5,6 +5,7 @@ import { useAppStore, type DeckItem } from "./store/useAppStore";
 import { useReviewStore } from "./store/useReviewStore";
 import { liveDeckStats, type LiveDeckStats } from "./lib/deckStats";
 import { ensureSeeded } from "./lib/deckCards";
+import { ensureSeedPackLoaded } from "./lib/questionPackStorage";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
 import type { BookRecord } from "./lib/lexiconDb";
 import { speakJapanese } from "./lib/tts";
@@ -99,6 +100,7 @@ export default function App() {
 
   useEffect(() => {
     void ensureSeeded();
+    void ensureSeedPackLoaded().catch(() => {});
     void listNovels().then(setBooks).catch(() => {});
   }, []);
 

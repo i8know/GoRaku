@@ -20,6 +20,7 @@ const navItems = [
   { label: "Deck Saya", path: "/deck", icon: "cards" as const },
   { label: "Sentence Mining", path: "/mining", icon: "mine" as const },
   { label: "Perpustakaan", path: "/library", icon: "book" as const },
+  { label: "Ujian JLPT", path: "/exam", icon: "target" as const },
   { label: "Progres", path: "/progress", icon: "chart" as const },
 ];
 

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import DictionaryManagerModal from "../components/DictionaryManagerModal";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 
 export default function SettingsPage({ notify }: { notify: (m: string) => void }) {
+  const navigate = useNavigate();
   const user = useAppStore((s) => s.user);
   const updateUser = useAppStore((s) => s.updateUser);
   const settings = useAppStore((s) => s.settings);
@@ -87,6 +89,9 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
         <section className="st-card st-danger">
           <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h3>Data &amp; Kamus</h3><p>Kelola kamus Yomitan dan cadangkan koleksimu</p></div></div>
           <div className="st-actions">
+            <Button className="outline-button" onClick={() => navigate("/license")}>
+              <Icon name="bookmark" size={16} /> Lisensi &amp; Atribusi Sumber Data
+            </Button>
             <Button className="outline-button" onClick={() => setDictModalOpen(true)}>
               <Icon name="book" size={16} /> Kelola Kamus Yomitan ({dictionaries.filter((d) => d.enabled).length})
             </Button>

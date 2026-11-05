@@ -17,6 +17,8 @@ import MangaReaderPage from './pages/MangaReader'
 import ProgressPage from './pages/Progress'
 import ProfilePage from './pages/Profile'
 import SettingsPage from './pages/Settings'
+import ExamPage from './pages/Exam'
+import LicenseAttributionPage from './pages/LicenseAttribution'
 import App from './App'
 import './index.css'
 import { useToastStore } from './store/useToastStore'
@@ -61,6 +63,8 @@ function AppRoutes() {
           <Route path="/library/:bookId" element={<ReaderPage notify={notify} />} />
           <Route path="/manga/:bookId" element={<MangaReaderPage notify={notify} />} />
           <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/exam" element={<ExamPage notify={notify} />} />
+          <Route path="/license" element={<LicenseAttributionPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage notify={notify} />} />
         </Route>

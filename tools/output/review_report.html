@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Laporan Tinjauan Soal JLPT N5 Orisinal</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 24px; background: #f8fafc; color: #1e293b; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .stats-card { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-box { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 18px; min-width: 130px; }
+    .stat-box .num { font-size: 24px; font-weight: bold; color: #0f172a; }
+    .stat-box .lbl { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; font-size: 13px; }
+    th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #cbd5e1; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    tr:hover { background: #f8fafc; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-approved { background: #dcfce7; color: #15803d; }
+    .badge-draft { background: #fef3c7; color: #b45309; }
+    .badge-rejected { background: #fee2e2; color: #b91c1c; }
+    .key-opt { font-weight: bold; color: #16a34a; }
+    .notes { font-size: 11px; color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Laporan Tinjauan Soal Latihan JLPT N5 Orisinal</h1>
+  <div class="subtitle">Paket: jlpt-n5-seed-pack-v1 (Versi: 1.0.0) • Lisensi: CC BY-SA 4.0 • Dibuat: 2026-11-03T13:37:38.850Z</div>
+
+  <div class="stats-card">
+    <div class="stat-box"><div class="num">171</div><div class="lbl">Total Soal</div></div>
+    <div class="stat-box"><div class="num" style="color:#16a34a;">57</div><div class="lbl">Disetujui (Approved)</div></div>
+    <div class="stat-box"><div class="num" style="color:#d97706;">114</div><div class="lbl">Draf (Draft)</div></div>
+    <div class="stat-box"><div class="num" style="color:#dc2626;">0</div><div class="lbl">Ditolak (Rejected)</div></div>
+    <div class="stat-box"><div class="num">57</div><div class="lbl">G1 Membaca</div></div>
+    <div class="stat-box"><div class="num">57</div><div class="lbl">G2 Penulisan</div></div>
+    <div class="stat-box"><div class="num">17</div><div class="lbl">G3 Partikel</div></div>
+    <div class="stat-box"><div class="num">40</div><div class="lbl">G4 Konteks</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px;">No</th>
+        <th style="width:70px;">ID</th>
+        <th style="width:85px;">Tipe</th>
+        <th>Soal (Prompt)</th>
+        <th style="width:160px;">Pilihan Jawaban</th>
+        <th style="width:70px;">Kunci</th>
+        <th>Pembahasan & Terjemahan</th>
+        <th style="width:80px;">Status</th>
+        <th>Catatan Review</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><code>q-g1-001</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>私は<u>本</u>を読みます。</td>
+        <td>ほうん<br>ぼん<br><span class="key-opt">✓ ほん</span><br>ぽんい</td>
+        <td><strong>ほん</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>2</td>
+        <td><code>q-g1-002</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>私は本を<u>読みます</u>。</td>
+        <td>よみますう<br>とく<br>よっみます<br><span class="key-opt">✓ よみます</span></td>
+        <td><strong>よみます</strong></td>
+        <td>
+          <strong>読みます</strong> (よみます)<br>
+          <span style="color:#475569;">to read</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>3</td>
+        <td><code>q-g1-003</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>私</u>は本を読みます。</td>
+        <td>わたじう<br>わだじ<br>わたしう<br><span class="key-opt">✓ わたし</span></td>
+        <td><strong>わたし</strong></td>
+        <td>
+          <strong>私</strong> (わたし)<br>
+          <span style="color:#475569;">I, me</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>4</td>
+        <td><code>q-g1-004</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>毎日</u>学校で日本語を勉強します。</td>
+        <td>まいにじう<br><span class="key-opt">✓ まいにち</span><br>まいにぢい<br>まっいにち</td>
+        <td><strong>まいにち</strong></td>
+        <td>
+          <strong>毎日</strong> (まいにち)<br>
+          <span style="color:#475569;">every day</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>5</td>
+        <td><code>q-g1-005</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>毎日<u>学校</u>で日本語を勉強します。</td>
+        <td>かっこう<br>がっごう<br><span class="key-opt">✓ がっこう</span><br>がっごうい</td>
+        <td><strong>がっこう</strong></td>
+        <td>
+          <strong>学校</strong> (がっこう)<br>
+          <span style="color:#475569;">school</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>6</td>
+        <td><code>q-g1-006</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>毎日学校で<u>日本語</u>を勉強します。</td>
+        <td>にぽんこ<br>にぼんこ<br>にぼんご<br><span class="key-opt">✓ にほんご</span></td>
+        <td><strong>にほんご</strong></td>
+        <td>
+          <strong>日本語</strong> (にほんご)<br>
+          <span style="color:#475569;">Japanese language</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>7</td>
+        <td><code>q-g1-007</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>毎日学校で日本語を<u>勉強します</u>。</td>
+        <td><span class="key-opt">✓ べんきょうします</span><br>へんきょうじます<br>ぺんきょうしますい<br>べんきょうじまず</td>
+        <td><strong>べんきょうします</strong></td>
+        <td>
+          <strong>勉強します</strong> (べんきょうします)<br>
+          <span style="color:#475569;">study</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>8</td>
+        <td><code>q-g1-008</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>朝ご飯にパンを<u>食べました</u>。</td>
+        <td>ぱ<br><span class="key-opt">✓ たべました</span><br>たべましだう<br>たべまじうた</td>
+        <td><strong>たべました</strong></td>
+        <td>
+          <strong>食べました</strong> (たべました)<br>
+          <span style="color:#475569;">to eat</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>9</td>
+        <td><code>q-g1-009</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>朝</u>ご飯にパンを食べました。</td>
+        <td>あさう<br>あざ<br><span class="key-opt">✓ あさ</span><br>あざう</td>
+        <td><strong>あさ</strong></td>
+        <td>
+          <strong>朝</strong> (あさ)<br>
+          <span style="color:#475569;">morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>10</td>
+        <td><code>q-g1-010</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>冷たい<u>水</u>を飲みました。</td>
+        <td>みすい<br>みずう<br>みうず<br><span class="key-opt">✓ みず</span></td>
+        <td><strong>みず</strong></td>
+        <td>
+          <strong>水</strong> (みず)<br>
+          <span style="color:#475569;">water</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>11</td>
+        <td><code>q-g1-011</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>冷たい水を<u>飲みました</u>。</td>
+        <td>のっみましだ<br>のみましうだ<br><span class="key-opt">✓ のみました</span><br>のみまじたい</td>
+        <td><strong>のみました</strong></td>
+        <td>
+          <strong>飲みました</strong> (のみました)<br>
+          <span style="color:#475569;">to drink</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>12</td>
+        <td><code>q-g1-012</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>電車</u>で東京へ行きます。</td>
+        <td>でっんしゃ<br>てっんしゃ<br><span class="key-opt">✓ でんしゃ</span><br>でんぐるま</td>
+        <td><strong>でんしゃ</strong></td>
+        <td>
+          <strong>電車</strong> (でんしゃ)<br>
+          <span style="color:#475569;">train, electric train</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>13</td>
+        <td><code>q-g1-013</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>電車で東京へ<u>行きます</u>。</td>
+        <td>おごな<br><span class="key-opt">✓ いきます</span><br>いっきまず<br>いきますい</td>
+        <td><strong>いきます</strong></td>
+        <td>
+          <strong>行きます</strong> (いきます)<br>
+          <span style="color:#475569;">to go</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>14</td>
+        <td><code>q-g1-014</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>電車で<u>東京</u>へ行きます。</td>
+        <td><span class="key-opt">✓ とうきょう</span><br>どうきょうい<br>どうきょう<br>とぎょう</td>
+        <td><strong>とうきょう</strong></td>
+        <td>
+          <strong>東京</strong> (とうきょう)<br>
+          <span style="color:#475569;">Tokyo</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>15</td>
+        <td><code>q-g1-015</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>昨日</u>友達と映画を見ました。</td>
+        <td>きっのう<br><span class="key-opt">✓ きのう</span><br>ぎのうい<br>ぎのう</td>
+        <td><strong>きのう</strong></td>
+        <td>
+          <strong>昨日</strong> (きのう)<br>
+          <span style="color:#475569;">yesterday</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>16</td>
+        <td><code>q-g1-016</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>昨日<u>友達</u>と映画を見ました。</td>
+        <td>どもたち<br><span class="key-opt">✓ ともだち</span><br>とっもだち<br>どもだちい</td>
+        <td><strong>ともだち</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>17</td>
+        <td><code>q-g1-017</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>昨日友達と<u>映画</u>を見ました。</td>
+        <td>えいかう<br>えっいか<br>えいうか<br><span class="key-opt">✓ えいが</span></td>
+        <td><strong>えいが</strong></td>
+        <td>
+          <strong>映画</strong> (えいが)<br>
+          <span style="color:#475569;">movie, film</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>18</td>
+        <td><code>q-g1-018</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>昨日友達と映画を<u>見ました</u>。</td>
+        <td><span class="key-opt">✓ みました</span><br>みっました<br>みまじた<br>みましたう</td>
+        <td><strong>みました</strong></td>
+        <td>
+          <strong>見ました</strong> (みました)<br>
+          <span style="color:#475569;">to see, to watch</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>19</td>
+        <td><code>q-g1-019</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>先生</u>の話をよく聞きます。</td>
+        <td>ませい<br>ぜんぜい<br>せんせうい<br><span class="key-opt">✓ せんせい</span></td>
+        <td><strong>せんせい</strong></td>
+        <td>
+          <strong>先生</strong> (せんせい)<br>
+          <span style="color:#475569;">teacher</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>20</td>
+        <td><code>q-g1-020</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>先生の<u>話</u>をよく聞きます。</td>
+        <td>はなしい<br>ばっなし<br>ぱっなし<br><span class="key-opt">✓ はなし</span></td>
+        <td><strong>はなし</strong></td>
+        <td>
+          <strong>話</strong> (はなし)<br>
+          <span style="color:#475569;">talk, speech, story</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>21</td>
+        <td><code>q-g1-021</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>先生の話をよく<u>聞きます</u>。</td>
+        <td><span class="key-opt">✓ ききます</span><br>ふん<br>きっぎます<br>ききますう</td>
+        <td><strong>ききます</strong></td>
+        <td>
+          <strong>聞きます</strong> (ききます)<br>
+          <span style="color:#475569;">to hear, to listen</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>22</td>
+        <td><code>q-g1-022</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>母</u>に手紙を書きました。</td>
+        <td>はぱい<br>ばはう<br>はうは<br><span class="key-opt">✓ はは</span></td>
+        <td><strong>はは</strong></td>
+        <td>
+          <strong>母</strong> (はは)<br>
+          <span style="color:#475569;">mother</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>23</td>
+        <td><code>q-g1-023</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>母に<u>手紙</u>を書きました。</td>
+        <td><span class="key-opt">✓ てがみ</span><br>でがみう<br>てがうみ<br>てかみ</td>
+        <td><strong>てがみ</strong></td>
+        <td>
+          <strong>手紙</strong> (てがみ)<br>
+          <span style="color:#475569;">letter</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>24</td>
+        <td><code>q-g1-024</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>母に手紙を<u>書きました</u>。</td>
+        <td>がきましたう<br><span class="key-opt">✓ かきました</span><br>かきまじだ<br>かぎましたう</td>
+        <td><strong>かきました</strong></td>
+        <td>
+          <strong>書きました</strong> (かきました)<br>
+          <span style="color:#475569;">to write</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>25</td>
+        <td><code>q-g1-025</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>店</u>で新しい車を買いました。</td>
+        <td>みぜう<br><span class="key-opt">✓ みせ</span><br>みうせ<br>でん</td>
+        <td><strong>みせ</strong></td>
+        <td>
+          <strong>店</strong> (みせ)<br>
+          <span style="color:#475569;">shop, store</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>26</td>
+        <td><code>q-g1-026</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>店で<u>新しい</u>車を買いました。</td>
+        <td>あだらしい<br>あったらじい<br>あっだらしい<br><span class="key-opt">✓ あたらしい</span></td>
+        <td><strong>あたらしい</strong></td>
+        <td>
+          <strong>新しい</strong> (あたらしい)<br>
+          <span style="color:#475569;">new</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>27</td>
+        <td><code>q-g1-027</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>店で新しい<u>車</u>を買いました。</td>
+        <td>くるまう<br>くるうま<br><span class="key-opt">✓ くるま</span><br>しゃ</td>
+        <td><strong>くるま</strong></td>
+        <td>
+          <strong>車</strong> (くるま)<br>
+          <span style="color:#475569;">car, vehicle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>28</td>
+        <td><code>q-g1-028</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>店で新しい車を<u>買いました</u>。</td>
+        <td>がいました<br><span class="key-opt">✓ かいました</span><br>ぱい<br>がっいました</td>
+        <td><strong>かいました</strong></td>
+        <td>
+          <strong>買いました</strong> (かいました)<br>
+          <span style="color:#475569;">to buy</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>29</td>
+        <td><code>q-g1-029</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>机の<u>上</u>に本があります。</td>
+        <td><span class="key-opt">✓ うえ</span><br>あ<br>のほ<br>うえい</td>
+        <td><strong>うえ</strong></td>
+        <td>
+          <strong>上</strong> (うえ)<br>
+          <span style="color:#475569;">above, on, up</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>30</td>
+        <td><code>q-g1-030</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>机の上に<u>本</u>があります。</td>
+        <td>ぽうん<br><span class="key-opt">✓ ほん</span><br>ぼうん<br>ぼん</td>
+        <td><strong>ほん</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>31</td>
+        <td><code>q-g1-031</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>庭に<u>白い</u>犬がいます。</td>
+        <td>しっろい<br>しろうい<br>じろい<br><span class="key-opt">✓ しろい</span></td>
+        <td><strong>しろい</strong></td>
+        <td>
+          <strong>白い</strong> (しろい)<br>
+          <span style="color:#475569;">white</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>32</td>
+        <td><code>q-g1-032</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>庭に白い<u>犬</u>がいます。</td>
+        <td>けん<br>げん<br><span class="key-opt">✓ いぬ</span><br>いぬい</td>
+        <td><strong>いぬ</strong></td>
+        <td>
+          <strong>犬</strong> (いぬ)<br>
+          <span style="color:#475569;">dog</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>33</td>
+        <td><code>q-g1-033</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>毎朝</u>七時に起きます。</td>
+        <td><span class="key-opt">✓ まいあさ</span><br>まっいあざ<br>まいあさい<br>まいあざ</td>
+        <td><strong>まいあさ</strong></td>
+        <td>
+          <strong>毎朝</strong> (まいあさ)<br>
+          <span style="color:#475569;">every morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>34</td>
+        <td><code>q-g1-034</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>毎朝七時に<u>起きます</u>。</td>
+        <td>おぎまうす<br>おっぎます<br>おぎます<br><span class="key-opt">✓ おきます</span></td>
+        <td><strong>おきます</strong></td>
+        <td>
+          <strong>起きます</strong> (おきます)<br>
+          <span style="color:#475569;">to wake up, to get up</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>35</td>
+        <td><code>q-g1-035</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>午後五時に<u>家</u>へ帰ります。</td>
+        <td>いえい<br>いえう<br><span class="key-opt">✓ いえ</span><br>いうえ</td>
+        <td><strong>いえ</strong></td>
+        <td>
+          <strong>家</strong> (いえ)<br>
+          <span style="color:#475569;">house, home</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>36</td>
+        <td><code>q-g1-036</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>午後五時に家へ<u>帰ります</u>。</td>
+        <td>かえりまうす<br>かえりますう<br><span class="key-opt">✓ かえります</span><br>がえりますい</td>
+        <td><strong>かえります</strong></td>
+        <td>
+          <strong>帰ります</strong> (かえります)<br>
+          <span style="color:#475569;">to return home</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>37</td>
+        <td><code>q-g1-037</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>部屋</u>の中で音楽を聞きます。</td>
+        <td>べうや<br><span class="key-opt">✓ へや</span><br>べやい<br>べや</td>
+        <td><strong>へや</strong></td>
+        <td>
+          <strong>部屋</strong> (へや)<br>
+          <span style="color:#475569;">room</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>38</td>
+        <td><code>q-g1-038</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>部屋の<u>中</u>で音楽を聞きます。</td>
+        <td><span class="key-opt">✓ なか</span><br>じゅう<br>なうが<br>なかう</td>
+        <td><strong>なか</strong></td>
+        <td>
+          <strong>中</strong> (なか)<br>
+          <span style="color:#475569;">inside, middle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>39</td>
+        <td><code>q-g1-039</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>部屋の中で<u>音楽</u>を聞きます。</td>
+        <td>おんかうく<br>おんがうぐ<br>おんかくい<br><span class="key-opt">✓ おんがく</span></td>
+        <td><strong>おんがく</strong></td>
+        <td>
+          <strong>音楽</strong> (おんがく)<br>
+          <span style="color:#475569;">music</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>40</td>
+        <td><code>q-g1-040</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>部屋の中で音楽を<u>聞きます</u>。</td>
+        <td>ききまうす<br>ききまうず<br>ききますう<br><span class="key-opt">✓ ききます</span></td>
+        <td><strong>ききます</strong></td>
+        <td>
+          <strong>聞きます</strong> (ききます)<br>
+          <span style="color:#475569;">to hear, to listen</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>41</td>
+        <td><code>q-g1-041</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>あの<u>高い</u>山は富士山です。</td>
+        <td>だかいう<br>たが<br><span class="key-opt">✓ たかい</span><br>たかうい</td>
+        <td><strong>たかい</strong></td>
+        <td>
+          <strong>高い</strong> (たかい)<br>
+          <span style="color:#475569;">tall, expensive, high</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>42</td>
+        <td><code>q-g1-042</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>あの高い<u>山</u>は富士山です。</td>
+        <td>せん<br>さん<br>やまう<br><span class="key-opt">✓ やま</span></td>
+        <td><strong>やま</strong></td>
+        <td>
+          <strong>山</strong> (やま)<br>
+          <span style="color:#475569;">mountain</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>43</td>
+        <td><code>q-g1-043</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>この<u>小さい</u>魚は赤いです。</td>
+        <td><span class="key-opt">✓ ちいさい</span><br>ぢいさい<br>ちっいさい<br>ぢいさ</td>
+        <td><strong>ちいさい</strong></td>
+        <td>
+          <strong>小さい</strong> (ちいさい)<br>
+          <span style="color:#475569;">small, little</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>44</td>
+        <td><code>q-g1-044</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>この小さい<u>魚</u>は赤いです。</td>
+        <td>ざかな<br>ぎょ<br><span class="key-opt">✓ さかな</span><br>うお</td>
+        <td><strong>さかな</strong></td>
+        <td>
+          <strong>魚</strong> (さかな)<br>
+          <span style="color:#475569;">fish</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>45</td>
+        <td><code>q-g1-045</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>この小さい魚は<u>赤いです</u>。</td>
+        <td>あかいでうす<br>しゃぐ<br><span class="key-opt">✓ あかいです</span><br>あかいでうず</td>
+        <td><strong>あかいです</strong></td>
+        <td>
+          <strong>赤いです</strong> (あかいです)<br>
+          <span style="color:#475569;">red</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>46</td>
+        <td><code>q-g1-046</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>図書館で<u>友達</u>と話しました。</td>
+        <td>ともだうじ<br>ともだぢう<br><span class="key-opt">✓ ともだち</span><br>ともだし</td>
+        <td><strong>ともだち</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>47</td>
+        <td><code>q-g1-047</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>図書館で友達と<u>話しました</u>。</td>
+        <td><span class="key-opt">✓ はなしました</span><br>ばっなしました<br>はなしましだ<br>はなしましうだ</td>
+        <td><strong>はなしました</strong></td>
+        <td>
+          <strong>話しました</strong> (はなしました)<br>
+          <span style="color:#475569;">to speak, to talk</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>48</td>
+        <td><code>q-g1-048</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>明日</u>友達が日本に来ます。</td>
+        <td>あじだ<br><span class="key-opt">✓ あした</span><br>あしたい<br>あじた</td>
+        <td><strong>あした</strong></td>
+        <td>
+          <strong>明日</strong> (あした)<br>
+          <span style="color:#475569;">tomorrow</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>49</td>
+        <td><code>q-g1-049</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>明日友達が<u>日本</u>に来ます。</td>
+        <td><span class="key-opt">✓ にほん</span><br>じつもと<br>にちもど<br>にじもと</td>
+        <td><strong>にほん</strong></td>
+        <td>
+          <strong>日本</strong> (にほん)<br>
+          <span style="color:#475569;">Japan</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>50</td>
+        <td><code>q-g1-050</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>明日友達が日本に<u>来ます</u>。</td>
+        <td>きだ<br><span class="key-opt">✓ きます</span><br>きますう<br>きまうす</td>
+        <td><strong>きます</strong></td>
+        <td>
+          <strong>来ます</strong> (きます)<br>
+          <span style="color:#475569;">to come</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>51</td>
+        <td><code>q-g1-051</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>今日</u>はお茶を飲みます。</td>
+        <td>ぎょ<br>ぎょう<br>きっょう<br><span class="key-opt">✓ きょう</span></td>
+        <td><strong>きょう</strong></td>
+        <td>
+          <strong>今日</strong> (きょう)<br>
+          <span style="color:#475569;">today</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>52</td>
+        <td><code>q-g1-052</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>今日は<u>お茶</u>を飲みます。</td>
+        <td>おじゃい<br>おっちゃ<br><span class="key-opt">✓ おちゃ</span><br>おちゃい</td>
+        <td><strong>おちゃ</strong></td>
+        <td>
+          <strong>お茶</strong> (おちゃ)<br>
+          <span style="color:#475569;">green tea, tea</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>53</td>
+        <td><code>q-g1-053</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>今日はお茶を<u>飲みます</u>。</td>
+        <td>のみまず<br>のみますい<br>のみますう<br><span class="key-opt">✓ のみます</span></td>
+        <td><strong>のみます</strong></td>
+        <td>
+          <strong>飲みます</strong> (のみます)<br>
+          <span style="color:#475569;">to drink</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>54</td>
+        <td><code>q-g1-054</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td><u>会社</u>の前で父に会いました。</td>
+        <td>かいじゃい<br>がいじゃ<br>かいしうゃ<br><span class="key-opt">✓ かいしゃ</span></td>
+        <td><strong>かいしゃ</strong></td>
+        <td>
+          <strong>会社</strong> (かいしゃ)<br>
+          <span style="color:#475569;">company, firm</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>55</td>
+        <td><code>q-g1-055</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>会社の<u>前</u>で父に会いました。</td>
+        <td>ぜん<br>まえい<br>まうえ<br><span class="key-opt">✓ まえ</span></td>
+        <td><strong>まえ</strong></td>
+        <td>
+          <strong>前</strong> (まえ)<br>
+          <span style="color:#475569;">in front, before</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>56</td>
+        <td><code>q-g1-056</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>会社の前で<u>父</u>に会いました。</td>
+        <td><span class="key-opt">✓ ちち</span><br>ぶ<br>ぢちう<br>じちい</td>
+        <td><strong>ちち</strong></td>
+        <td>
+          <strong>父</strong> (ちち)<br>
+          <span style="color:#475569;">father</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>57</td>
+        <td><code>q-g1-057</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_READING</span></td>
+        <td>会社の前で父に<u>会いました</u>。</td>
+        <td>がい<br>あっいましだ<br>あいましたい<br><span class="key-opt">✓ あいました</span></td>
+        <td><strong>あいました</strong></td>
+        <td>
+          <strong>会いました</strong> (あいました)<br>
+          <span style="color:#475569;">company, firm</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-approved">APPROVED</span></td>
+        <td><span class="notes">Tervalidasi fonologis & terverifikasi leksikal JMdict tanpa opsi kembar.</span></td>
+      </tr><tr>
+        <td>58</td>
+        <td><code>q-g2-001</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>私は<u>ほん</u>を読みます。</td>
+        <td>休<br><span class="key-opt">✓ 本</span><br>木<br>体</td>
+        <td><strong>本</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>59</td>
+        <td><code>q-g2-002</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>私は本を<u>よみます</u>。</td>
+        <td>訳みます<br><span class="key-opt">✓ 読みます</span><br>語みます<br>話みます</td>
+        <td><strong>読みます</strong></td>
+        <td>
+          <strong>読みます</strong> (よみます)<br>
+          <span style="color:#475569;">to read</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>60</td>
+        <td><code>q-g2-003</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>わたし</u>は本を読みます。</td>
+        <td>禾<br>和<br><span class="key-opt">✓ 私</span><br>利</td>
+        <td><strong>私</strong></td>
+        <td>
+          <strong>私</strong> (わたし)<br>
+          <span style="color:#475569;">I, me</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>61</td>
+        <td><code>q-g2-004</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>まいにち</u>学校で日本語を勉強します。</td>
+        <td>毎白<br>海日<br><span class="key-opt">✓ 毎日</span><br>母日</td>
+        <td><strong>毎日</strong></td>
+        <td>
+          <strong>毎日</strong> (まいにち)<br>
+          <span style="color:#475569;">every day</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>62</td>
+        <td><code>q-g2-005</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>毎日<u>がっこう</u>で日本語を勉強します。</td>
+        <td>存校<br>学村<br><span class="key-opt">✓ 学校</span><br>学枚</td>
+        <td><strong>学校</strong></td>
+        <td>
+          <strong>学校</strong> (がっこう)<br>
+          <span style="color:#475569;">school</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>63</td>
+        <td><code>q-g2-006</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>毎日学校で<u>にほんご</u>を勉強します。</td>
+        <td>日本誤<br>日体語<br><span class="key-opt">✓ 日本語</span><br>日本話</td>
+        <td><strong>日本語</strong></td>
+        <td>
+          <strong>日本語</strong> (にほんご)<br>
+          <span style="color:#475569;">Japanese language</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>64</td>
+        <td><code>q-g2-007</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>毎日学校で日本語を<u>べんきょうします</u>。</td>
+        <td>免強します<br>勉張します<br>勉弓します<br><span class="key-opt">✓ 勉強します</span></td>
+        <td><strong>勉強します</strong></td>
+        <td>
+          <strong>勉強します</strong> (べんきょうします)<br>
+          <span style="color:#475569;">study</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>65</td>
+        <td><code>q-g2-008</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>朝ご飯にパンを<u>たべました</u>。</td>
+        <td><span class="key-opt">✓ 食べました</span><br>館べました<br>飲べました<br>飯べました</td>
+        <td><strong>食べました</strong></td>
+        <td>
+          <strong>食べました</strong> (たべました)<br>
+          <span style="color:#475569;">to eat</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>66</td>
+        <td><code>q-g2-009</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>あさ</u>ご飯にパンを食べました。</td>
+        <td>潮<br><span class="key-opt">✓ 朝</span><br>幹<br>草</td>
+        <td><strong>朝</strong></td>
+        <td>
+          <strong>朝</strong> (あさ)<br>
+          <span style="color:#475569;">morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>67</td>
+        <td><code>q-g2-010</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>冷たい<u>みず</u>を飲みました。</td>
+        <td><span class="key-opt">✓ 水</span><br>木<br>氷<br>永</td>
+        <td><strong>水</strong></td>
+        <td>
+          <strong>水</strong> (みず)<br>
+          <span style="color:#475569;">water</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>68</td>
+        <td><code>q-g2-011</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>冷たい水を<u>のみました</u>。</td>
+        <td>飯みました<br><span class="key-opt">✓ 飲みました</span><br>飾みました<br>食みました</td>
+        <td><strong>飲みました</strong></td>
+        <td>
+          <strong>飲みました</strong> (のみました)<br>
+          <span style="color:#475569;">to drink</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>69</td>
+        <td><code>q-g2-012</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>でんしゃ</u>で東京へ行きます。</td>
+        <td><span class="key-opt">✓ 電車</span><br>電軍<br>雷車<br>電東</td>
+        <td><strong>電車</strong></td>
+        <td>
+          <strong>電車</strong> (でんしゃ)<br>
+          <span style="color:#475569;">train, electric train</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>70</td>
+        <td><code>q-g2-013</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>電車で東京へ<u>いきます</u>。</td>
+        <td>術きます<br><span class="key-opt">✓ 行きます</span><br>得きます<br>待きます</td>
+        <td><strong>行きます</strong></td>
+        <td>
+          <strong>行きます</strong> (いきます)<br>
+          <span style="color:#475569;">to go</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>71</td>
+        <td><code>q-g2-014</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>電車で<u>とうきょう</u>へ行きます。</td>
+        <td>車京<br><span class="key-opt">✓ 東京</span><br>東高<br>陳京</td>
+        <td><strong>東京</strong></td>
+        <td>
+          <strong>東京</strong> (とうきょう)<br>
+          <span style="color:#475569;">Tokyo</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>72</td>
+        <td><code>q-g2-015</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>きのう</u>友達と映画を見ました。</td>
+        <td>昨田<br>昨白<br>昨目<br><span class="key-opt">✓ 昨日</span></td>
+        <td><strong>昨日</strong></td>
+        <td>
+          <strong>昨日</strong> (きのう)<br>
+          <span style="color:#475569;">yesterday</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>73</td>
+        <td><code>q-g2-016</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>昨日<u>ともだち</u>と映画を見ました。</td>
+        <td>友連<br>支達<br>左達<br><span class="key-opt">✓ 友達</span></td>
+        <td><strong>友達</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>74</td>
+        <td><code>q-g2-017</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>昨日友達と<u>えいが</u>を見ました。</td>
+        <td>英画<br><span class="key-opt">✓ 映画</span><br>明画<br>映昼</td>
+        <td><strong>映画</strong></td>
+        <td>
+          <strong>映画</strong> (えいが)<br>
+          <span style="color:#475569;">movie, film</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>75</td>
+        <td><code>q-g2-018</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>昨日友達と映画を<u>みました</u>。</td>
+        <td>児ました<br><span class="key-opt">✓ 見ました</span><br>具ました<br>貝ました</td>
+        <td><strong>見ました</strong></td>
+        <td>
+          <strong>見ました</strong> (みました)<br>
+          <span style="color:#475569;">to see, to watch</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>76</td>
+        <td><code>q-g2-019</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>せんせい</u>の話をよく聞きます。</td>
+        <td><span class="key-opt">✓ 先生</span><br>光生<br>先年<br>先先</td>
+        <td><strong>先生</strong></td>
+        <td>
+          <strong>先生</strong> (せんせい)<br>
+          <span style="color:#475569;">teacher</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>77</td>
+        <td><code>q-g2-020</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>先生の<u>はなし</u>をよく聞きます。</td>
+        <td>語<br>読<br><span class="key-opt">✓ 話</span><br>活</td>
+        <td><strong>話</strong></td>
+        <td>
+          <strong>話</strong> (はなし)<br>
+          <span style="color:#475569;">talk, speech, story</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>78</td>
+        <td><code>q-g2-021</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>先生の話をよく<u>ききます</u>。</td>
+        <td>開きます<br>間きます<br><span class="key-opt">✓ 聞きます</span><br>問きます</td>
+        <td><strong>聞きます</strong></td>
+        <td>
+          <strong>聞きます</strong> (ききます)<br>
+          <span style="color:#475569;">to hear, to listen</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>79</td>
+        <td><code>q-g2-022</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>はは</u>に手紙を書きました。</td>
+        <td><span class="key-opt">✓ 母</span><br>舟<br>女<br>毎</td>
+        <td><strong>母</strong></td>
+        <td>
+          <strong>母</strong> (はは)<br>
+          <span style="color:#475569;">mother</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>80</td>
+        <td><code>q-g2-023</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>母に<u>てがみ</u>を書きました。</td>
+        <td><span class="key-opt">✓ 手紙</span><br>手給<br>手結<br>千紙</td>
+        <td><strong>手紙</strong></td>
+        <td>
+          <strong>手紙</strong> (てがみ)<br>
+          <span style="color:#475569;">letter</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>81</td>
+        <td><code>q-g2-024</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>母に手紙を<u>かきました</u>。</td>
+        <td>事きました<br>昼きました<br><span class="key-opt">✓ 書きました</span><br>画きました</td>
+        <td><strong>書きました</strong></td>
+        <td>
+          <strong>書きました</strong> (かきました)<br>
+          <span style="color:#475569;">to write</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>82</td>
+        <td><code>q-g2-025</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>みせ</u>で新しい車を買いました。</td>
+        <td>広<br>床<br><span class="key-opt">✓ 店</span><br>居</td>
+        <td><strong>店</strong></td>
+        <td>
+          <strong>店</strong> (みせ)<br>
+          <span style="color:#475569;">shop, store</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>83</td>
+        <td><code>q-g2-026</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>店で<u>あたらしい</u>車を買いました。</td>
+        <td>親しい<br>薪しい<br><span class="key-opt">✓ 新しい</span><br>折しい</td>
+        <td><strong>新しい</strong></td>
+        <td>
+          <strong>新しい</strong> (あたらしい)<br>
+          <span style="color:#475569;">new</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>84</td>
+        <td><code>q-g2-027</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>店で新しい<u>くるま</u>を買いました。</td>
+        <td>連<br>東<br>軍<br><span class="key-opt">✓ 車</span></td>
+        <td><strong>車</strong></td>
+        <td>
+          <strong>車</strong> (くるま)<br>
+          <span style="color:#475569;">car, vehicle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>85</td>
+        <td><code>q-g2-028</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>店で新しい車を<u>かいました</u>。</td>
+        <td><span class="key-opt">✓ 買いました</span><br>貴いました<br>貸いました<br>員いました</td>
+        <td><strong>買いました</strong></td>
+        <td>
+          <strong>買いました</strong> (かいました)<br>
+          <span style="color:#475569;">to buy</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>86</td>
+        <td><code>q-g2-029</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>机の<u>うえ</u>に本があります。</td>
+        <td>止<br>正<br><span class="key-opt">✓ 上</span><br>下</td>
+        <td><strong>上</strong></td>
+        <td>
+          <strong>上</strong> (うえ)<br>
+          <span style="color:#475569;">above, on, up</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>87</td>
+        <td><code>q-g2-030</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>机の上に<u>ほん</u>があります。</td>
+        <td>休<br><span class="key-opt">✓ 本</span><br>木<br>体</td>
+        <td><strong>本</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>88</td>
+        <td><code>q-g2-031</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>庭に<u>しろい</u>犬がいます。</td>
+        <td>日い<br>自い<br>百い<br><span class="key-opt">✓ 白い</span></td>
+        <td><strong>白い</strong></td>
+        <td>
+          <strong>白い</strong> (しろい)<br>
+          <span style="color:#475569;">white</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>89</td>
+        <td><code>q-g2-032</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>庭に白い<u>いぬ</u>がいます。</td>
+        <td><span class="key-opt">✓ 犬</span><br>太<br>大<br>牛</td>
+        <td><strong>犬</strong></td>
+        <td>
+          <strong>犬</strong> (いぬ)<br>
+          <span style="color:#475569;">dog</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>90</td>
+        <td><code>q-g2-033</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>まいあさ</u>七時に起きます。</td>
+        <td><span class="key-opt">✓ 毎朝</span><br>毎潮<br>毒朝<br>海朝</td>
+        <td><strong>毎朝</strong></td>
+        <td>
+          <strong>毎朝</strong> (まいあさ)<br>
+          <span style="color:#475569;">every morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>91</td>
+        <td><code>q-g2-034</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>毎朝七時に<u>おきます</u>。</td>
+        <td>趣きます<br><span class="key-opt">✓ 起きます</span><br>走きます<br>超きます</td>
+        <td><strong>起きます</strong></td>
+        <td>
+          <strong>起きます</strong> (おきます)<br>
+          <span style="color:#475569;">to wake up, to get up</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>92</td>
+        <td><code>q-g2-035</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>午後五時に<u>いえ</u>へ帰ります。</td>
+        <td><span class="key-opt">✓ 家</span><br>大<br>木<br>日</td>
+        <td><strong>家</strong></td>
+        <td>
+          <strong>家</strong> (いえ)<br>
+          <span style="color:#475569;">house, home</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>93</td>
+        <td><code>q-g2-036</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>午後五時に家へ<u>かえります</u>。</td>
+        <td>日<br>木<br><span class="key-opt">✓ 帰ります</span><br>大</td>
+        <td><strong>帰ります</strong></td>
+        <td>
+          <strong>帰ります</strong> (かえります)<br>
+          <span style="color:#475569;">to return home</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>94</td>
+        <td><code>q-g2-037</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>へや</u>の中で音楽を聞きます。</td>
+        <td><span class="key-opt">✓ 部屋</span><br>部昼<br>部室<br>部居</td>
+        <td><strong>部屋</strong></td>
+        <td>
+          <strong>部屋</strong> (へや)<br>
+          <span style="color:#475569;">room</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>95</td>
+        <td><code>q-g2-038</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>部屋の<u>なか</u>で音楽を聞きます。</td>
+        <td>由<br>田<br><span class="key-opt">✓ 中</span><br>申</td>
+        <td><strong>中</strong></td>
+        <td>
+          <strong>中</strong> (なか)<br>
+          <span style="color:#475569;">inside, middle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>96</td>
+        <td><code>q-g2-039</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>部屋の中で<u>おんがく</u>を聞きます。</td>
+        <td><span class="key-opt">✓ 音楽</span><br>音東<br>音薬<br>章楽</td>
+        <td><strong>音楽</strong></td>
+        <td>
+          <strong>音楽</strong> (おんがく)<br>
+          <span style="color:#475569;">music</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>97</td>
+        <td><code>q-g2-040</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>部屋の中で音楽を<u>ききます</u>。</td>
+        <td>問きます<br><span class="key-opt">✓ 聞きます</span><br>開きます<br>間きます</td>
+        <td><strong>聞きます</strong></td>
+        <td>
+          <strong>聞きます</strong> (ききます)<br>
+          <span style="color:#475569;">to hear, to listen</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>98</td>
+        <td><code>q-g2-041</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>あの<u>たかい</u>山は富士山です。</td>
+        <td>京い<br>亭い<br><span class="key-opt">✓ 高い</span><br>亮い</td>
+        <td><strong>高い</strong></td>
+        <td>
+          <strong>高い</strong> (たかい)<br>
+          <span style="color:#475569;">tall, expensive, high</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>99</td>
+        <td><code>q-g2-042</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>あの高い<u>やま</u>は富士山です。</td>
+        <td><span class="key-opt">✓ 山</span><br>川<br>岡<br>出</td>
+        <td><strong>山</strong></td>
+        <td>
+          <strong>山</strong> (やま)<br>
+          <span style="color:#475569;">mountain</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>100</td>
+        <td><code>q-g2-043</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>この<u>ちいさい</u>魚は赤いです。</td>
+        <td>木<br>日<br>大<br><span class="key-opt">✓ 小さい</span></td>
+        <td><strong>小さい</strong></td>
+        <td>
+          <strong>小さい</strong> (ちいさい)<br>
+          <span style="color:#475569;">small, little</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>101</td>
+        <td><code>q-g2-044</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>この小さい<u>さかな</u>は赤いです。</td>
+        <td>鳥<br><span class="key-opt">✓ 魚</span><br>角<br>魯</td>
+        <td><strong>魚</strong></td>
+        <td>
+          <strong>魚</strong> (さかな)<br>
+          <span style="color:#475569;">fish</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>102</td>
+        <td><code>q-g2-045</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>この小さい魚は<u>あかいです</u>。</td>
+        <td>亦いです<br>青いです<br><span class="key-opt">✓ 赤いです</span><br>変いです</td>
+        <td><strong>赤いです</strong></td>
+        <td>
+          <strong>赤いです</strong> (あかいです)<br>
+          <span style="color:#475569;">red</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>103</td>
+        <td><code>q-g2-046</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>図書館で<u>ともだち</u>と話しました。</td>
+        <td><span class="key-opt">✓ 友達</span><br>支達<br>友通<br>左達</td>
+        <td><strong>友達</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>104</td>
+        <td><code>q-g2-047</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>図書館で友達と<u>はなしました</u>。</td>
+        <td>活しました<br>語しました<br>読しました<br><span class="key-opt">✓ 話しました</span></td>
+        <td><strong>話しました</strong></td>
+        <td>
+          <strong>話しました</strong> (はなしました)<br>
+          <span style="color:#475569;">to speak, to talk</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>105</td>
+        <td><code>q-g2-048</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>あした</u>友達が日本に来ます。</td>
+        <td><span class="key-opt">✓ 明日</span><br>明目<br>明田<br>明白</td>
+        <td><strong>明日</strong></td>
+        <td>
+          <strong>明日</strong> (あした)<br>
+          <span style="color:#475569;">tomorrow</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>106</td>
+        <td><code>q-g2-049</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>明日友達が<u>にほん</u>に来ます。</td>
+        <td>日休<br>田本<br><span class="key-opt">✓ 日本</span><br>日木</td>
+        <td><strong>日本</strong></td>
+        <td>
+          <strong>日本</strong> (にほん)<br>
+          <span style="color:#475569;">Japan</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>107</td>
+        <td><code>q-g2-050</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>明日友達が日本に<u>きます</u>。</td>
+        <td><span class="key-opt">✓ 来ます</span><br>末ます<br>米ます<br>未ます</td>
+        <td><strong>来ます</strong></td>
+        <td>
+          <strong>来ます</strong> (きます)<br>
+          <span style="color:#475569;">to come</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>108</td>
+        <td><code>q-g2-051</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>きょう</u>はお茶を飲みます。</td>
+        <td>今目<br>今白<br><span class="key-opt">✓ 今日</span><br>今田</td>
+        <td><strong>今日</strong></td>
+        <td>
+          <strong>今日</strong> (きょう)<br>
+          <span style="color:#475569;">today</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>109</td>
+        <td><code>q-g2-052</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>今日は<u>おちゃ</u>を飲みます。</td>
+        <td><span class="key-opt">✓ お茶</span><br>日<br>木<br>大</td>
+        <td><strong>お茶</strong></td>
+        <td>
+          <strong>お茶</strong> (おちゃ)<br>
+          <span style="color:#475569;">green tea, tea</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>110</td>
+        <td><code>q-g2-053</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>今日はお茶を<u>のみます</u>。</td>
+        <td>飯みます<br>食みます<br><span class="key-opt">✓ 飲みます</span><br>飾みます</td>
+        <td><strong>飲みます</strong></td>
+        <td>
+          <strong>飲みます</strong> (のみます)<br>
+          <span style="color:#475569;">to drink</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>111</td>
+        <td><code>q-g2-054</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td><u>かいしゃ</u>の前で父に会いました。</td>
+        <td>全社<br><span class="key-opt">✓ 会社</span><br>今社<br>合社</td>
+        <td><strong>会社</strong></td>
+        <td>
+          <strong>会社</strong> (かいしゃ)<br>
+          <span style="color:#475569;">company, firm</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>112</td>
+        <td><code>q-g2-055</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>会社の<u>まえ</u>で父に会いました。</td>
+        <td><span class="key-opt">✓ 前</span><br>剪<br>箭<br>煎</td>
+        <td><strong>前</strong></td>
+        <td>
+          <strong>前</strong> (まえ)<br>
+          <span style="color:#475569;">in front, before</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>113</td>
+        <td><code>q-g2-056</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>会社の前で<u>ちち</u>に会いました。</td>
+        <td>文<br>交<br><span class="key-opt">✓ 父</span><br>支</td>
+        <td><strong>父</strong></td>
+        <td>
+          <strong>父</strong> (ちち)<br>
+          <span style="color:#475569;">father</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>114</td>
+        <td><code>q-g2-057</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">KANJI_WRITING</span></td>
+        <td>会社の前で父に<u>あいました</u>。</td>
+        <td><span class="key-opt">✓ 会いました</span><br>合いました<br>全いました<br>今いました</td>
+        <td><strong>会いました</strong></td>
+        <td>
+          <strong>会いました</strong> (あいました)<br>
+          <span style="color:#475569;">company, firm</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal penulisan kanji G2 dari visual look-alike: wajib ditinjau manusia.</span></td>
+      </tr><tr>
+        <td>115</td>
+        <td><code>q-g3-001</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>私は本（　★　）読みます。</td>
+        <td><span class="key-opt">✓ を</span><br>が<br>に<br>で</td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>116</td>
+        <td><code>q-g3-002</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>毎日学校（　★　）日本語を勉強します。</td>
+        <td>と<br>に<br><span class="key-opt">✓ で</span><br>を</td>
+        <td><strong>で</strong></td>
+        <td>
+          <strong>で</strong> (で)<br>
+          <span style="color:#475569;">Particle 'で' (Partikel で (Alat / Sarana / Transportasi))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>117</td>
+        <td><code>q-g3-003</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>朝ご飯にパン（　★　）食べました。</td>
+        <td><span class="key-opt">✓ を</span><br>で<br>が<br>に</td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>118</td>
+        <td><code>q-g3-004</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>冷たい水（　★　）飲みました。</td>
+        <td>で<br>が<br><span class="key-opt">✓ を</span><br>に</td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>119</td>
+        <td><code>q-g3-005</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>電車（　★　）東京へ行きます。</td>
+        <td>に<br>と<br><span class="key-opt">✓ で</span><br>を</td>
+        <td><strong>で</strong></td>
+        <td>
+          <strong>で</strong> (で)<br>
+          <span style="color:#475569;">Particle 'で' (Partikel で (Alat / Sarana / Transportasi))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>120</td>
+        <td><code>q-g3-006</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>昨日友達（　★　）映画を見ました。</td>
+        <td><span class="key-opt">✓ と</span><br>に<br>を<br>で</td>
+        <td><strong>と</strong></td>
+        <td>
+          <strong>と</strong> (と)<br>
+          <span style="color:#475569;">Particle 'と' (Partikel と (Bersama / Teman Aktivitas))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>121</td>
+        <td><code>q-g3-007</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>母に手紙（　★　）書きました。</td>
+        <td>が<br>で<br>に<br><span class="key-opt">✓ を</span></td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>122</td>
+        <td><code>q-g3-008</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>店（　★　）新しい車を買いました。</td>
+        <td>を<br>と<br>に<br><span class="key-opt">✓ で</span></td>
+        <td><strong>で</strong></td>
+        <td>
+          <strong>で</strong> (で)<br>
+          <span style="color:#475569;">Particle 'で' (Partikel で (Alat / Sarana / Transportasi))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>123</td>
+        <td><code>q-g3-009</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>机の上（　★　）本があります。</td>
+        <td>へ<br>を<br><span class="key-opt">✓ に</span><br>で</td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Keberadaan Benda Mati: ある))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>124</td>
+        <td><code>q-g3-010</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>庭（　★　）白い犬がいます。</td>
+        <td>を<br><span class="key-opt">✓ に</span><br>で<br>へ</td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Keberadaan Benda Hidup: いる))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>125</td>
+        <td><code>q-g3-011</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>毎朝七時（　★　）起きます。</td>
+        <td>で<br>は<br>を<br><span class="key-opt">✓ に</span></td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Waktu Spesifik))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>126</td>
+        <td><code>q-g3-012</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>午後五時（　★　）家へ帰ります。</td>
+        <td>で<br>を<br><span class="key-opt">✓ に</span><br>は</td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Waktu Spesifik))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>127</td>
+        <td><code>q-g3-013</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>部屋の中で音楽（　★　）聞きます。</td>
+        <td>で<br>に<br>が<br><span class="key-opt">✓ を</span></td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>128</td>
+        <td><code>q-g3-014</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>図書館で友達（　★　）話しました。</td>
+        <td>を<br>に<br><span class="key-opt">✓ と</span><br>で</td>
+        <td><strong>と</strong></td>
+        <td>
+          <strong>と</strong> (と)<br>
+          <span style="color:#475569;">Particle 'と' (Partikel と (Bersama / Teman Aktivitas))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>129</td>
+        <td><code>q-g3-015</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>明日友達が日本（　★　）来ます。</td>
+        <td>を<br>で<br>は<br><span class="key-opt">✓ に</span></td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Waktu Spesifik))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>130</td>
+        <td><code>q-g3-016</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>今日はお茶（　★　）飲みます。</td>
+        <td>で<br><span class="key-opt">✓ を</span><br>に<br>が</td>
+        <td><strong>を</strong></td>
+        <td>
+          <strong>を</strong> (を)<br>
+          <span style="color:#475569;">Particle 'を' (Partikel を (Objek Penderita))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>131</td>
+        <td><code>q-g3-017</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">PARTICLES</span></td>
+        <td>会社の前で父（　★　）会いました。</td>
+        <td>へ<br>を<br><span class="key-opt">✓ に</span><br>で</td>
+        <td><strong>に</strong></td>
+        <td>
+          <strong>に</strong> (に)<br>
+          <span style="color:#475569;">Particle 'に' (Partikel に (Keberadaan Benda Hidup: いる))</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal partikel G3 dari pola terkurasi: wajib ditinjau manusia untuk memastikan tidak ada partikel alternatif yang sah.</span></td>
+      </tr><tr>
+        <td>132</td>
+        <td><code>q-g4-001</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>私は（　★　）を読みます。</td>
+        <td><span class="key-opt">✓ 本</span><br>話<br>電車<br>午後</td>
+        <td><strong>本</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>133</td>
+        <td><code>q-g4-002</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）は本を読みます。</td>
+        <td>学校<br>富士山<br><span class="key-opt">✓ 私</span><br>写真</td>
+        <td><strong>私</strong></td>
+        <td>
+          <strong>私</strong> (わたし)<br>
+          <span style="color:#475569;">I, me</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya membaca buku.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>134</td>
+        <td><code>q-g4-003</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）学校で日本語を勉強します。</td>
+        <td>下<br>東京<br><span class="key-opt">✓ 毎日</span><br>今</td>
+        <td><strong>毎日</strong></td>
+        <td>
+          <strong>毎日</strong> (まいにち)<br>
+          <span style="color:#475569;">every day</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>135</td>
+        <td><code>q-g4-004</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>毎日（　★　）で日本語を勉強します。</td>
+        <td><span class="key-opt">✓ 学校</span><br>図書館<br>友達<br>私</td>
+        <td><strong>学校</strong></td>
+        <td>
+          <strong>学校</strong> (がっこう)<br>
+          <span style="color:#475569;">school</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>136</td>
+        <td><code>q-g4-005</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>毎日学校で（　★　）を勉強します。</td>
+        <td><span class="key-opt">✓ 日本語</span><br>毎朝<br>家<br>ご飯</td>
+        <td><strong>日本語</strong></td>
+        <td>
+          <strong>日本語</strong> (にほんご)<br>
+          <span style="color:#475569;">Japanese language</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap hari saya belajar bahasa Jepang di sekolah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>137</td>
+        <td><code>q-g4-006</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）ご飯にパンを食べました。</td>
+        <td><span class="key-opt">✓ 朝</span><br>庭<br>左<br>中</td>
+        <td><strong>朝</strong></td>
+        <td>
+          <strong>朝</strong> (あさ)<br>
+          <span style="color:#475569;">morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya makan roti untuk sarapan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>138</td>
+        <td><code>q-g4-007</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>冷たい（　★　）を飲みました。</td>
+        <td>東京<br>学校<br><span class="key-opt">✓ 水</span><br>今日</td>
+        <td><strong>水</strong></td>
+        <td>
+          <strong>水</strong> (みず)<br>
+          <span style="color:#475569;">water</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya meminum air dingin.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>139</td>
+        <td><code>q-g4-008</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）で東京へ行きます。</td>
+        <td><span class="key-opt">✓ 電車</span><br>先生<br>毎朝<br>部屋</td>
+        <td><strong>電車</strong></td>
+        <td>
+          <strong>電車</strong> (でんしゃ)<br>
+          <span style="color:#475569;">train, electric train</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>140</td>
+        <td><code>q-g4-009</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>電車で（　★　）へ行きます。</td>
+        <td>電話<br><span class="key-opt">✓ 東京</span><br>日本語<br>写真</td>
+        <td><strong>東京</strong></td>
+        <td>
+          <strong>東京</strong> (とうきょう)<br>
+          <span style="color:#475569;">Tokyo</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pergi ke Tokyo dengan kereta listrik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>141</td>
+        <td><code>q-g4-010</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）友達と映画を見ました。</td>
+        <td>会社<br><span class="key-opt">✓ 昨日</span><br>父<br>本</td>
+        <td><strong>昨日</strong></td>
+        <td>
+          <strong>昨日</strong> (きのう)<br>
+          <span style="color:#475569;">yesterday</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>142</td>
+        <td><code>q-g4-011</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>昨日（　★　）と映画を見ました。</td>
+        <td>店<br><span class="key-opt">✓ 友達</span><br>手紙<br>電車</td>
+        <td><strong>友達</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>143</td>
+        <td><code>q-g4-012</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>昨日友達と（　★　）を見ました。</td>
+        <td><span class="key-opt">✓ 映画</span><br>毎朝<br>パン<br>母</td>
+        <td><strong>映画</strong></td>
+        <td>
+          <strong>映画</strong> (えいが)<br>
+          <span style="color:#475569;">movie, film</span><br>
+          <span style="color:#64748b;font-style:italic;">“Kemarin saya menonton film bersama teman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>144</td>
+        <td><code>q-g4-013</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）の話をよく聞きます。</td>
+        <td>上<br>東京<br><span class="key-opt">✓ 先生</span><br>図書館</td>
+        <td><strong>先生</strong></td>
+        <td>
+          <strong>先生</strong> (せんせい)<br>
+          <span style="color:#475569;">teacher</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>145</td>
+        <td><code>q-g4-014</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>先生の（　★　）をよく聞きます。</td>
+        <td>勉強<br>写真<br>日本<br><span class="key-opt">✓ 話</span></td>
+        <td><strong>話</strong></td>
+        <td>
+          <strong>話</strong> (はなし)<br>
+          <span style="color:#475569;">talk, speech, story</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan perkataan guru dengan baik.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>146</td>
+        <td><code>q-g4-015</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）に手紙を書きました。</td>
+        <td>学校<br>毎日<br><span class="key-opt">✓ 母</span><br>パン</td>
+        <td><strong>母</strong></td>
+        <td>
+          <strong>母</strong> (はは)<br>
+          <span style="color:#475569;">mother</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>147</td>
+        <td><code>q-g4-016</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>母に（　★　）を書きました。</td>
+        <td>話<br>私<br>電車<br><span class="key-opt">✓ 手紙</span></td>
+        <td><strong>手紙</strong></td>
+        <td>
+          <strong>手紙</strong> (てがみ)<br>
+          <span style="color:#475569;">letter</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya menulis surat untuk ibu.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>148</td>
+        <td><code>q-g4-017</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）で新しい車を買いました。</td>
+        <td>今日<br><span class="key-opt">✓ 店</span><br>庭<br>山</td>
+        <td><strong>店</strong></td>
+        <td>
+          <strong>店</strong> (みせ)<br>
+          <span style="color:#475569;">shop, store</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>149</td>
+        <td><code>q-g4-018</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>店で（　★　）車を買いました。</td>
+        <td>古い<br><span class="key-opt">✓ 新しい</span><br>小さい<br>大きい</td>
+        <td><strong>新しい</strong></td>
+        <td>
+          <strong>新しい</strong> (あたらしい)<br>
+          <span style="color:#475569;">new</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>150</td>
+        <td><code>q-g4-019</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>店で新しい（　★　）を買いました。</td>
+        <td>日本語<br><span class="key-opt">✓ 車</span><br>名前<br>ご飯</td>
+        <td><strong>車</strong></td>
+        <td>
+          <strong>車</strong> (くるま)<br>
+          <span style="color:#475569;">car, vehicle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Membeli mobil baru di toko.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>151</td>
+        <td><code>q-g4-020</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>机の（　★　）に本があります。</td>
+        <td>家<br>病院<br><span class="key-opt">✓ 上</span><br>左</td>
+        <td><strong>上</strong></td>
+        <td>
+          <strong>上</strong> (うえ)<br>
+          <span style="color:#475569;">above, on, up</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>152</td>
+        <td><code>q-g4-021</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>机の上に（　★　）があります。</td>
+        <td><span class="key-opt">✓ 本</span><br>友達<br>店<br>毎日</td>
+        <td><strong>本</strong></td>
+        <td>
+          <strong>本</strong> (ほん)<br>
+          <span style="color:#475569;">book</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada buku di atas meja.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>153</td>
+        <td><code>q-g4-022</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>庭に（　★　）犬がいます。</td>
+        <td>冷たい<br>大きい<br>安い<br><span class="key-opt">✓ 白い</span></td>
+        <td><strong>白い</strong></td>
+        <td>
+          <strong>白い</strong> (しろい)<br>
+          <span style="color:#475569;">white</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>154</td>
+        <td><code>q-g4-023</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>庭に白い（　★　）がいます。</td>
+        <td>本<br>日本語<br>富士山<br><span class="key-opt">✓ 犬</span></td>
+        <td><strong>犬</strong></td>
+        <td>
+          <strong>犬</strong> (いぬ)<br>
+          <span style="color:#475569;">dog</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ada anjing putih di halaman.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>155</td>
+        <td><code>q-g4-024</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）七時に起きます。</td>
+        <td>名前<br><span class="key-opt">✓ 毎朝</span><br>家<br>音楽</td>
+        <td><strong>毎朝</strong></td>
+        <td>
+          <strong>毎朝</strong> (まいあさ)<br>
+          <span style="color:#475569;">every morning</span><br>
+          <span style="color:#64748b;font-style:italic;">“Setiap pagi saya bangun pada jam tujuh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>156</td>
+        <td><code>q-g4-025</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>午後五時に（　★　）へ帰ります。</td>
+        <td>手紙<br>図書館<br>日本<br><span class="key-opt">✓ 家</span></td>
+        <td><strong>家</strong></td>
+        <td>
+          <strong>家</strong> (いえ)<br>
+          <span style="color:#475569;">house, home</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya pulang ke rumah jam lima sore.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>157</td>
+        <td><code>q-g4-026</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）の中で音楽を聞きます。</td>
+        <td>ご飯<br>水<br>庭<br><span class="key-opt">✓ 部屋</span></td>
+        <td><strong>部屋</strong></td>
+        <td>
+          <strong>部屋</strong> (へや)<br>
+          <span style="color:#475569;">room</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>158</td>
+        <td><code>q-g4-027</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>部屋の（　★　）で音楽を聞きます。</td>
+        <td>後ろ<br>机<br>日本語<br><span class="key-opt">✓ 中</span></td>
+        <td><strong>中</strong></td>
+        <td>
+          <strong>中</strong> (なか)<br>
+          <span style="color:#475569;">inside, middle</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>159</td>
+        <td><code>q-g4-028</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>部屋の中で（　★　）を聞きます。</td>
+        <td>電話<br>名前<br><span class="key-opt">✓ 音楽</span><br>明日</td>
+        <td><strong>音楽</strong></td>
+        <td>
+          <strong>音楽</strong> (おんがく)<br>
+          <span style="color:#475569;">music</span><br>
+          <span style="color:#64748b;font-style:italic;">“Mendengarkan musik di dalam kamar.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>160</td>
+        <td><code>q-g4-029</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>あの（　★　）山は富士山です。</td>
+        <td>古い<br><span class="key-opt">✓ 高い</span><br>大きい<br>赤い</td>
+        <td><strong>高い</strong></td>
+        <td>
+          <strong>高い</strong> (たかい)<br>
+          <span style="color:#475569;">tall, expensive, high</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>161</td>
+        <td><code>q-g4-030</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>あの高い（　★　）は富士山です。</td>
+        <td><span class="key-opt">✓ 山</span><br>部屋<br>手紙<br>日本</td>
+        <td><strong>山</strong></td>
+        <td>
+          <strong>山</strong> (やま)<br>
+          <span style="color:#475569;">mountain</span><br>
+          <span style="color:#64748b;font-style:italic;">“Gunung yang tinggi itu adalah Gunung Fuji.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>162</td>
+        <td><code>q-g4-031</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>この（　★　）魚は赤いです。</td>
+        <td><span class="key-opt">✓ 小さい</span><br>高い<br>長い<br>冷たい</td>
+        <td><strong>小さい</strong></td>
+        <td>
+          <strong>小さい</strong> (ちいさい)<br>
+          <span style="color:#475569;">small, little</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>163</td>
+        <td><code>q-g4-032</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>この小さい（　★　）は赤いです。</td>
+        <td>本<br>部屋<br>病院<br><span class="key-opt">✓ 魚</span></td>
+        <td><strong>魚</strong></td>
+        <td>
+          <strong>魚</strong> (さかな)<br>
+          <span style="color:#475569;">fish</span><br>
+          <span style="color:#64748b;font-style:italic;">“Ikan kecil ini berwarna merah.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>164</td>
+        <td><code>q-g4-033</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>図書館で（　★　）と話しました。</td>
+        <td>会社<br>電話<br><span class="key-opt">✓ 友達</span><br>今日</td>
+        <td><strong>友達</strong></td>
+        <td>
+          <strong>友達</strong> (ともだち)<br>
+          <span style="color:#475569;">friend</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya berbicara dengan teman di perpustakaan.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>165</td>
+        <td><code>q-g4-034</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）友達が日本に来ます。</td>
+        <td>午後<br><span class="key-opt">✓ 明日</span><br>私<br>音楽</td>
+        <td><strong>明日</strong></td>
+        <td>
+          <strong>明日</strong> (あした)<br>
+          <span style="color:#475569;">tomorrow</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>166</td>
+        <td><code>q-g4-035</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>明日友達が（　★　）に来ます。</td>
+        <td>富士山<br><span class="key-opt">✓ 日本</span><br>映画<br>水</td>
+        <td><strong>日本</strong></td>
+        <td>
+          <strong>日本</strong> (にほん)<br>
+          <span style="color:#475569;">Japan</span><br>
+          <span style="color:#64748b;font-style:italic;">“Besok teman saya akan datang ke Jepang.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>167</td>
+        <td><code>q-g4-036</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）はお茶を飲みます。</td>
+        <td>車<br>時間<br><span class="key-opt">✓ 今日</span><br>前</td>
+        <td><strong>今日</strong></td>
+        <td>
+          <strong>今日</strong> (きょう)<br>
+          <span style="color:#475569;">today</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>168</td>
+        <td><code>q-g4-037</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>今日は（　★　）を飲みます。</td>
+        <td>犬<br>手紙<br><span class="key-opt">✓ お茶</span><br>家</td>
+        <td><strong>お茶</strong></td>
+        <td>
+          <strong>お茶</strong> (おちゃ)<br>
+          <span style="color:#475569;">green tea, tea</span><br>
+          <span style="color:#64748b;font-style:italic;">“Hari ini saya minum teh.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>169</td>
+        <td><code>q-g4-038</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>（　★　）の前で父に会いました。</td>
+        <td>車<br>私<br>明日<br><span class="key-opt">✓ 会社</span></td>
+        <td><strong>会社</strong></td>
+        <td>
+          <strong>会社</strong> (かいしゃ)<br>
+          <span style="color:#475569;">company, firm</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>170</td>
+        <td><code>q-g4-039</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>会社の（　★　）で父に会いました。</td>
+        <td>東京<br>写真<br>図書館<br><span class="key-opt">✓ 前</span></td>
+        <td><strong>前</strong></td>
+        <td>
+          <strong>前</strong> (まえ)<br>
+          <span style="color:#475569;">in front, before</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr><tr>
+        <td>171</td>
+        <td><code>q-g4-040</code></td>
+        <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">CONTEXT_VOCAB</span></td>
+        <td>会社の前で（　★　）に会いました。</td>
+        <td>庭<br><span class="key-opt">✓ 父</span><br>右<br>電車</td>
+        <td><strong>父</strong></td>
+        <td>
+          <strong>父</strong> (ちち)<br>
+          <span style="color:#475569;">father</span><br>
+          <span style="color:#64748b;font-style:italic;">“Saya bertemu ayah di depan kantor.”</span>
+        </td>
+        <td><span class="badge badge-draft">DRAFT</span></td>
+        <td><span class="notes">Soal pemilihan kata konteks G4: ditandai draft karena keunikan jawaban dalam kalimat terbuka memerlukan tinjauan manusia.</span></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
