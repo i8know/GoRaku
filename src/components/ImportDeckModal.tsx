@@ -6,16 +6,18 @@ import {
   type ParseStep,
   type PresetDeck,
 } from "../lib/apkg";
-import { renderJapanese, ROLE_LABELS, ROLES, toPlain, type FieldMapping, type Role } from "../lib/ankiText";
-import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
-import { useAppStore } from "../store/useAppStore";
-import { useReviewStore } from "../store/useReviewStore";
 import type {
+  SubdeckCommitDef,
+  WorkerCommitOptions,
   WorkerCommitResult,
   WorkerParsedSummary,
   WorkerRequest,
   WorkerResponse,
 } from "../workers/apkgImport.worker";
+import { renderJapanese, ROLE_LABELS, ROLES, toPlain, type FieldMapping, type Role } from "../lib/ankiText";
+import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
+import { useAppStore } from "../store/useAppStore";
+import { useReviewStore } from "../store/useReviewStore";
 
 type Stage = "pick" | "parsing" | "configure" | "saving" | "done" | "error";
 
@@ -75,6 +77,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
   const [selectedDecks, setSelectedDecks] = useState<Set<string>>(new Set());
   const [mappings, setMappings] = useState<Record<string, FieldMapping>>({});
   const [activeType, setActiveType] = useState("");
+  const [splitIntoSubdecks, setSplitIntoSubdecks] = useState(true);
   const [includeMedia, setIncludeMedia] = useState(true);
   // Requirement 4: Default schedule mode is (a) import as new cards ("new"), with option (b) estimate from ivl & factor ("estimate")
   const [scheduleMode, setScheduleMode] = useState<"new" | "estimate">("new");
@@ -139,6 +142,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
     setMappings(p.initialMappings);
     setActiveType(p.noteTypes[0]?.id ?? "");
     setSelectedDecks(new Set(p.subdecks.map((d) => d.id)));
+    setSplitIntoSubdecks(p.hierarchy?.hasSubdecks ?? false);
     setTitle(p.suggestedTitle);
     setKanji(presetOverride ? presetOverride.kanji : autoKanji(p.suggestedTitle));
     if (presetOverride) {
@@ -193,37 +197,98 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
 
           if (commitMeta) {
             if (commitMeta.isNewDeck) {
-              useAppStore.getState().importDeck({
-                id: res.deckId,
-                title: commitMeta.finalTitle,
-                level: `${commitMeta.level} • ${commitMeta.kind}`,
-                kind: commitMeta.kind,
-                total: res.finalDeckTotal,
-                kanji: commitMeta.kanji,
-                color: commitMeta.color,
-                meta: {
-                  fileName: commitMeta.fileName,
-                  fileSize: commitMeta.fileSize,
-                  format: commitMeta.format,
-                  importedAt: Date.now(),
-                  noteTypes: commitMeta.noteTypes,
-                  subdecks: commitMeta.subdecks,
-                  mediaCount: res.mediaStored,
-                  mediaFailed: res.mediaFailed,
-                  decksCount: res.decksCount,
-                  skipped: res.skipped,
-                },
-              });
+              if (res.subdecksCreated && res.subdecksCreated.length > 0) {
+                // 1. Build subdeck children mapping for multi-level hierarchy
+                const subdeckChildrenMap = new Map<string, string[]>();
+                for (const sub of res.subdecksCreated) {
+                  const arr = subdeckChildrenMap.get(sub.parentId) ?? [];
+                  arr.push(sub.id);
+                  subdeckChildrenMap.set(sub.parentId, arr);
+                }
+
+                // 2. Parent deck
+                const parentDeckData = {
+                  id: res.deckId,
+                  title: commitMeta.finalTitle,
+                  level: `${commitMeta.level} • ${commitMeta.kind}`,
+                  kind: commitMeta.kind,
+                  total: res.finalDeckTotal,
+                  kanji: commitMeta.kanji,
+                  color: commitMeta.color,
+                  subdeckIds: subdeckChildrenMap.get(res.deckId) ?? res.subdecksCreated.map((s) => s.id),
+                  meta: {
+                    fileName: commitMeta.fileName,
+                    fileSize: commitMeta.fileSize,
+                    format: commitMeta.format,
+                    importedAt: Date.now(),
+                    noteTypes: commitMeta.noteTypes,
+                    subdecks: res.subdecksCreated.map((s) => s.title),
+                    mediaCount: res.mediaStored,
+                    mediaFailed: res.mediaFailed,
+                    decksCount: res.subdecksCreated.length,
+                    skipped: res.skipped,
+                  },
+                };
+
+                // 3. Child subdecks with multi-level parentId and subdeckIds
+                const subdeckItems = res.subdecksCreated.map((sub) => ({
+                  id: sub.id,
+                  parentId: sub.parentId,
+                  subdeckIds: subdeckChildrenMap.get(sub.id),
+                  title: sub.title,
+                  subdeckName: sub.subdeckName,
+                  level: sub.level,
+                  kind: sub.kind,
+                  total: sub.total,
+                  kanji: sub.kanji,
+                  color: sub.color,
+                }));
+
+                useAppStore.getState().importDecksBatch([parentDeckData, ...subdeckItems]);
+
+                // 4. Import SRS per subdeck
+                for (const sub of res.subdecksCreated) {
+                  if (sub.srsCards.length > 0) {
+                    useReviewStore.getState().importSchedule(sub.id, sub.srsCards);
+                  }
+                }
+              } else {
+                useAppStore.getState().importDeck({
+                  id: res.deckId,
+                  title: commitMeta.finalTitle,
+                  level: `${commitMeta.level} • ${commitMeta.kind}`,
+                  kind: commitMeta.kind,
+                  total: res.finalDeckTotal,
+                  kanji: commitMeta.kanji,
+                  color: commitMeta.color,
+                  meta: {
+                    fileName: commitMeta.fileName,
+                    fileSize: commitMeta.fileSize,
+                    format: commitMeta.format,
+                    importedAt: Date.now(),
+                    noteTypes: commitMeta.noteTypes,
+                    subdecks: commitMeta.subdecks,
+                    mediaCount: res.mediaStored,
+                    mediaFailed: res.mediaFailed,
+                    decksCount: res.decksCount,
+                    skipped: res.skipped,
+                  },
+                });
+
+                if (res.srsCards.length > 0) {
+                  useReviewStore.getState().importSchedule(res.deckId, res.srsCards);
+                }
+              }
             } else {
               useAppStore.getState().updateDeck(res.deckId, {
                 total: res.finalDeckTotal,
                 updatedAt: Date.now(),
               });
+              if (res.srsCards.length > 0) {
+                useReviewStore.getState().importSchedule(res.deckId, res.srsCards);
+              }
             }
 
-            if (res.srsCards.length > 0) {
-              useReviewStore.getState().importSchedule(res.deckId, res.srsCards);
-            }
             onImportedRef.current(res.deckId, commitMeta.finalTitle);
           }
 
@@ -466,6 +531,47 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
       writtenMediaNames: [],
     };
 
+    let subdeckOptionsPayload: WorkerCommitOptions["subdeckOptions"] = undefined;
+    if (isNew && splitIntoSubdecks && parsed.hierarchy?.hasSubdecks) {
+      const pathIdMap = new Map<string, string>();
+      const groupsWithIds = parsed.hierarchy.groups.map((g, idx) => {
+        const id = g.isContainer
+          ? `${deckId}-c-${idx + 1}-${encodeURIComponent(g.subdeckName).replace(/[^a-zA-Z0-9]/g, "").slice(0, 15).toLowerCase()}`
+          : `${deckId}-sd-${idx + 1}-${g.levelCode.toLowerCase()}`;
+        if (g.pathKey) {
+          pathIdMap.set(g.pathKey, id);
+        }
+        return { g, id };
+      });
+
+      const groups: SubdeckCommitDef[] = groupsWithIds.map(({ g, id }) => {
+        let parentId = deckId;
+        if (g.parentPathKey && pathIdMap.has(g.parentPathKey)) {
+          parentId = pathIdMap.get(g.parentPathKey)!;
+        }
+        return {
+          key: g.key,
+          id,
+          title: g.title.includes("•") ? g.title : `${finalTitle} • ${g.title}`,
+          subdeckName: g.subdeckName,
+          level: g.level,
+          kind,
+          kanji: g.kanji,
+          color: g.color,
+          pathKey: g.pathKey,
+          parentPathKey: g.parentPathKey,
+          parentId,
+          isContainer: g.isContainer,
+        };
+      });
+
+      subdeckOptionsPayload = {
+        enabled: true,
+        strategy: parsed.hierarchy.strategy,
+        groups,
+      };
+    }
+
     setStage("saving");
     setProgress({ phase: "cards", done: 0, total: selectedNotesCount, pct: 0 });
 
@@ -479,6 +585,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
         includeMedia,
         scheduleMode,
         duplicateMode,
+        subdeckOptions: subdeckOptionsPayload,
       },
     });
   };
@@ -833,6 +940,92 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                   </section>
                 )}
 
+                {destMode === "new" && parsed.hierarchy?.hasSubdecks && (
+                  <section className="imp-panel" style={{ background: "#fcfaf7", border: "1px solid #d9d2c5" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "8px" }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: "13px", color: "#263d36", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Icon name="cards" size={15} /> Struktur Sub-deck (Revolusi Anki)
+                        </h4>
+                        <small style={{ color: "#6e685f", fontSize: "11px", display: "block", marginTop: "2px" }}>
+                          {parsed.hierarchy.strategy === "anki-subdecks"
+                            ? `Ditemukan ${parsed.hierarchy.groups.length} sub-deck di dalam paket Anki ini.`
+                            : `Ditemukan ${parsed.hierarchy.groups.length} tingkatan level JLPT (N5–N1) dari tag kartu.`}
+                        </small>
+                      </div>
+                      <Toggle
+                        on={splitIntoSubdecks}
+                        onChange={setSplitIntoSubdecks}
+                        label="Pecah per sub-deck"
+                      />
+                    </div>
+
+                    {splitIntoSubdecks ? (
+                      <div style={{ marginTop: "10px" }}>
+                        <p style={{ fontSize: "11px", color: "#544e45", margin: "0 0 8px 0" }}>
+                          Kartu otomatis dipisah ke sub-deck masing-masing (mis. <b>N5 hanya di sub-deck N5</b>, <b>N4 di sub-deck N4</b>):
+                        </p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                          {parsed.hierarchy.groups.map((g) => (
+                            <div
+                              key={g.key}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "7px 10px",
+                                background: "#fffdfa",
+                                border: "1px solid #e5e0d5",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span
+                                  className={`deck-art ${g.color}`}
+                                  style={{
+                                    width: "22px",
+                                    height: "22px",
+                                    borderRadius: "5px",
+                                    display: "grid",
+                                    placeItems: "center",
+                                    fontWeight: 700,
+                                    fontSize: "11px",
+                                    color: "#fff",
+                                  }}
+                                >
+                                  {g.kanji}
+                                </span>
+                                <strong style={{ fontSize: "12px", color: "#25231f" }}>{g.title}</strong>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span
+                                  style={{
+                                    fontSize: "9px",
+                                    fontWeight: 700,
+                                    padding: "2px 6px",
+                                    borderRadius: "4px",
+                                    background: "#e8efec",
+                                    color: "#263d36",
+                                  }}
+                                >
+                                  {g.levelCode}
+                                </span>
+                                <span style={{ fontSize: "11px", fontWeight: 600, color: "#6e685f" }}>
+                                  {g.noteCount.toLocaleString("id-ID")} kartu
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: "11px", color: "#8a8479", margin: "6px 0 0" }}>
+                        Mode gabung: Semua {selectedNotesCount.toLocaleString("id-ID")} kartu akan digabung menjadi satu deck tunggal tanpa sub-deck.
+                      </p>
+                    )}
+                  </section>
+                )}
+
                 {parsed.subdecks.length > 1 && (
                   <section className="imp-panel">
                     <h4>
@@ -1177,6 +1370,19 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                   {result.skippedEmpty > 0 && `${result.skippedEmpty.toLocaleString("id-ID")} catatan dilewati karena field depan kosong. `}
                   {result.scheduled > 0 && `${result.scheduled.toLocaleString("id-ID")} jadwal SRS diperkirakan.`}
                 </small>
+              )}
+
+              {result.subdecksCreated && result.subdecksCreated.length > 0 && (
+                <div style={{ marginTop: "14px", padding: "10px 14px", background: "#f5f8f6", border: "1px solid #d2ded7", borderRadius: "10px", fontSize: "12px", color: "#263d36", textAlign: "left" }}>
+                  <strong>Terbagi ke dalam {result.subdecksCreated.length} sub-deck:</strong>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
+                    {result.subdecksCreated.map((s) => (
+                      <span key={s.id} style={{ background: "#e8efec", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600 }}>
+                        {s.subdeckName} ({s.total.toLocaleString("id-ID")} kartu)
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
               <div className="imp-done-actions">
                 <Button className="outline-button" onClick={onClose}>

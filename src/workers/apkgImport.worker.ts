@@ -32,6 +32,38 @@ import {
   type StoredCard,
 } from "../lib/deckDb";
 import type { SRSCard } from "../lib/srs";
+import { extractLevelCode, detectSubdeckHierarchy, type SubdeckDetectionResult } from "../lib/deckSubdecks";
+
+export interface SubdeckCommitDef {
+  key: string;
+  id: string;
+  title: string;
+  subdeckName: string;
+  level: string;
+  kind: string;
+  kanji: string;
+  color: string;
+  pathKey?: string;
+  parentPathKey?: string;
+  parentId?: string;
+  isContainer?: boolean;
+}
+
+export interface SubdeckCommitResultItem {
+  id: string;
+  parentId: string;
+  title: string;
+  subdeckName: string;
+  level: string;
+  kind: string;
+  kanji: string;
+  color: string;
+  total: number;
+  srsCards: SRSCard[];
+  pathKey?: string;
+  parentPathKey?: string;
+  isContainer?: boolean;
+}
 
 export interface SubdeckStat {
   noteCount: number;
@@ -55,6 +87,8 @@ export interface WorkerParsedSummary {
   samplesByType: Record<string, ApkgNote[]>;
   /** Per-subdeck note counts and noteType usage so the UI can filter subdecks without holding 5,000+ notes */
   subdeckStats: Record<string, SubdeckStat>;
+  /** Auto-detected subdeck structure and level segregation */
+  hierarchy: SubdeckDetectionResult;
 }
 
 export interface WorkerCommitOptions {
@@ -65,6 +99,11 @@ export interface WorkerCommitOptions {
   includeMedia: boolean;
   scheduleMode: "new" | "estimate";
   duplicateMode: "skip" | "update";
+  subdeckOptions?: {
+    enabled: boolean;
+    strategy: "anki-subdecks" | "level-tags" | "none";
+    groups: SubdeckCommitDef[];
+  };
 }
 
 export interface WorkerCommitResult {
@@ -81,6 +120,7 @@ export interface WorkerCommitResult {
   skippedEmpty: number;
   scheduled: number;
   srsCards: SRSCard[];
+  subdecksCreated?: SubdeckCommitResultItem[];
 }
 
 export type WorkerRequest =
@@ -163,6 +203,7 @@ function buildSummary(p: ParsedApkg): WorkerParsedSummary {
     initialMappings,
     samplesByType,
     subdeckStats,
+    hierarchy: detectSubdeckHierarchy(p),
   };
 }
 
@@ -219,7 +260,20 @@ async function handleCommitImport(options: WorkerCommitOptions) {
     throw new ApkgError("Data paket belum siap. Silakan pilih berkas kembali.", "EMPTY_DECK");
   }
 
-  const { deckId, isNewDeck, selectedDeckIds, mappings, includeMedia, scheduleMode, duplicateMode } = options;
+  const {
+    deckId,
+    isNewDeck,
+    selectedDeckIds,
+    mappings,
+    includeMedia,
+    scheduleMode,
+    duplicateMode,
+    subdeckOptions,
+  } = options;
+  const isSubdecksEnabled = !!subdeckOptions?.enabled && (subdeckOptions.groups?.length ?? 0) > 0;
+  const subdeckGroups = isSubdecksEnabled ? subdeckOptions.groups : [];
+  const groupByKey = new Map(subdeckGroups.map((g) => [g.key, g]));
+
   const selectedSet = new Set(selectedDeckIds);
   const subdeckName = new Map(currentParsed.subdecks.map((d) => [d.id, d.name]));
   const selectedNotes = currentParsed.notes.filter((n) => selectedSet.has(n.deckId));
@@ -230,6 +284,8 @@ async function handleCommitImport(options: WorkerCommitOptions) {
 
   const newlyAddedCardIds: string[] = [];
   const writtenMediaNames: string[] = [];
+  const subdeckCardsCount: Record<string, number> = {};
+  const subdeckSrsMap: Record<string, SRSCard[]> = {};
 
   try {
     const existingIds = isNewDeck ? new Set<string>() : await getExistingCardIds(deckId);
@@ -257,7 +313,34 @@ async function handleCommitImport(options: WorkerCommitOptions) {
         continue;
       }
 
-      const card = noteToCard(note, mapping, deckId, subdeckName.get(note.deckId) ?? "");
+      let targetDeckId = deckId;
+      let targetSubdeckLabel = subdeckName.get(note.deckId) ?? "";
+
+      if (isSubdecksEnabled) {
+        if (subdeckOptions.strategy === "anki-subdecks") {
+          const g = groupByKey.get(note.deckId);
+          if (g) {
+            targetDeckId = g.id;
+            targetSubdeckLabel = g.subdeckName;
+          }
+        } else if (subdeckOptions.strategy === "level-tags") {
+          let matchedLevel: string | undefined;
+          for (const tag of note.tags) {
+            const lvl = extractLevelCode(tag);
+            if (lvl && lvl !== "Campuran") {
+              matchedLevel = lvl;
+              break;
+            }
+          }
+          const g = groupByKey.get(matchedLevel || "other") ?? subdeckGroups[0];
+          if (g) {
+            targetDeckId = g.id;
+            targetSubdeckLabel = g.subdeckName;
+          }
+        }
+      }
+
+      const card = noteToCard(note, mapping, targetDeckId, targetSubdeckLabel);
       if (!card) {
         skippedEmpty++;
         continue;
@@ -265,6 +348,7 @@ async function handleCommitImport(options: WorkerCommitOptions) {
 
       cardsToWrite.push(card);
       seenInImport.add(note.id);
+      subdeckCardsCount[targetDeckId] = (subdeckCardsCount[targetDeckId] || 0) + 1;
 
       if (isDuplicate) {
         cardsUpdated++;
@@ -274,7 +358,10 @@ async function handleCommitImport(options: WorkerCommitOptions) {
       }
 
       if (scheduleMode === "estimate" && note.schedule) {
-        srs.push(scheduleToSrs(card.id, note.schedule));
+        const srsItem = scheduleToSrs(card.id, note.schedule);
+        srs.push(srsItem);
+        if (!subdeckSrsMap[targetDeckId]) subdeckSrsMap[targetDeckId] = [];
+        subdeckSrsMap[targetDeckId].push(srsItem);
       }
     }
 
@@ -282,7 +369,9 @@ async function handleCommitImport(options: WorkerCommitOptions) {
 
     if (cardsToWrite.length === 0) {
       if (skippedDuplicates > 0 && skippedEmpty === 0) {
-        const finalDeckTotal = await getCardCount(deckId);
+        const finalDeckTotal = isSubdecksEnabled
+          ? cardsToWrite.length
+          : await getCardCount(deckId);
         post({
           type: "commit-success",
           result: {
@@ -302,6 +391,7 @@ async function handleCommitImport(options: WorkerCommitOptions) {
             skippedEmpty: 0,
             scheduled: 0,
             srsCards: [],
+            subdecksCreated: [],
           },
         });
         return;
@@ -402,7 +492,30 @@ async function handleCommitImport(options: WorkerCommitOptions) {
       pct: 100,
     });
 
-    const finalDeckTotal = await getCardCount(deckId);
+    const subdecksCreated: SubdeckCommitResultItem[] | undefined = isSubdecksEnabled
+      ? subdeckGroups
+          .map((g) => ({
+            id: g.id,
+            parentId: g.parentId || deckId,
+            title: g.title,
+            subdeckName: g.subdeckName,
+            level: g.level,
+            kind: g.kind,
+            kanji: g.kanji,
+            color: g.color,
+            total: subdeckCardsCount[g.id] ?? 0,
+            srsCards: subdeckSrsMap[g.id] ?? [],
+            pathKey: g.pathKey,
+            parentPathKey: g.parentPathKey,
+            isContainer: g.isContainer,
+          }))
+          .filter((s) => s.isContainer || s.total > 0)
+      : undefined;
+
+    const finalDeckTotal = isSubdecksEnabled
+      ? cardsToWrite.length
+      : await getCardCount(deckId);
+
     const decksCount =
       selectedDeckIds.length === currentParsed.subdecks.length
         ? currentParsed.totalDecks
@@ -424,6 +537,7 @@ async function handleCommitImport(options: WorkerCommitOptions) {
         skippedEmpty,
         scheduled: srs.length,
         srsCards: srs,
+        subdecksCreated,
       },
     });
   } catch (err) {
@@ -431,6 +545,11 @@ async function handleCommitImport(options: WorkerCommitOptions) {
     try {
       if (isNewDeck) {
         await deleteDeckData(deckId);
+        if (isSubdecksEnabled) {
+          for (const g of subdeckGroups) {
+            await deleteDeckData(g.id);
+          }
+        }
       } else {
         await deleteCards(deckId, newlyAddedCardIds);
         await deleteMedia(deckId, writtenMediaNames);

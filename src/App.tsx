@@ -4,6 +4,7 @@ import { Icon, Button } from "./ui";
 import { useAppStore, type DeckItem } from "./store/useAppStore";
 import { useReviewStore } from "./store/useReviewStore";
 import { liveDeckStats, type LiveDeckStats } from "./lib/deckStats";
+import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
 import { ensureSeeded } from "./lib/deckCards";
 import { ensureSeedPackLoaded } from "./lib/questionPackStorage";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
@@ -91,6 +92,7 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [books, setBooks] = useState<BookRecord[]>([]);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+  const [expandedDeckId, setExpandedDeckId] = useState<string | null>(null);
 
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
@@ -100,8 +102,8 @@ export default function App() {
 
   useEffect(() => {
     void ensureSeeded();
-    void ensureSeedPackLoaded().catch(() => {});
-    void listNovels().then(setBooks).catch(() => {});
+    void ensureSeedPackLoaded().catch(() => { });
+    void listNovels().then(setBooks).catch(() => { });
   }, []);
 
   const now = new Date();
@@ -126,13 +128,24 @@ export default function App() {
 
   const stats = useMemo(() => {
     const m = new Map<string, LiveDeckStats>();
-    for (const d of decks) m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+    for (const d of decks) {
+      const children = decks.filter((c) => c.parentId === d.id);
+      if (children.length > 0) {
+        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks));
+      } else {
+        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+      }
+    }
     return m;
   }, [decks, srsCards, newIntroduced, settings]);
   const st = (d: DeckItem) => stats.get(d.id)!;
 
-  const totalDue = useMemo(() => decks.reduce((s, d) => s + (stats.get(d.id)?.due ?? 0), 0), [decks, stats]);
-  const firstDueDeck = useMemo(() => decks.find((d) => (stats.get(d.id)?.due ?? 0) > 0) ?? decks[0], [decks, stats]);
+  const rootDecks = useMemo(() => decks.filter((d) => !d.parentId), [decks]);
+  const totalDue = useMemo(() => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.due ?? 0), 0), [rootDecks, stats]);
+  const firstDueDeck = useMemo(
+    () => rootDecks.find((d) => (stats.get(d.id)?.due ?? 0) > 0) ?? rootDecks[0],
+    [rootDecks, stats],
+  );
 
   const saveAction = (message: string) => {
     setModal(null);
@@ -269,38 +282,163 @@ export default function App() {
           </div>
         </div>
         <div className="deck-grid">
-          {decks.map((deck) => {
+          {rootDecks.map((deck) => {
             const s = st(deck);
             const imported = deck.source === "apkg";
+            const leaves = getLeafDescendantDecks(deck.id, decks);
+            const children = decks.filter((c) => c.parentId === deck.id);
+            const displaySubdecks = leaves.length > 0 ? leaves : children;
+            const sortedSubdecks = [...displaySubdecks].sort((a, b) => {
+              const order: Record<string, number> = { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5 };
+              const aCode = extractLevelCode(a.title) ?? extractLevelCode(a.subdeckName || "") ?? "Z";
+              const bCode = extractLevelCode(b.title) ?? extractLevelCode(b.subdeckName || "") ?? "Z";
+              return (order[aCode] ?? 9) - (order[bCode] ?? 9);
+            });
+            const isExpanded = expandedDeckId === deck.id;
+            const toggleDeckExpand = () =>
+              setExpandedDeckId((prev) => (prev === deck.id ? null : deck.id));
+
             return (
-              <article className="deck-card dk-card" key={deck.id}>
+              <article className={`deck-card dk-card ${isExpanded ? "is-expanded" : ""}`} key={deck.id}>
                 <div
                   className={`deck-art ${deck.color} cursor-pointer`}
-                  onClick={() => navigate(`/deck/${deck.id}`)}
-                  title={`Buka dashboard ${deck.title}`}
+                  onClick={() => {
+                    if (displaySubdecks.length > 0) {
+                      toggleDeckExpand();
+                    } else {
+                      navigate(`/deck/${deck.id}`);
+                    }
+                  }}
+                  title={
+                    displaySubdecks.length > 0
+                      ? isExpanded
+                        ? "Tutup sub-deck"
+                        : "Tekan untuk melihat sub-deck"
+                      : `Buka dashboard ${deck.title}`
+                  }
                 >
                   <span>{deck.kanji}</span><i />
                   {imported && <em className="dk-badge">ANKI</em>}
+                  {displaySubdecks.length > 0 && (
+                    <em
+                      className="dk-badge"
+                      style={{ right: imported ? "56px" : "14px", background: "rgba(38, 61, 54, 0.85)" }}
+                    >
+                      {displaySubdecks.length} SUB-DECK
+                    </em>
+                  )}
                 </div>
                 <div className="deck-body">
-                  <span className="deck-level">{deck.level}</span>
+                  <div className="dk-card-top-meta">
+                    <span className="deck-level">{deck.level}</span>
+                    {displaySubdecks.length > 0 && (
+                      <button
+                        type="button"
+                        className={`dk-subdeck-inline-toggle ${isExpanded ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDeckExpand();
+                        }}
+                        title={isExpanded ? "Tutup daftar sub-deck" : "Tekan untuk melihat sub-deck"}
+                      >
+                        <span>{isExpanded ? "Tutup" : `${displaySubdecks.length} Sub-deck`}</span>
+                        <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={11} />
+                      </button>
+                    )}
+                  </div>
                   <h3
                     className="cursor-pointer hover:text-coral transition-colors"
-                    onClick={() => navigate(`/deck/${deck.id}`)}
+                    onClick={() => {
+                      if (displaySubdecks.length > 0) {
+                        toggleDeckExpand();
+                      } else {
+                        navigate(`/deck/${deck.id}`);
+                      }
+                    }}
                   >
                     {deck.title}
                   </h3>
                   <div className="deck-meta">
-                    <span><Icon name="clock" size={15} /> {s.due > 0 ? (imported ? `${s.reviewDue} ulasan • ${s.newToday} baru` : `${s.due} jatuh tempo`) : "Selesai hari ini"}</span>
+                    <span><Icon name="clock" size={15} /> {s.due > 0 ? (imported || displaySubdecks.length > 0 ? `${s.reviewDue} ulasan • ${s.newToday} baru` : `${s.due} jatuh tempo`) : "Selesai hari ini"}</span>
                     <span>{deck.total.toLocaleString("id-ID")} kartu</span>
                   </div>
                   <div className="progress"><i style={{ width: `${s.progress}%` }} /></div>
-                  <Button
-                    className={`deck-open ${s.due > 0 ? "deck-open-ready" : ""}`}
-                    onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
-                  >
-                    {s.due > 0 ? <>Belajar sekarang <Icon name="arrow" size={16} /></> : <>Buka deck <Icon name="arrow" size={16} /></>}
-                  </Button>
+
+                  {displaySubdecks.length > 0 && isExpanded && (
+                    <div className="dk-card-subdecks-wrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="dk-quick-levels">
+                        <div className="dk-quick-levels-label">
+                          <span>Pilih Level Belajar:</span>
+                          <small>{displaySubdecks.length} sub-deck</small>
+                        </div>
+                        <div className="dk-quick-levels-chips">
+                          {sortedSubdecks.map((c) => {
+                            const cs = st(c);
+                            const lvlLabel = c.subdeckName || c.level.split("•")[0].trim() || c.kanji;
+                            return (
+                              <button
+                                key={c.id}
+                                type="button"
+                                className={`dk-quick-chip ${c.color}`}
+                                onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
+                              >
+                                <strong>{lvlLabel}</strong>
+                                <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="dk-card-subdecks-drawer">
+                        {sortedSubdecks.map((c) => {
+                          const cs = st(c);
+                          return (
+                            <div
+                              key={c.id}
+                              className="dk-card-subdeck-item"
+                              onClick={() => navigate(`/deck/${c.id}`)}
+                            >
+                              <div className="dk-card-subdeck-item-left">
+                                <span className={`deck-art ${c.color} dk-subdeck-kanji`}>{c.kanji}</span>
+                                <div>
+                                  <strong>{c.subdeckName || c.title}</strong>
+                                  <small>{c.total.toLocaleString("id-ID")} kartu</small>
+                                </div>
+                              </div>
+                              <div className="dk-card-subdeck-item-right">
+                                <button
+                                  type="button"
+                                  className="dk-subdeck-study-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`);
+                                  }}
+                                >
+                                  Belajar
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {displaySubdecks.length > 0 && !isExpanded ? (
+                    <Button
+                      className="deck-open deck-open-ready"
+                      onClick={toggleDeckExpand}
+                    >
+                      Pilih Sub-deck ({displaySubdecks.length}) <Icon name="chevron-down" size={15} />
+                    </Button>
+                  ) : (
+                    <Button
+                      className={`deck-open ${s.due > 0 ? "deck-open-ready" : ""}`}
+                      onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
+                    >
+                      {s.due > 0 ? <>Belajar {displaySubdecks.length > 0 ? "Semua" : "sekarang"} <Icon name="arrow" size={16} /></> : <>Buka deck <Icon name="arrow" size={16} /></>}
+                    </Button>
+                  )}
                 </div>
               </article>
             );

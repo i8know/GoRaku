@@ -43,7 +43,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
   const removeMinedCard = useAppStore((s) => s.removeMinedCard);
   const clearMinedQueue = useAppStore((s) => s.clearMinedQueue);
 
-  const deckOptions = decks.map((d) => d.title);
+  const deckOptions = decks.map((d) => (d.parentId ? `↳ ${d.subdeckName || d.title}` : d.title));
   const [src, setSrc] = useState<SrcKey>("Novel");
   const [sel, setSel] = useState<number | null>(0);
   const [deck, setDeck] = useState(deckOptions[0] || "Default");

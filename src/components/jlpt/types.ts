@@ -22,12 +22,19 @@ export interface MockSection {
 export interface MockTest {
   id: number;
   title: string;
+  subtitle?: string;
+  badgeLabel?: string;
+  isOfficialPastPaper?: boolean;
+  officialYear?: string;
   level: 1 | 2 | 3 | 4 | 5;
   levelLabel: JLPTLevel;
   difficulty: "easy" | "standard" | "hard";
   difficultyLabel: string;
   totalDurationMinutes: number;
   totalQuestions: number;
+  passingScoreTotal?: number;
+  passingScoreLangReading?: number;
+  passingScoreListening?: number;
   mock_sections: MockSection[];
   isCustom?: boolean;
   packId?: string;
@@ -43,7 +50,10 @@ export interface SectionSessionResult {
   answeredCount: number;
   correctCount: number;
   percentageScore: number;
+  scaledScore?: number;
+  maxScaledScore?: number;
   answers: Record<number, number>; // question index -> selected option index
+  flaggedIndices?: number[];
   questions: QuestionItem[];
 }
 

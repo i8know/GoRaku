@@ -16,6 +16,7 @@ import {
 } from "../lib/deckStats";
 import { addCards, exportDeck, loadDeckCards, removeCards, splitLevel, updateCard, type CardDraft } from "../lib/deckCards";
 import { deleteDeckData, getMedia, type StoredCard } from "../lib/deckDb";
+import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
 import { toPlain } from "../lib/ankiText";
 import CardEditorModal from "../components/CardEditorModal";
 import DeckIdentityFields, { type DeckIdentity } from "../components/DeckIdentityFields";
@@ -39,12 +40,50 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
   const { deckId = "" } = useParams<{ deckId: string }>();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const deck = useAppStore((s) => s.decks.find((d) => d.id === deckId));
+  const allDecks = useAppStore((s) => s.decks);
+  const deck = allDecks.find((d) => d.id === deckId);
+  const childSubdecks = useMemo(() => allDecks.filter((d) => d.parentId === deckId), [allDecks, deckId]);
+  const allDescendants = useMemo(() => {
+    const res: typeof allDecks = [];
+    const walk = (parentId: string) => {
+      const children = allDecks.filter((d) => d.parentId === parentId);
+      for (const child of children) {
+        res.push(child);
+        walk(child.id);
+      }
+    };
+    walk(deckId);
+    return res;
+  }, [allDecks, deckId]);
+  const parentDeck = useMemo(
+    () => (deck?.parentId ? allDecks.find((d) => d.id === deck.parentId) : undefined),
+    [allDecks, deck?.parentId],
+  );
+
+  const [subdeckViewMode, setSubdeckViewMode] = useState<"direct" | "all-levels">("direct");
+
+  const ancestorChain = useMemo(() => {
+    const chain: typeof allDecks = [];
+    let cur = deck?.parentId ? allDecks.find((d) => d.id === deck.parentId) : undefined;
+    while (cur) {
+      chain.unshift(cur);
+      const pid: string | undefined = cur.parentId;
+      cur = pid ? allDecks.find((d) => d.id === pid) : undefined;
+    }
+    return chain;
+  }, [allDecks, deck?.parentId]);
+
+  const leafDescendants = useMemo(() => {
+    return getLeafDescendantDecks(deckId, allDecks);
+  }, [allDecks, deckId]);
+
   const settings = useAppStore((s) => s.settings);
   const updateDeck = useAppStore((s) => s.updateDeck);
   const removeDeck = useAppStore((s) => s.removeDeck);
-  const srsDeck = useReviewStore((s) => s.srsCards[deckId]);
-  const intro = useReviewStore((s) => s.newIntroduced[deckId]);
+  const allSrsCards = useReviewStore((s) => s.srsCards);
+  const allIntros = useReviewStore((s) => s.newIntroduced);
+  const srsDeck = allSrsCards[deckId];
+  const intro = allIntros[deckId];
   const activity = useReviewStore((s) => s.activity[deckId]);
   const forgetCards = useReviewStore((s) => s.forgetCards);
   const resetSrs = useReviewStore((s) => s.removeDeck);
@@ -55,6 +94,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
   const [editor, setEditor] = useState<Editor>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<CardStateKey | "all">("all");
+  const [subdeckFilter, setSubdeckFilter] = useState<string>("all");
   const [sort, setSort] = useState<(typeof SORTS)[number]>("Urutan asli");
   const [page, setPage] = useState(0);
   const plainCacheRef = useRef<Map<string, string>>(new Map());
@@ -129,9 +169,26 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
     }
   }, [params, setParams]);
 
-  const stats = useMemo(() => (deck ? liveDeckStats(deck, srsDeck, intro, settings) : null), [deck, srsDeck, intro, settings]);
-  const fc = useMemo(() => forecast([srsDeck]), [srsDeck]);
+  const stats = useMemo(() => {
+    if (!deck) return null;
+    if (childSubdecks.length > 0) {
+      return aggregateParentStats(deck, childSubdecks, allSrsCards, allIntros, settings, allDecks);
+    }
+    return liveDeckStats(deck, srsDeck, intro, settings);
+  }, [deck, childSubdecks, allSrsCards, allIntros, srsDeck, intro, settings]);
+
+  const fc = useMemo(() => {
+    if (childSubdecks.length > 0) {
+      return forecast(childSubdecks.map((cd) => allSrsCards[cd.id]));
+    }
+    return forecast([srsDeck]);
+  }, [childSubdecks, allSrsCards, srsDeck]);
   const fcLabels = useMemo(() => forecastLabels(), []);
+
+  const getCardSrs = useCallback(
+    (c: StoredCard) => allSrsCards[c.deckId]?.[c.id] ?? srsDeck?.[c.id],
+    [allSrsCards, srsDeck],
+  );
 
   useEffect(() => {
     plainCacheRef.current.clear();
@@ -141,16 +198,18 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
     const out: Record<CardStateKey | "all", number> = { all: 0, new: 0, due: 0, learn: 0, known: 0 };
     for (const c of cards ?? []) {
       out.all++;
-      out[cardState(srsDeck?.[c.id]).key]++;
+      out[cardState(getCardSrs(c)).key]++;
     }
     return out;
-  }, [cards, srsDeck]);
+  }, [cards, getCardSrs]);
 
   const visible = useMemo(() => {
     if (!cards) return [];
     const s = q.trim().toLowerCase();
     let list = cards.filter((c) => {
-      if (filter !== "all" && cardState(srsDeck?.[c.id]).key !== filter) return false;
+      if (subdeckFilter !== "all" && c.deckId !== subdeckFilter) return false;
+      const cSrs = getCardSrs(c);
+      if (filter !== "all" && cardState(cSrs).key !== filter) return false;
       if (!s) return true;
       return (
         c.word.toLowerCase().includes(s) ||
@@ -160,10 +219,10 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
       );
     });
     if (sort === "A–Z") list = [...list].sort((a, b) => a.reading.localeCompare(b.reading, "ja") || a.word.localeCompare(b.word, "ja"));
-    if (sort === "Jadwal terdekat") list = [...list].sort((a, b) => (srsDeck?.[a.id]?.nextReview ?? Infinity) - (srsDeck?.[b.id]?.nextReview ?? Infinity));
-    if (sort === "Tersulit") list = [...list].sort((a, b) => (srsDeck?.[a.id]?.easeFactor ?? 9) - (srsDeck?.[b.id]?.easeFactor ?? 9));
+    if (sort === "Jadwal terdekat") list = [...list].sort((a, b) => (getCardSrs(a)?.nextReview ?? Infinity) - (getCardSrs(b)?.nextReview ?? Infinity));
+    if (sort === "Tersulit") list = [...list].sort((a, b) => (getCardSrs(a)?.easeFactor ?? 9) - (getCardSrs(b)?.easeFactor ?? 9));
     return list;
-  }, [cards, q, filter, sort, srsDeck, getPlainMeaning]);
+  }, [cards, q, filter, sort, subdeckFilter, getCardSrs, getPlainMeaning]);
 
   const hardest = useMemo(() => {
     if (!cards || !srsDeck) return [];
@@ -234,11 +293,41 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
     <>
       <section className={`dd-hero deck-art ${deck.color}`}>
         <i />
-        <button className="dd-back" onClick={() => navigate("/deck")}><Icon name="arrow-left" size={15} /> Deck Saya</button>
+        <nav className="dd-breadcrumbs" aria-label="Navigasi hirarki deck">
+          <button
+            type="button"
+            className="dd-breadcrumb-item"
+            onClick={() => navigate("/deck")}
+          >
+            <Icon name="arrow-left" size={13} /> Deck Saya
+          </button>
+          {ancestorChain.map((anc) => (
+            <span key={anc.id} className="dd-breadcrumb-step">
+              <span className="dd-breadcrumb-sep">›</span>
+              <button
+                type="button"
+                className="dd-breadcrumb-item"
+                onClick={() => navigate(`/deck/${anc.id}`)}
+              >
+                {anc.subdeckName || anc.title}
+              </button>
+            </span>
+          ))}
+          {ancestorChain.length > 0 && (
+            <span className="dd-breadcrumb-step">
+              <span className="dd-breadcrumb-sep">›</span>
+              <span className="dd-breadcrumb-current">{deck.subdeckName || deck.title}</span>
+            </span>
+          )}
+        </nav>
         <div className="dd-hero-main">
           <span className="dd-hero-kanji" aria-hidden="true">{deck.kanji}</span>
           <div className="dd-hero-copy">
-            <span className="dd-hero-level">{deck.level}{imported && <em>ANKI</em>}</span>
+            <span className="dd-hero-level">
+              {parentDeck && <b>SUB-DECK • </b>}
+              {deck.level}
+              {imported && <em>ANKI</em>}
+            </span>
             <h1>{deck.title}</h1>
             <p>
               {deck.total.toLocaleString("id-ID")} kartu • diperbarui {deckUpdatedLabel(deck).toLowerCase()}
@@ -260,9 +349,142 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
 
       {tab === "Ringkasan" && (
         <div className="dd-overview">
+          {childSubdecks.length > 0 && (
+            <article className="dd-subdecks" style={{ gridColumn: "1 / -1" }}>
+              <div className="dd-panel-head">
+                <div>
+                  <h3>Pilih Sub-deck untuk Belajar</h3>
+                  <span className="goal">Tekan sub-deck di bawah untuk memilih level belajar (misal N5 dulu atau N1)</span>
+                </div>
+                {leafDescendants.length > childSubdecks.length && (
+                  <div className="dd-subdeck-view-switcher">
+                    <button
+                      type="button"
+                      className={`dd-subdeck-view-btn ${subdeckViewMode === "direct" ? "active" : ""}`}
+                      onClick={() => setSubdeckViewMode("direct")}
+                    >
+                      Struktur Folder ({childSubdecks.length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`dd-subdeck-view-btn ${subdeckViewMode === "all-levels" ? "active" : ""}`}
+                      onClick={() => setSubdeckViewMode("all-levels")}
+                    >
+                      Pilih Level N5–N1 ({leafDescendants.length})
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="dd-subdeck-grid">
+                {(subdeckViewMode === "all-levels" && leafDescendants.length > 0
+                  ? [...leafDescendants].sort((a, b) => {
+                      const order: Record<string, number> = { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5 };
+                      const aCode = extractLevelCode(a.title) ?? extractLevelCode(a.subdeckName || "") ?? "Z";
+                      const bCode = extractLevelCode(b.title) ?? extractLevelCode(b.subdeckName || "") ?? "Z";
+                      return (order[aCode] ?? 9) - (order[bCode] ?? 9);
+                    })
+                  : childSubdecks
+                ).map((sub) => {
+                  const subChildren = allDecks.filter((d) => d.parentId === sub.id);
+                  const isContainer = subChildren.length > 0;
+                  const subSt = isContainer
+                    ? aggregateParentStats(sub, subChildren, allSrsCards, allIntros, settings, allDecks)
+                    : liveDeckStats(sub, allSrsCards[sub.id], allIntros[sub.id], settings);
+
+                  return (
+                    <div
+                      key={sub.id}
+                      className="dd-subdeck-card cursor-pointer"
+                      onClick={() => {
+                        if (isContainer) {
+                          navigate(`/deck/${sub.id}`);
+                        } else {
+                          navigate(subSt.due > 0 ? `/deck/${sub.id}/review` : `/deck/${sub.id}`);
+                        }
+                      }}
+                    >
+                      <div className="dd-subdeck-card-top">
+                        <div className={`dd-subdeck-card-art ${sub.color}`}>
+                          <span>{sub.kanji}</span>
+                        </div>
+                        <div className="dd-subdeck-card-info">
+                          <h4 className="dd-subdeck-card-title">{sub.subdeckName || sub.title}</h4>
+                          <div className="dd-subdeck-card-pills">
+                            <span className="dk-subdeck-pill">{sub.level}</span>
+                            {isContainer && (
+                              <span className="dk-badge-inline" style={{ fontSize: "10px" }}>
+                                {subChildren.length} Sub-deck
+                              </span>
+                            )}
+                            <small style={{ color: "#777" }}>{sub.total.toLocaleString("id-ID")} kartu</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="dd-subdeck-card-stats">
+                        <div className="anki-stats-group" style={{ fontSize: "11px", padding: "2px 8px" }}>
+                          <span
+                            className={`anki-num anki-num-new ${subSt.newToday > 0 ? "has-cards" : "zero"}`}
+                            title={`${subSt.newToday} kartu baru`}
+                          >
+                            {subSt.newToday}
+                          </span>
+                          <span
+                            className={`anki-num anki-num-learn ${subSt.learning > 0 ? "has-cards" : "zero"}`}
+                            title={`${subSt.learning} sedang belajar`}
+                          >
+                            {subSt.learning}
+                          </span>
+                          <span
+                            className={`anki-num anki-num-due ${subSt.reviewDue > 0 ? "has-cards" : "zero"}`}
+                            title={`${subSt.reviewDue} ulasan jatuh tempo`}
+                          >
+                            {subSt.reviewDue}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--hot)" : "#777" }}>
+                          {subSt.due > 0 ? `${subSt.due} tugas` : "✓ Tuntas"}
+                        </span>
+                      </div>
+
+                      <div className="dd-subdeck-card-actions" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          className="primary-light"
+                          style={{ flex: 1, padding: "6px 12px", fontSize: "12px", justifyContent: "center" }}
+                          onClick={() => navigate(subSt.due > 0 ? `/deck/${sub.id}/review` : `/deck/${sub.id}`)}
+                        >
+                          {subSt.due > 0 ? (isContainer ? "Belajar Semua" : `Belajar ${sub.subdeckName || sub.title}`) : "Buka Deck"}
+                        </Button>
+                        {isContainer && (
+                          <Button
+                            className="outline-button"
+                            style={{ padding: "6px 10px", fontSize: "12px" }}
+                            onClick={() => navigate(`/deck/${sub.id}`)}
+                            title="Buka sub-deck di dalamnya"
+                          >
+                            Buka Sub-deck →
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          )}
+
           <article className="dd-today">
-            <p className="eyebrow light">SESI HARI INI</p>
-            <h2>{canStudy ? `${stats.due} kartu menunggu` : deck.total === 0 ? "Deck masih kosong" : "Semua beres untuk hari ini"}</h2>
+            <p className="eyebrow light">
+              {childSubdecks.length > 0 ? "SESI GABUNGAN SEMUA SUB-DECK" : "SESI HARI INI"}
+            </p>
+            <h2>
+              {canStudy
+                ? `${stats.due} kartu menunggu ${childSubdecks.length > 0 ? "di semua sub-deck" : ""}`
+                : deck.total === 0
+                  ? "Deck masih kosong"
+                  : "Semua beres untuk hari ini"}
+            </h2>
             <div className="dd-today-stats">
               <div><strong>{stats.reviewDue}</strong><span>ulasan</span></div>
               <div><strong>{stats.newToday}</strong><span>kartu baru</span></div>
@@ -273,7 +495,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
               <Button className="primary-light" onClick={() => setEditor({ mode: "add" })}><Icon name="plus" size={15} /> Tambah kartu pertama</Button>
             ) : (
               <Button className="primary-light" onClick={study} disabled={!canStudy}>
-                {canStudy ? <>Mulai sesi <Icon name="arrow" size={15} /></> : <>Kembali besok <Icon name="check" size={15} /></>}
+                {canStudy ? <>Mulai sesi {childSubdecks.length > 0 ? "Semua Sub-deck" : ""} <Icon name="arrow" size={15} /></> : <>Kembali besok <Icon name="check" size={15} /></>}
               </Button>
             )}
           </article>
@@ -347,6 +569,23 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
               ))}
             </div>
             <div className="pg-toolbar-right">
+              {childSubdecks.length > 0 && (
+                <label className="pg-select">
+                  <Icon name="cards" size={14} />
+                  <select
+                    value={subdeckFilter}
+                    onChange={(e) => setSubdeckFilter(e.target.value)}
+                    aria-label="Filter sub-deck"
+                  >
+                    <option value="all">Semua Sub-deck ({childSubdecks.length})</option>
+                    {childSubdecks.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.subdeckName || sub.title} ({sub.total} kartu)
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label className="pg-search"><Icon name="search" size={15} /><input id="dd-card-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari kata, arti, tag…" /></label>
               <label className="pg-select"><Icon name="filter" size={14} />
                 <select id="dd-card-sort" value={sort} onChange={(e) => setSort(e.target.value as (typeof SORTS)[number])} aria-label="Urutkan kartu">
@@ -374,11 +613,12 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
               </div>
               {cards === null && Array.from({ length: 6 }).map((_, i) => <div key={i} className="dd-row skeleton-row"><i /><i /><i /></div>)}
               {pageSlice.map((c) => {
-                const st = cardState(srsDeck?.[c.id]);
+                const st = cardState(getCardSrs(c));
                 return (
                   <div key={c.id} className="dd-row" role="row" tabIndex={0} onClick={() => setEditor({ mode: "edit", card: c })} onKeyDown={(e) => e.key === "Enter" && setEditor({ mode: "edit", card: c })}>
                     <strong lang="ja">
                       {c.word}
+                      {c.subdeck && <span className="dk-subdeck-pill ml-1.5">{c.subdeck}</span>}
                       {(c.audio || c.image) && (
                         <span className="dd-media" onClick={(e) => e.stopPropagation()}>
                           {c.audio && (

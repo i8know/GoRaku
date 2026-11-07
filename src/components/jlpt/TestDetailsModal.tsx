@@ -1,5 +1,6 @@
 import React from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
+import { calculateOfficialJLPTScore } from "./jlpt2018N5Data";
 import { Icon } from "../../ui";
 
 interface TestDetailsModalProps {
@@ -29,10 +30,29 @@ export default function TestDetailsModal({
   let totalQuestionsCount = 0;
   let completedSectionsCount = 0;
 
+  let vocabCorrect = 0;
+  let vocabTotal = 0;
+  let grCorrect = 0;
+  let grTotal = 0;
+  let listenCorrect = 0;
+  let listenTotal = 0;
+
   test.mock_sections.forEach((sec) => {
     totalQuestionsCount += sec.mock_questions_count;
     const sessionKey = `${test.id}_${sec.id}`;
     const sess = sessions[sessionKey];
+
+    if (sec.category === "vocab") {
+      vocabTotal += sec.mock_questions_count;
+      if (sess) vocabCorrect += sess.correctCount;
+    } else if (sec.category === "grammar_reading" || sec.category === "vocab_grammar_reading") {
+      grTotal += sec.mock_questions_count;
+      if (sess) grCorrect += sess.correctCount;
+    } else if (sec.category === "listening") {
+      listenTotal += sec.mock_questions_count;
+      if (sess) listenCorrect += sess.correctCount;
+    }
+
     if (sess) {
       totalAnswered += sess.answeredCount;
       totalCorrect += sess.correctCount;
@@ -41,11 +61,25 @@ export default function TestDetailsModal({
   });
 
   const hasAnyCompleted = completedSectionsCount > 0;
-  const isAllCompleted = completedSectionsCount === test.mock_sections.length;
   const overallPercentage =
     totalQuestionsCount > 0
       ? Math.round((totalCorrect / totalQuestionsCount) * 100)
       : 0;
+
+  const officialScore = calculateOfficialJLPTScore(
+    vocabCorrect,
+    vocabTotal,
+    grCorrect,
+    grTotal,
+    listenCorrect,
+    listenTotal,
+    test.levelLabel
+  );
+
+  // Cari seksi pertama yang belum selesai untuk tombol mulai cepat
+  const nextPendingSection =
+    test.mock_sections.find((sec) => !sessions[`${test.id}_${sec.id}`]) ||
+    test.mock_sections[0];
 
   return (
     <div
@@ -56,21 +90,26 @@ export default function TestDetailsModal({
       <div className="w-full max-w-2xl bg-[#fffdf8] rounded-2xl border border-[#e2ded5] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[#25231f]">
         {/* Header Modal */}
         <div className="flex items-center justify-between p-5 border-b border-[#e2ded5] bg-[#f8f5ef] shrink-0">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-[#25231f] font-['Noto_Serif_JP',serif]">
-              {test.title}
-            </h2>
-            <div className="flex items-center gap-1.5">
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#e8efec] text-[#233c35]">
-                {test.levelLabel}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f5f1e8] border border-[#dedad1] text-[#686359]">
-                {`${test.totalDurationMinutes}mnt`}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f1e6df] text-[#bf5b46]">
-                {test.difficultyLabel}
-              </span>
+          <div className="space-y-1">
+            <div className="flex items-center flex-wrap gap-2">
+              <h2 className="text-xl font-bold text-[#25231f] font-['Noto_Serif_JP',serif]">
+                {test.title}
+              </h2>
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#e8efec] text-[#233c35]">
+                  {test.levelLabel}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f5f1e8] border border-[#dedad1] text-[#686359]">
+                  {`${test.totalDurationMinutes}mnt`}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f1e6df] text-[#bf5b46]">
+                  {test.difficultyLabel}
+                </span>
+              </div>
             </div>
+            {test.subtitle && (
+              <p className="text-xs text-[#686359]">{test.subtitle}</p>
+            )}
           </div>
           <button
             type="button"
@@ -84,36 +123,76 @@ export default function TestDetailsModal({
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* Total Score Banner */}
-          <div className="p-4 rounded-xl border border-[#ece7de] bg-[#f9f7f2] flex items-center justify-between">
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-[#a06658]">
-                Total Nilai
-              </span>
-              <div className="text-2xl font-bold text-[#25231f] mt-0.5 font-['Noto_Serif_JP',serif]">
-                {hasAnyCompleted ? `${totalCorrect} / ${totalQuestionsCount}` : `ー / ${test.totalQuestions}`}
+          {/* Total Score Banner + Official 0-180 Scale */}
+          <div className="p-4 rounded-xl border border-[#ece7de] bg-[#f9f7f2] space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#a06658]">
+                  Total Nilai
+                </span>
+                <div className="text-2xl font-bold text-[#25231f] mt-0.5 font-['Noto_Serif_JP',serif]">
+                  {hasAnyCompleted
+                    ? `${totalCorrect} / ${totalQuestionsCount}`
+                    : `ー / ${test.totalQuestions}`}
+                </div>
               </div>
+
+              {hasAnyCompleted ? (
+                <div className="text-right">
+                  <div
+                    className={`text-2xl font-extrabold ${
+                      officialScore.overallPassed
+                        ? "text-[#263d36]"
+                        : "text-[#bf5b46]"
+                    }`}
+                  >
+                    {officialScore.totalScaled} / 180点 ({overallPercentage}%)
+                  </div>
+                  <div className="text-xs font-semibold text-[#77736b]">
+                    {officialScore.overallPassed
+                      ? "合格圏内！ お疲れ様！ (Lulus Standar JLPT)"
+                      : "頑張ってください！ (Belum Mencapai Ambang Lulus)"}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-right">
+                  <span className="text-xs text-[#88847b]">
+                    Belum ada bagian yang dikerjakan
+                  </span>
+                  <p className="text-xs font-semibold text-[#bf5b46]">
+                    頑張ってください！
+                  </p>
+                </div>
+              )}
             </div>
 
-            {hasAnyCompleted ? (
-              <div className="text-right">
-                <div
-                  className={`text-2xl font-extrabold ${
-                    overallPercentage >= 70 ? "text-[#263d36]" : "text-[#bf5b46]"
-                  }`}
-                >
-                  {overallPercentage}%
-                </div>
-                <div className="text-xs font-semibold text-[#77736b]">
-                  {overallPercentage >= 70 ? "お疲れ様！ (Bagus Sekali)" : "頑張ってください！ (Semangat)"}
-                </div>
+            {/* Tabel Standar Penilaian Resmi 0-180 (Sesuai Halaman 2 PDF 2018 N5) */}
+            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#e5dfd3] text-xs">
+              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
+                <span className="text-[10px] text-[#77736b] block">
+                  言語知識・読解 (0〜120)
+                </span>
+                <span className="font-bold text-[#25231f]">
+                  {hasAnyCompleted ? `${officialScore.langReadingScaled} / 120点` : "基準点: 38点"}
+                </span>
               </div>
-            ) : (
-              <div className="text-right">
-                <span className="text-xs text-[#88847b]">Belum ada bagian yang dikerjakan</span>
-                <p className="text-xs font-semibold text-[#bf5b46]">頑張ってください！</p>
+              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
+                <span className="text-[10px] text-[#77736b] block">
+                  聴解 (0〜60)
+                </span>
+                <span className="font-bold text-[#25231f]">
+                  {hasAnyCompleted ? `${officialScore.listeningScaled} / 60点` : "基準点: 19点"}
+                </span>
               </div>
-            )}
+              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
+                <span className="text-[10px] text-[#77736b] block">
+                  総合得点 (0〜180)
+                </span>
+                <span className="font-bold text-[#bf5b46]">
+                  合格点: {officialScore.passThresholdTotal}点
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* List of Sections */}
@@ -182,7 +261,9 @@ export default function TestDetailsModal({
                   {/* Section Metrics Details */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-[#ece7de] text-xs">
                     <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                      <span className="text-[10px] text-[#88847b] block">Waktu Dialokasikan</span>
+                      <span className="text-[10px] text-[#88847b] block">
+                        Waktu Dialokasikan
+                      </span>
                       <span className="font-semibold text-[#25231f]">
                         {`${sec.duration_minutes} Menit`}
                       </span>
@@ -191,20 +272,27 @@ export default function TestDetailsModal({
                     {isCompleted ? (
                       <>
                         <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                          <span className="text-[10px] text-[#88847b] block">Waktumu</span>
+                          <span className="text-[10px] text-[#88847b] block">
+                            Waktumu
+                          </span>
                           <span
                             className={`font-semibold ${
-                              sess.durationTakenSeconds <= sec.duration_minutes * 60
+                              sess.durationTakenSeconds <=
+                              sec.duration_minutes * 60
                                 ? "text-[#263d36]"
                                 : "text-[#bf5b46]"
                             }`}
                           >
-                            {`${Math.floor(sess.durationTakenSeconds / 60)}m ${sess.durationTakenSeconds % 60}d`}
+                            {`${Math.floor(sess.durationTakenSeconds / 60)}m ${
+                              sess.durationTakenSeconds % 60
+                            }d`}
                           </span>
                         </div>
 
                         <div className="p-2 rounded-lg bg-[#f9f7f2] col-span-2 sm:col-span-1">
-                          <span className="text-[10px] text-[#88847b] block">Skor Bagian</span>
+                          <span className="text-[10px] text-[#88847b] block">
+                            Skor Bagian
+                          </span>
                           <span className="font-bold text-[#25231f]">
                             {`${sess.correctCount} / ${sec.mock_questions_count} (${sess.percentageScore}%)`}
                           </span>
@@ -212,7 +300,9 @@ export default function TestDetailsModal({
                       </>
                     ) : (
                       <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                        <span className="text-[10px] text-[#88847b] block">Total Soal</span>
+                        <span className="text-[10px] text-[#88847b] block">
+                          Total Soal
+                        </span>
                         <span className="font-semibold text-[#25231f]">
                           {`${sec.mock_questions_count} Soal`}
                         </span>
@@ -226,11 +316,21 @@ export default function TestDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#e2ded5] flex justify-end bg-[#f8f5ef] shrink-0">
+        <div className="p-4 border-t border-[#e2ded5] flex items-center justify-between gap-3 bg-[#f8f5ef] shrink-0">
+          {nextPendingSection && (
+            <button
+              type="button"
+              onClick={() => onStartSection(test, nextPendingSection)}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#263d36] hover:bg-[#1d302a] text-white transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="play" size={14} />
+              <span>Kerjakan {nextPendingSection.titleId} Sekarang</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[#33312c] transition-colors"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[#33312c] transition-colors ml-auto"
           >
             Tutup
           </button>

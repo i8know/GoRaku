@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
+import { QuestionItem } from "../../lib/questionPack";
 import { renderQuestionPrompt } from "./furiganaHelper";
+import ListeningSceneCard from "./ListeningSceneCard";
 import { Icon } from "../../ui";
 
 interface TestReviewViewProps {
@@ -20,10 +22,21 @@ export default function TestReviewView({
 }: TestReviewViewProps) {
   const [filterMode, setFilterMode] = useState<"all" | "incorrect" | "correct">("all");
   const [showFurigana, setShowFurigana] = useState<boolean>(true);
+  const [playingQuestionId, setPlayingQuestionId] = useState<string | null>(null);
 
-  const { questions, answers, correctCount, totalQuestions, percentageScore, durationTakenSeconds, targetDurationSeconds } = result;
+  const {
+    questions,
+    answers,
+    correctCount,
+    totalQuestions,
+    percentageScore,
+    durationTakenSeconds,
+    targetDurationSeconds
+  } = result;
 
-  const isPassed = percentageScore >= 60;
+  const scaledScore =
+    totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 60) : 0;
+  const isPassed = percentageScore >= 50 || scaledScore >= 19;
 
   // Filter soal berdasarkan mode
   const filteredQuestions = questions
@@ -35,6 +48,40 @@ export default function TestReviewView({
     });
 
   const incorrectCount = totalQuestions - correctCount;
+
+  const handlePlayQuestionAudio = (q: QuestionItem) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+
+    if (playingQuestionId === q.id) {
+      setPlayingQuestionId(null);
+      return;
+    }
+
+    setPlayingQuestionId(q.id);
+    if (q.dialogueScript && q.dialogueScript.length > 0) {
+      q.dialogueScript.forEach((turn, idx) => {
+        const u = new SpeechSynthesisUtterance(turn.text);
+        u.lang = "ja-JP";
+        u.rate = 0.9;
+        u.pitch = turn.speaker === "男" ? 0.85 : turn.speaker === "女" ? 1.18 : 1.0;
+        if (idx === q.dialogueScript!.length - 1) {
+          u.onend = () => setPlayingQuestionId(null);
+          u.onerror = () => setPlayingQuestionId(null);
+        }
+        window.speechSynthesis.speak(u);
+      });
+      return;
+    }
+
+    const clean = q.prompt.replace(/<[^>]+>/g, "").replace(/（　★　）/g, "、");
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = "ja-JP";
+    u.rate = 0.9;
+    u.onend = () => setPlayingQuestionId(null);
+    u.onerror = () => setPlayingQuestionId(null);
+    window.speechSynthesis.speak(u);
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-fade-in text-[#25231f]">
@@ -76,7 +123,7 @@ export default function TestReviewView({
               {test.title} • {section.titleJa}
             </h1>
             <p className="text-xs text-[#77736b] mt-1">
-              Hasil pengerjaan seksi ujian JLPT bergaya Bunpro
+              Hasil pengerjaan seksi ujian JLPT lengkap dengan kunci jawaban, penjelasan, dan naskah Choukai
             </p>
           </div>
 
@@ -97,13 +144,16 @@ export default function TestReviewView({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de]">
             <span className="text-[10px] font-bold text-[#a06658] block uppercase tracking-wider">
-              Skor Pengerjaan
+              Skor Pengerjaan & Skala JLPT
             </span>
             <div className="text-3xl font-extrabold text-[#25231f] font-['Noto_Serif_JP',serif] mt-1">
-              {correctCount} <span className="text-base font-normal text-[#88847b]">/ {totalQuestions}</span>
+              {correctCount}{" "}
+              <span className="text-base font-normal text-[#88847b]">
+                / {totalQuestions}
+              </span>
             </div>
             <div className="text-xs font-semibold text-[#bf5b46] mt-1">
-              {percentageScore}% Benar
+              {percentageScore}% Benar • Skala: {scaledScore} / 60点
             </div>
           </div>
 
@@ -193,53 +243,88 @@ export default function TestReviewView({
             return (
               <div
                 key={q.id}
-                className={`p-6 rounded-2xl bg-[#fffdfa] border transition-all ${
+                className={`p-6 rounded-2xl bg-[#fffdfa] border transition-all space-y-4 ${
                   isCorrect
                     ? "border-[#e2ded5] shadow-[0_2px_12px_rgba(62,52,41,0.03)]"
                     : "border-[#f3d3cb] bg-[#fff9f8] shadow-[0_2px_12px_rgba(217,91,67,0.04)]"
                 }`}
               >
                 {/* Header Card */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
                     <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#f2eee6] text-[#494740]">
                       Soal #{idx + 1}
                     </span>
+                    {q.mondaiNumber && (
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e8efec] text-[#233c35]">
+                        もんだい {q.mondaiNumber}
+                      </span>
+                    )}
                     <span className="text-[11px] text-[#88847b]">
                       ID: <code>{q.id}</code>
                     </span>
                   </div>
 
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
-                      isCorrect
-                        ? "bg-[#e8efec] text-[#233c35]"
-                        : "bg-[#fcedea] text-[#943828]"
-                    }`}
-                  >
-                    {isCorrect ? "✓ Benar" : "✗ Salah"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handlePlayQuestionAudio(q)}
+                      className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                        playingQuestionId === q.id
+                          ? "bg-[#d95b43] text-white border-[#d95b43]"
+                          : "bg-white border-[#dcd7cc] text-[#494740] hover:border-[#d95b43]"
+                      }`}
+                    >
+                      <Icon name="volume" size={14} />
+                      <span>{playingQuestionId === q.id ? "Berhenti" : "Audio"}</span>
+                    </button>
+
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
+                        isCorrect
+                          ? "bg-[#e8efec] text-[#233c35]"
+                          : "bg-[#fcedea] text-[#943828]"
+                      }`}
+                    >
+                      {isCorrect ? "✓ Benar" : "✗ Salah"}
+                    </span>
+                  </div>
                 </div>
+
+                {/* Wacana Membaca jika ada */}
+                {q.passageHtml && (
+                  <div
+                    className="p-4 rounded-xl bg-[#f9f6ee] border border-[#dcd6c8]"
+                    dangerouslySetInnerHTML={{ __html: q.passageHtml }}
+                  />
+                )}
+
+                {/* Ilustrasi Choukai jika ada */}
+                {q.sceneIllustration && (
+                  <ListeningSceneCard sceneKey={q.sceneIllustration} />
+                )}
 
                 {/* Prompt Kalimat */}
                 <div
-                  className="font-['Noto_Serif_JP',serif] text-lg font-medium text-[#25231f] leading-relaxed mb-4"
+                  className="font-['Noto_Serif_JP',serif] text-lg font-medium text-[#25231f] leading-relaxed"
                   dangerouslySetInnerHTML={{
                     __html: renderQuestionPrompt(q, showFurigana)
                   }}
                 />
 
                 {/* Pilihan Opsi */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {q.options.map((opt, optIdx) => {
                     const isKey = optIdx === q.correctIndex;
                     const isUserChoice = optIdx === userPick;
 
                     let optClass = "border-[#e2ded5] bg-[#fffdfa] text-[#494740]";
                     if (isKey) {
-                      optClass = "border-[#263d36] bg-[#e8efec] text-[#1b3a2e] font-bold ring-1 ring-[#263d36]";
+                      optClass =
+                        "border-[#263d36] bg-[#e8efec] text-[#1b3a2e] font-bold ring-1 ring-[#263d36]";
                     } else if (isUserChoice && !isCorrect) {
-                      optClass = "border-[#dc6048] bg-[#fcedea] text-[#943828] line-through ring-1 ring-[#dc6048]";
+                      optClass =
+                        "border-[#dc6048] bg-[#fcedea] text-[#943828] line-through ring-1 ring-[#dc6048]";
                     }
 
                     return (
@@ -249,37 +334,69 @@ export default function TestReviewView({
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-bold opacity-70">{optIdx + 1}.</span>
-                          <span className="font-['Noto_Serif_JP',serif] text-sm">{opt}</span>
+                          <span className="font-['Noto_Serif_JP',serif] text-sm">
+                            {opt}
+                          </span>
                         </div>
-                        {isKey && <span className="text-[#233c35] text-xs font-bold">✓ Kunci</span>}
-                        {isUserChoice && !isKey && <span className="text-[#943828] text-xs font-bold">✗ Pilihanmu</span>}
+                        {isKey && (
+                          <span className="text-[#233c35] text-xs font-bold">
+                            ✓ Kunci
+                          </span>
+                        )}
+                        {isUserChoice && !isKey && (
+                          <span className="text-[#943828] text-xs font-bold">
+                            ✗ Pilihanmu
+                          </span>
+                        )}
                       </div>
                     );
                   })}
                 </div>
 
+                {/* Naskah Lengkap Choukai (聴解原文) jika ada */}
+                {q.dialogueScript && q.dialogueScript.length > 0 && (
+                  <div className="p-3.5 rounded-xl bg-[#fffdf8] border border-[#e2ded5] space-y-2 text-xs font-['Noto_Serif_JP',serif]">
+                    <div className="font-bold text-[#263d36]">
+                      🎧 聴解スクリプト（Naskah Lengkap Mendengarkan）:
+                    </div>
+                    {q.dialogueScript.map((turn, tIdx) => (
+                      <div key={tIdx} className="flex items-start gap-2">
+                        <span className="font-bold text-[#bf5b46] shrink-0">
+                          {turn.speaker}：
+                        </span>
+                        <span className="text-[#25231f]">{turn.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Pembahasan & Penjelasan Detail */}
                 <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="font-bold text-[#25231f]">
-                      Target Uji: <span className="font-['Noto_Serif_JP',serif] text-[#d95b43] font-semibold">{q.explanation.targetWord}</span> 【{q.explanation.reading}】
+                      Target Uji:{" "}
+                      <span className="font-['Noto_Serif_JP',serif] text-[#d95b43] font-semibold">
+                        {q.explanation.targetWord}
+                      </span>{" "}
+                      【{q.explanation.reading}】
                     </div>
                     <span className="text-[10px] text-[#88847b]">
-                      Tatoeba #{q.provenance.tatoeba_jpn_id} • JMdict {q.provenance.jmdict_ent_seq}
+                      {q.officialSourceLabel ||
+                        `Tatoeba #${q.provenance.tatoeba_jpn_id} • JMdict ${q.provenance.jmdict_ent_seq}`}
                     </span>
                   </div>
 
                   <div className="text-[#595750]">
-                    <strong>Arti (JMdict):</strong> {q.explanation.meaningEn || "—"}
+                    <strong>Arti / Makna:</strong> {q.explanation.meaningEn || "—"}
                   </div>
 
                   <div className="text-[#595750]">
-                    <strong>Terjemahan (Tatoeba):</strong> “{q.explanation.translationId || "—"}”
+                    <strong>Terjemahan Kalimat:</strong> “{q.explanation.translationId || "—"}”
                   </div>
 
                   {q.explanation.notes && (
-                    <div className="text-[11px] text-[#77736b] italic pt-1 border-t border-[#ece7de]">
-                      💡 {q.explanation.notes}
+                    <div className="text-[11px] text-[#494740] pt-1.5 border-t border-[#ece7de] leading-relaxed">
+                      💡 <strong>Pembahasan:</strong> {q.explanation.notes}
                     </div>
                   )}
                 </div>
@@ -288,7 +405,9 @@ export default function TestReviewView({
           })
         ) : (
           <div className="text-center py-12 bg-[#fffdfa] rounded-2xl border border-[#e2ded5]">
-            <p className="text-[#88847b]">Tidak ada pertanyaan dalam kategori filter ini.</p>
+            <p className="text-[#88847b]">
+              Tidak ada pertanyaan dalam kategori filter ini.
+            </p>
           </div>
         )}
       </div>

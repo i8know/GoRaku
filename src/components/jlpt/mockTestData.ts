@@ -1,5 +1,19 @@
 import { MockTest, JLPTLevel, MockSection } from "./types";
 import { QuestionPack, QuestionItem } from "../../lib/questionPack";
+import {
+  get2018N5VocabQuestions,
+  get2018N5GrammarReadingQuestions,
+  get2018N5ListeningQuestions,
+  getCuratedQuestionsForLevel
+} from "./jlpt2018N5Data";
+import {
+  generateOfficial2018N4MockTest,
+  get2018N4VocabQuestions,
+  get2018N4GrammarReadingQuestions,
+  get2018N4ListeningQuestions
+} from "./jlpt2018N4Data";
+
+export { generateOfficial2018N4MockTest };
 
 export const CATEGORY_LABELS: Record<string, { ja: string; id: string }> = {
   vocab: {
@@ -320,4 +334,129 @@ function sliceWithWrap<T>(arr: T[], start: number, count: number): T[] {
   }
   return result;
 }
+
+/**
+ * Membangun objek ujian lengkap 2018年 日本語能力試験 N5（公式過去問・全91問）
+ * sesuai dokumen PDF N5-2018年 (35 Kosakata + 32 Tata Bahasa & Dokkai + 24 Choukai = 91 Soal).
+ */
+export function generateOfficial2018N5MockTest(): MockTest {
+  return {
+    id: 2018,
+    title: "2018年 日本語能力試験 N5【完全再現】",
+    subtitle: "35 文字・語彙 • 32 文法・読解（★並べ替え・長文・高木大学ルート表） • 24 聴解（イラスト・会話音声付）",
+    badgeLabel: "2018年 公式過去問 • 91問",
+    isOfficialPastPaper: true,
+    officialYear: "2018",
+    level: 5,
+    levelLabel: "N5",
+    difficulty: "standard",
+    difficultyLabel: "Standar",
+    totalDurationMinutes: 90,
+    totalQuestions: 91,
+    passingScoreTotal: 90,
+    passingScoreLangReading: 38,
+    passingScoreListening: 19,
+    mock_sections: [
+      {
+        id: 201801,
+        mock_test_id: 2018,
+        position: 1,
+        category: "vocab",
+        duration_minutes: 20,
+        mock_questions_count: 35,
+        titleJa: CATEGORY_LABELS.vocab.ja,
+        titleId: CATEGORY_LABELS.vocab.id
+      },
+      {
+        id: 201802,
+        mock_test_id: 2018,
+        position: 2,
+        category: "grammar_reading",
+        duration_minutes: 40,
+        mock_questions_count: 32,
+        titleJa: CATEGORY_LABELS.grammar_reading.ja,
+        titleId: CATEGORY_LABELS.grammar_reading.id
+      },
+      {
+        id: 201803,
+        mock_test_id: 2018,
+        position: 3,
+        category: "listening",
+        duration_minutes: 30,
+        mock_questions_count: 24,
+        titleJa: CATEGORY_LABELS.listening.ja,
+        titleId: CATEGORY_LABELS.listening.id
+      }
+    ]
+  };
+}
+
+/**
+ * Mengambil soal lengkap untuk suatu kartu MockTest dan MockSection (mendukung penuh
+ * 2018 N5 91 Soal, N5【模擬試験】1..5, serta Level N4, N3, N2, dan N1).
+ */
+export function getQuestionsForTestAndSection(
+  test: MockTest,
+  section: MockSection,
+  pack: QuestionPack
+): QuestionItem[] {
+  // 0. Jika tes adalah 2018年 日本語能力試験 N4 (98 soal lengkap dari PDF N4)
+  if (test.id === 20184 || (test.isOfficialPastPaper && test.levelLabel === "N4")) {
+    if (section.category === "vocab") return get2018N4VocabQuestions();
+    if (section.category === "grammar_reading") return get2018N4GrammarReadingQuestions();
+    if (section.category === "listening") return get2018N4ListeningQuestions();
+  }
+
+  const officialVocab = get2018N5VocabQuestions();
+  const officialGr = get2018N5GrammarReadingQuestions();
+  const officialListen = get2018N5ListeningQuestions();
+
+  // 1. Jika tes adalah 2018年 日本語能力試験 N5 (91 soal lengkap dari PDF)
+  if (test.id === 2018 || test.isOfficialPastPaper) {
+    if (section.category === "vocab") return officialVocab;
+    if (section.category === "grammar_reading") return officialGr;
+    if (section.category === "listening") return officialListen;
+  }
+
+  // 2. Jika level N5 (N5【模擬試験】1..5):
+  //    Tes #1 mengutamakan soal autentik 2018 N5; Tes #2..5 mengombinasikan soal 2018 N5 + bank QuestionPack
+  if (test.levelLabel === "N5") {
+    const offset = (test.id - 1) * 7;
+    if (section.category === "vocab") {
+      if (test.id === 1) {
+        return officialVocab.slice(0, section.mock_questions_count);
+      }
+      const combined = [...officialVocab, ...getQuestionsForMockSection(pack, test.id, "vocab")];
+      return sliceWithWrap(combined, offset, section.mock_questions_count);
+    }
+    if (section.category === "grammar_reading") {
+      if (test.id === 1) {
+        // Sertakan perwakilan dari setiap Mondai 1..6 (termasuk ★, Dokkai, dan Tabel Rute 高木大学)
+        const m1 = officialGr.filter((q) => q.mondaiNumber === 1).slice(0, 6);
+        const m2 = officialGr.filter((q) => q.mondaiNumber === 2); // 5 soal ★
+        const m3 = officialGr.filter((q) => q.mondaiNumber === 3); // 5 soal wacana
+        const m4 = officialGr.filter((q) => q.mondaiNumber === 4); // 3 soal短文
+        const m5 = officialGr.filter((q) => q.mondaiNumber === 5); // 2 soal中文
+        const m6 = officialGr.filter((q) => q.mondaiNumber === 6); // 1 soal情報検索
+        return [...m1, ...m2, ...m3, ...m4, ...m5, ...m6].slice(0, section.mock_questions_count);
+      }
+      const combined = [...officialGr, ...getQuestionsForMockSection(pack, test.id, "grammar_reading")];
+      return sliceWithWrap(combined, offset, section.mock_questions_count);
+    }
+    if (section.category === "listening") {
+      if (test.id === 1) {
+        return officialListen.slice(0, section.mock_questions_count);
+      }
+      return sliceWithWrap(officialListen, (test.id - 1) * 4, section.mock_questions_count);
+    }
+  }
+
+  // 3. Level N4, N3, N2, N1
+  return getCuratedQuestionsForLevel(
+    test.levelLabel as Exclude<JLPTLevel, "N5">,
+    section.category,
+    section.mock_questions_count
+  );
+}
+
 

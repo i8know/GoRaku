@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
-import { getMedia } from "../lib/deckDb";
+import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
 import { initCard, isDue, reviewCard, type SRSCard } from "../lib/srs";
 import { renderJapanese } from "../lib/ankiText";
@@ -12,6 +12,8 @@ import "../decks.css";
 
 type ReviewCard = {
   id: string;
+  deckId?: string;
+  subdeck?: string;
   word: string;
   reading: string;
   /** Inline HTML (sanitized for imported decks). */
@@ -26,6 +28,7 @@ type ReviewCard = {
 interface UndoHistoryItem {
   pos: number;
   cardId: string;
+  deckId?: string;
   prevSrsCard: SRSCard | undefined;
   wasNew: boolean;
   wasRequeued: boolean;
@@ -63,7 +66,11 @@ export default function ReviewPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const card = queue && pos < queue.length ? queue[pos] : undefined;
-  const srsCard = useReviewStore((s) => (deckId && card ? s.srsCards[deckId]?.[card.id] : undefined));
+  const srsCard = useReviewStore((s) => {
+    if (!card) return undefined;
+    const targetDeckId = card.deckId || deckId;
+    return targetDeckId ? s.srsCards[targetDeckId]?.[card.id] : undefined;
+  });
 
   // Build the session queue once: due reviews first, then today's new cards.
   useEffect(() => {
@@ -73,12 +80,23 @@ export default function ReviewPage() {
       .then((cards) => {
         if (!alive) return;
         const { srsCards, newIntroduced } = useReviewStore.getState();
-        const srsDeck = srsCards[deck.id] ?? {};
+        const getCardSrs = (c: StoredCard): SRSCard | undefined => {
+          const targetDeckId = c.deckId || deck.id;
+          return targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
+        };
+
         const due = cards
-          .filter((c) => srsDeck[c.id] && isDue(srsDeck[c.id]))
-          .sort((a, b) => srsDeck[a.id].nextReview - srsDeck[b.id].nextReview)
+          .filter((c) => {
+            const sc = getCardSrs(c);
+            return sc && isDue(sc);
+          })
+          .sort((a, b) => (getCardSrs(a)?.nextReview ?? 0) - (getCardSrs(b)?.nextReview ?? 0))
           .slice(0, settings.maxReview);
-        const fresh = cards.filter((c) => !srsDeck[c.id]).slice(0, newCardsLeftToday(newIntroduced[deck.id], settings.newCards));
+
+        const fresh = cards
+          .filter((c) => !getCardSrs(c))
+          .slice(0, newCardsLeftToday(newIntroduced[deck.id], settings.newCards));
+
         setQueue([...due, ...fresh]);
       })
       .catch(() => alive && setQueue([]));
@@ -160,7 +178,8 @@ export default function ReviewPage() {
   const answer = useCallback(
     (quality: number) => {
       if (!card || !deckId) return;
-      const currentSrsMap = useReviewStore.getState().srsCards[deckId] ?? {};
+      const targetDeckId = card.deckId || deckId;
+      const currentSrsMap = useReviewStore.getState().srsCards[targetDeckId] ?? {};
       const prevSrsCard = currentSrsMap[card.id];
       const wasNew = !prevSrsCard;
       const wasRequeued = quality < 3;
@@ -170,13 +189,14 @@ export default function ReviewPage() {
         {
           pos,
           cardId: card.id,
+          deckId: targetDeckId,
           prevSrsCard: prevSrsCard ? { ...prevSrsCard } : undefined,
           wasNew,
           wasRequeued,
         },
       ]);
 
-      reviewCardAction(deckId, card.id, quality);
+      reviewCardAction(targetDeckId, card.id, quality);
       setReviewed((r) => r + 1);
       // "Lupa" puts the card back at the end of this session, like Anki's relearning step.
       if (wasRequeued) setQueue((q) => (q ? [...q, card] : q));
@@ -189,7 +209,8 @@ export default function ReviewPage() {
   const handleUndo = useCallback(() => {
     if (history.length === 0 || !deckId) return;
     const last = history[history.length - 1];
-    restoreCardState(deckId, last.cardId, last.prevSrsCard, last.wasNew);
+    const targetDeckId = last.deckId || deckId;
+    restoreCardState(targetDeckId, last.cardId, last.prevSrsCard, last.wasNew);
     if (last.wasRequeued) {
       setQueue((q) => (q && q.length > 0 ? q.slice(0, -1) : q));
     }
@@ -332,7 +353,10 @@ export default function ReviewPage() {
 
       <div className="review-stage">
         <div className="review-card-front">
-          {isNewCard && <span className="rv-new">Kartu baru</span>}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {card.subdeck && <span className="rv-subdeck-badge">{card.subdeck}</span>}
+            {isNewCard && <span className="rv-new">Kartu baru</span>}
+          </div>
           {(settings.furi || showAnswer) && card.reading && <small className="review-reading" lang="ja">{card.reading}</small>}
           <div className="review-word-row">
             <h1 className="review-word" lang="ja">{card.word}</h1>

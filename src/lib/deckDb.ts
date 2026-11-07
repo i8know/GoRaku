@@ -171,10 +171,34 @@ export async function getMedia(deckId: string, name: string): Promise<Blob | und
   const db = await openDb();
   const tx = db.transaction(MEDIA, "readonly");
   const req = tx.objectStore(MEDIA).get(key(deckId, name));
-  return new Promise((resolve, reject) => {
+  const directResult = await new Promise<Blob | undefined>((resolve, reject) => {
     req.onsuccess = () => resolve(req.result as Blob | undefined);
     req.onerror = () => reject(req.error);
   });
+  if (directResult) return directResult;
+
+  // Fallback: check ancestor decks if deckId is a subdeck
+  try {
+    const { useAppStore } = await import("../store/useAppStore");
+    const allDecks = useAppStore.getState().decks;
+    let currentParentId = allDecks.find((d) => d.id === deckId)?.parentId;
+    const visited = new Set<string>();
+    while (currentParentId && !visited.has(currentParentId)) {
+      visited.add(currentParentId);
+      const tx2 = db.transaction(MEDIA, "readonly");
+      const req2 = tx2.objectStore(MEDIA).get(key(currentParentId, name));
+      const res = await new Promise<Blob | undefined>((resolve, reject) => {
+        req2.onsuccess = () => resolve(req2.result as Blob | undefined);
+        req2.onerror = () => reject(req2.error);
+      });
+      if (res) return res;
+      currentParentId = allDecks.find((d) => d.id === currentParentId)?.parentId;
+    }
+  } catch {
+    /* ignore fallback lookup errors */
+  }
+
+  return undefined;
 }
 
 export async function deleteCards(deckId: string, ids: string[]): Promise<void> {

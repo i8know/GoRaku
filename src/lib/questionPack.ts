@@ -40,10 +40,15 @@ export interface QuestionExplanation {
   notes?: string;
 }
 
+export interface QuestionDialogueTurn {
+  speaker: "男" | "女" | "アナウンス" | "質問";
+  text: string;
+}
+
 export interface QuestionItem {
   id: string;
   type: QuestionType;
-  level: "N5";
+  level: "N5" | "N4" | "N3" | "N2" | "N1";
   prompt: string;
   options: string[];
   correctIndex: number;
@@ -51,6 +56,17 @@ export interface QuestionItem {
   explanation: QuestionExplanation;
   provenance: QuestionProvenance;
   review: QuestionReview;
+  /** Metadata tambahan untuk soal autentik JLPT (Mondai, Dokkai, Choukai, ★) */
+  mondaiNumber?: number;
+  mondaiLabelJa?: string;
+  mondaiLabelId?: string;
+  passageTitle?: string;
+  passageHtml?: string;
+  dialogueScript?: QuestionDialogueTurn[];
+  sceneIllustration?: string;
+  isStarQuestion?: boolean;
+  starTokens?: string[];
+  officialSourceLabel?: string;
 }
 
 export interface QuestionPackAttribution {

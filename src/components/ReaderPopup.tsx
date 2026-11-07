@@ -732,7 +732,7 @@ export default function ReaderPopup({
           >
             {decks.map((d) => (
               <option key={d.id} value={d.id}>
-                {d.title}
+                {d.parentId ? `  ↳ ${d.subdeckName || d.title}` : d.title}
               </option>
             ))}
           </select>

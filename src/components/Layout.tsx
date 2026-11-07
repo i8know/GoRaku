@@ -16,12 +16,12 @@ import { speakJapanese } from "../lib/tts";
 const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
 
 const navItems = [
-  { label: "Beranda", path: "/beranda", icon: "home" as const },
-  { label: "Deck Saya", path: "/deck", icon: "cards" as const },
-  { label: "Sentence Mining", path: "/mining", icon: "mine" as const },
-  { label: "Perpustakaan", path: "/library", icon: "book" as const },
-  { label: "Ujian JLPT", path: "/exam", icon: "target" as const },
-  { label: "Progres", path: "/progress", icon: "chart" as const },
+  { label: "Beranda", shortLabel: "Beranda", jp: "学習・概要", path: "/beranda", icon: "home" as const },
+  { label: "Deck Saya", shortLabel: "Deck", jp: "階層・単語帳", path: "/deck", icon: "cards" as const },
+  { label: "Sentence Mining", shortLabel: "Mining", jp: "文脈・採掘", path: "/mining", icon: "mine" as const },
+  { label: "Perpustakaan", shortLabel: "Pustaka", jp: "小説・漫画", path: "/library", icon: "book" as const },
+  { label: "Ujian JLPT", shortLabel: "JLPT", jp: "模擬試験", path: "/exam", icon: "target" as const },
+  { label: "Progres", shortLabel: "Progres", jp: "統計・分析", path: "/progress", icon: "chart" as const },
 ];
 
 const DAILY_QUOTES = [
@@ -85,7 +85,7 @@ export default function ProtectedLayout() {
   // Allow user to override auto-collapse while inside Reader or Review
   const [focusOverrideExpanded, setFocusOverrideExpanded] = useState(false);
   const [quickOpen, setQuickOpen] = useState(true);
-  const [quickTab, setQuickTab] = useState<"bacaan" | "deck">("bacaan");
+  const [quickTab, setQuickTab] = useState<"bacaan" | "deck" | "jlpt">("bacaan");
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
@@ -143,15 +143,19 @@ export default function ProtectedLayout() {
   };
 
   // Compute live deck stats & priority decks
-  const { totalDue, priorityDecks } = useMemo(() => {
+  const { totalDue, priorityDecks, rootDecksCount, subdecksCount } = useMemo(() => {
     let sumDue = 0;
+    const parentIds = new Set(decks.filter((d) => d.parentId).map((d) => d.parentId!));
+    const roots = decks.filter((d) => !d.parentId);
+    const leafSubdecks = decks.filter((d) => d.parentId && !parentIds.has(d.id));
     const withDue: { id: string; title: string; kanji: string; due: number; color: string }[] = [];
     for (const d of decks) {
+      if (parentIds.has(d.id)) continue; // skip parent container decks to avoid double-counting leaf subdecks
       const st = liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings);
       sumDue += st.due;
       withDue.push({
         id: d.id,
-        title: d.title,
+        title: d.subdeckName ? `${d.subdeckName} (${d.level.split("•")[0].trim()})` : d.title,
         kanji: d.kanji,
         due: st.due,
         color: d.color,
@@ -161,6 +165,8 @@ export default function ProtectedLayout() {
     return {
       totalDue: sumDue,
       priorityDecks: withDue.slice(0, 2),
+      rootDecksCount: roots.length,
+      subdecksCount: leafSubdecks.length,
     };
   }, [decks, srsCards, newIntroduced, settings]);
 
@@ -260,13 +266,16 @@ export default function ProtectedLayout() {
       return { text: `${totalDue}` };
     }
     if (label === "Deck Saya") {
-      return { text: `${decks.length}`, cls: "badge-muted" };
+      return { text: `${rootDecksCount}`, cls: "badge-muted" };
     }
     if (label === "Sentence Mining" && minedQueue.length > 0) {
       return { text: `${minedQueue.length}` };
     }
     if (label === "Perpustakaan" && booksCount > 0) {
       return { text: `${booksCount}`, cls: "badge-muted" };
+    }
+    if (label === "Ujian JLPT") {
+      return { text: "N5-1", cls: "badge-muted" };
     }
     if (label === "Progres" && todayReviewedCount > 0) {
       return { text: `+${todayReviewedCount}`, cls: "badge-sage" };
@@ -275,9 +284,13 @@ export default function ProtectedLayout() {
   };
 
   const handleQuickStartReview = () => {
+    const parentIds = new Set(decks.filter((d) => d.parentId).map((d) => d.parentId!));
     const firstDue =
-      decks.find((d) => liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings).due > 0) ??
-      decks[0];
+      decks.find(
+        (d) =>
+          !parentIds.has(d.id) &&
+          liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings).due > 0,
+      ) ?? decks[0];
     if (firstDue) {
       navigate(`/deck/${firstDue.id}/review`);
     } else {
@@ -330,7 +343,7 @@ export default function ProtectedLayout() {
           </button>
         </div>
 
-        {/* Status Bar: Streak Harian + Status Kamus Yomitan (Klik langsung buka modal kelola kamus) */}
+        {/* Status Bar (Expanded Mode): Streak Harian + Status Kamus Yomitan */}
         <div className="sb-status-expanded mb-3 px-1 flex items-center justify-between gap-1.5 text-[10px]">
           <button
             type="button"
@@ -362,9 +375,56 @@ export default function ProtectedLayout() {
           </button>
         </div>
 
-        {/* Mini 7-Day Habit Tracker Dropdown */}
-        {streakCalendarOpen && !effectiveCollapsed && (
-          <div className="mb-3 rounded-xl border border-[#2b332e] bg-[#171c19] p-2.5 text-xs animate-[modal-in_0.14s_ease]">
+        {/* Status Dock (Collapsed Mode): Mini Streak + Mini Kamus Yomitan */}
+        {effectiveCollapsed && (
+          <div className="relative mb-2.5 pb-2 border-b border-[#252b27] grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => setStreakCalendarOpen((v) => !v)}
+              title={`Streak ${streakDays} Hari — Klik untuk lihat ritme 7 hari`}
+              className="rounded-lg border border-[#2b332e] bg-[#1c221e] hover:border-[#df674d] py-1.5 flex flex-col items-center justify-center gap-0.5 text-[#e87f67] transition-colors"
+            >
+              <Icon name="flame" size={13} />
+              <span className="text-[8.5px] font-bold leading-none">{streakDays}h</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDictModalOpen(true)}
+              title={
+                activeDictCount > 0
+                  ? `${activeDictCount} Kamus Yomitan Aktif — Klik untuk kelola`
+                  : "Kamus Yomitan Kosong — Klik untuk impor ZIP"
+              }
+              className={`rounded-lg border py-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
+                activeDictCount > 0
+                  ? "border-[#2c4438] bg-[#16271e] text-[#78cf9f] hover:border-[#3ec47d]"
+                  : "border-[#4a3424] bg-[#291b12] text-[#e89d60] hover:border-[#df8a45]"
+              }`}
+            >
+              <span
+                className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
+                  activeDictCount > 0 ? "bg-[#3ec47d] animate-pulse" : "bg-[#df8a45]"
+                }`}
+              />
+              <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
+                辞
+              </span>
+              <span className="text-[8.5px] font-bold leading-none">
+                {activeDictCount > 0 ? `${activeDictCount}` : "0"}
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* Mini 7-Day Habit Tracker Dropdown (Works in BOTH Expanded & Collapsed Mode) */}
+        {streakCalendarOpen && (
+          <div
+            className={`${
+              effectiveCollapsed
+                ? "fixed left-[92px] top-[76px] z-50 w-[236px] shadow-2xl"
+                : "mb-3"
+            } rounded-xl border border-[#2b332e] bg-[#171c19] p-2.5 text-xs animate-[modal-in_0.14s_ease]`}
+          >
             <div className="flex items-center justify-between text-[10px] text-[#8c918d] mb-1.5 font-medium">
               <span>Ritme Belajar Mingguan</span>
               <span className="font-bold text-[#df674d]">{todayReviewedCount} kartu hari ini</span>
@@ -405,7 +465,7 @@ export default function ProtectedLayout() {
           </div>
         )}
 
-        {/* Navigasi Utama dengan Indikator Animasi & Badge Dinamis */}
+        {/* Navigasi Utama dengan Ikon yang Selalu Tampil, Micro-Caption, & Flyout Dinamis */}
         <nav className="nav-list" aria-label="Navigasi utama">
           <span className="nav-label">BELAJAR</span>
           {navItems.map((item) => {
@@ -421,21 +481,28 @@ export default function ProtectedLayout() {
                 <Link
                   to={item.path}
                   className={`nav-item ${isActive ? "active" : ""}`}
+                  aria-label={item.label}
                 >
                   {isActive && (
-                    <motion.span
+                    <motion.div
                       layoutId="sidebar-active-pill"
                       className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] rounded-r-full bg-[#df674d]"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <span className="relative flex items-center justify-center shrink-0">
-                    <Icon name={item.icon} />
-                    {effectiveCollapsed && badge && (
-                      <i className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#df674d]" />
+                  <div className="nav-item-icon">
+                    <Icon name={item.icon} size={19} />
+                    {badge && (
+                      <b className={`nav-collapsed-badge ${badge.cls ?? ""}`}>
+                        {badge.text}
+                      </b>
                     )}
-                  </span>
-                  <span className="truncate">{item.label}</span>
+                  </div>
+                  <div className="nav-item-label">
+                    <span className="truncate font-semibold">{item.label}</span>
+                    <small lang="ja">{item.jp}</small>
+                  </div>
+                  <span className="nav-collapsed-caption">{item.shortLabel}</span>
                   {badge && <em className={badge.cls ?? ""}>{badge.text}</em>}
                 </Link>
 
@@ -466,47 +533,142 @@ export default function ProtectedLayout() {
                     </button>
                   )}
 
-                {/* Floating Interactive Flyout Card saat Sidebar Dilipat */}
+                {/* Floating Interactive Flyout Card saat Sidebar Dilipat (Hover Bridge pl-2.5 agar kursor bisa masuk ke dalam flyout) */}
                 {effectiveCollapsed && hoveredNav === item.label && (
-                  <div className="fixed left-[86px] z-50 pointer-events-auto min-w-[210px] rounded-xl border border-[#343c37] bg-[#1a1f1c] p-3 text-xs text-white shadow-2xl animate-[modal-in_0.14s_ease]">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 font-bold text-[#e87f67]">
-                        <Icon name={item.icon} size={14} />
-                        <span>{item.label}</span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 pl-2.5 z-50 pointer-events-auto">
+                    <div className="w-[238px] rounded-xl border border-[#343c37] bg-[#1a1f1c] p-3 text-xs text-white shadow-2xl animate-[modal-in_0.14s_ease]">
+                      <div className="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-[#282f2b]">
+                        <div className="flex items-center gap-2 font-bold text-[#e87f67]">
+                          <Icon name={item.icon} size={15} />
+                          <div>
+                            <span className="block leading-tight">{item.label}</span>
+                            <small lang="ja" className="text-[9.5px] font-normal text-[#828a85]">
+                              {item.jp}
+                            </small>
+                          </div>
+                        </div>
+                        {badge && (
+                          <span className="rounded-full bg-[#dc6048] px-1.5 py-0.5 text-[9.5px] font-bold text-white">
+                            {badge.text}
+                          </span>
+                        )}
                       </div>
-                      {badge && (
-                        <span className="rounded-full bg-[#dc6048] px-1.5 py-0.5 text-[9.5px] font-bold text-white">
-                          {badge.text}
-                        </span>
-                      )}
-                    </div>
 
-                    {/* Preview Konten Khusus per Nav Item */}
-                    <div className="text-[11px] text-[#9ca39e] mb-2 leading-relaxed">
-                      {item.label === "Beranda" &&
-                        (totalDue > 0
-                          ? `${totalDue} kartu jatuh tempo untuk ditinjau hari ini.`
-                          : "Semua kartu harian telah selesai ditinjau!")}
-                      {item.label === "Deck Saya" &&
-                        `${decks.length} deck aktif (${totalDue} kartu jatuh tempo).`}
-                      {item.label === "Sentence Mining" &&
-                        `${minedQueue.length} kartu di antrean tambang siap disimpan.`}
-                      {item.label === "Perpustakaan" &&
-                        (recentBook
-                          ? `Lanjut: ${recentBook.title} (${recentBook.progress}%)`
-                          : `${booksCount} buku & manga di perpustakaan.`)}
-                      {item.label === "Progres" &&
-                        `+${todayReviewedCount} kartu ditinjau hari ini.`}
-                    </div>
+                      {/* Preview Konten & Aksi Dinamis Khusus per Nav Item */}
+                      <div className="text-[11px] text-[#adb5b0] mb-2.5 leading-relaxed">
+                        {item.label === "Beranda" && (
+                          <div className="space-y-1.5">
+                            <p className="m-0">
+                              {totalDue > 0
+                                ? `${totalDue} kartu jatuh tempo siap diulas hari ini.`
+                                : "Semua kartu harian telah selesai diulas!"}
+                            </p>
+                            <div className="flex items-center justify-between text-[10px] text-[#d5dbd7]">
+                              <span>Target Harian</span>
+                              <span className="font-mono font-bold text-[#e87f67]">
+                                {todayReviewedCount}/{dailyGoalTarget} ({dailyGoalPct}%)
+                              </span>
+                            </div>
+                          </div>
+                        )}
 
-                    <button
-                      type="button"
-                      onClick={() => navigate(item.path)}
-                      className="w-full rounded-lg bg-[#27322d] hover:bg-[#df674d] hover:text-white py-1 px-2 text-[10.5px] font-bold text-[#d1dcd6] transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span>Buka {item.label}</span>
-                      <Icon name="arrow" size={12} />
-                    </button>
+                        {item.label === "Deck Saya" && (
+                          <div className="space-y-1.5">
+                            <p className="m-0">
+                              <strong>{rootDecksCount}</strong> deck induk •{" "}
+                              <strong>{subdecksCount}</strong> sub-deck (N5–N1).
+                            </p>
+                            {priorityDecks.length > 0 && (
+                              <div className="space-y-1 pt-1">
+                                {priorityDecks.map((d) => (
+                                  <button
+                                    key={d.id}
+                                    type="button"
+                                    onClick={() =>
+                                      navigate(d.due > 0 ? `/deck/${d.id}/review` : `/deck/${d.id}`)
+                                    }
+                                    className="w-full flex items-center justify-between rounded-md bg-[#232925] hover:bg-[#2d3631] px-2 py-1 text-[10.5px] text-left text-[#dfe5e1]"
+                                  >
+                                    <span className="truncate">{d.title}</span>
+                                    <span className="text-[#e87f67] font-bold shrink-0 ml-1">
+                                      {d.due > 0 ? `${d.due}` : "✓"}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {item.label === "Sentence Mining" && (
+                          <p className="m-0">
+                            {minedQueue.length > 0
+                              ? `${minedQueue.length} kartu di antrean tambang siap disimpan.`
+                              : "Ekstrak kalimat dari novel, manga, atau teks bebas secara instan."}
+                          </p>
+                        )}
+
+                        {item.label === "Perpustakaan" && (
+                          <div className="space-y-1.5">
+                            {recentBook ? (
+                              <>
+                                <p className="m-0 truncate text-white font-semibold" lang="ja">
+                                  📖 {recentBook.title}
+                                </p>
+                                <div className="h-1.5 w-full rounded-full bg-[#2b322e] overflow-hidden">
+                                  <div
+                                    className="h-full bg-[#df674d]"
+                                    style={{ width: `${recentBook.progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] text-[#8c948f] block">
+                                  Progres baca: {recentBook.progress}% ({booksCount} koleksi)
+                                </span>
+                              </>
+                            ) : (
+                              <p className="m-0">
+                                {booksCount} novel EPUB/TXT &amp; manga CBZ di perpustakaan lokal.
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {item.label === "Ujian JLPT" && (
+                          <div className="space-y-1.5">
+                            <p className="m-0">
+                              Simulasi 3 bagian resmi (文字・語彙, 文法・読解, 聴解):
+                            </p>
+                            <div className="grid grid-cols-5 gap-1 pt-0.5">
+                              {(["N5", "N4", "N3", "N2", "N1"] as const).map((lvl) => (
+                                <button
+                                  key={lvl}
+                                  type="button"
+                                  onClick={() => navigate(`/exam?level=${lvl}`)}
+                                  className="rounded bg-[#252d29] hover:bg-[#df674d] hover:text-white py-1 text-[10px] font-bold text-[#e2e7e4] transition-colors"
+                                >
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {item.label === "Progres" && (
+                          <p className="m-0">
+                            +{todayReviewedCount} kartu diulas hari ini • Streak {streakDays} hari berturut-turut.
+                          </p>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate(item.path)}
+                        className="w-full rounded-lg bg-[#27322d] hover:bg-[#df674d] hover:text-white py-1.5 px-2.5 text-[10.5px] font-bold text-[#d1dcd6] transition-colors flex items-center justify-center gap-1"
+                      >
+                        <span>Buka {item.label}</span>
+                        <Icon name="arrow" size={12} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -514,7 +676,52 @@ export default function ProtectedLayout() {
           })}
         </nav>
 
-        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan] & [Deck] */}
+        {/* Quick Dock Dinamis saat Sidebar Dilipat (Collapsed Mode) */}
+        {effectiveCollapsed && (
+          <div className="mt-3 pt-2.5 border-t border-[#262b28] flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              title="Pencarian Cepat & Kamus Global (Ctrl+K)"
+              className="w-full rounded-xl border border-[#2a312d] bg-[#1d2320] hover:border-[#df674d] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-[#9ea4a0] transition-colors"
+            >
+              <Icon name="search" size={16} />
+              <span className="text-[8.5px] font-bold">⌘K Cari</span>
+            </button>
+
+            {recentBook && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    recentBook.type === "manga"
+                      ? `/manga/${recentBook.id}`
+                      : `/library/${recentBook.id}`,
+                  )
+                }
+                title={`Lanjutkan Membaca: ${recentBook.title} (${recentBook.progress}%)`}
+                className="w-full rounded-xl border border-[#2c3832] bg-[#1a241f] hover:border-[#78cf9f] py-2 flex flex-col items-center justify-center gap-0.5 text-[#8fd9b0] transition-colors"
+              >
+                <Icon name="book" size={15} />
+                <span className="text-[8.5px] font-bold">{recentBook.progress}%</span>
+              </button>
+            )}
+
+            {totalDue > 0 && (
+              <button
+                type="button"
+                onClick={handleQuickStartReview}
+                title={`Review Kilat Sekarang (${totalDue} kartu jatuh tempo)`}
+                className="w-full rounded-xl border border-[#4a2f28] bg-[#291b18] hover:bg-[#df674d] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-[#f08b75] transition-colors"
+              >
+                <Icon name="bolt" size={15} />
+                <span className="text-[8.5px] font-bold">{totalDue} Ulas</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan], [Deck], & [JLPT] (Expanded Mode) */}
         <div className="sb-quick-section mt-4 pt-3 border-t border-[#262b28]">
           <div className="flex items-center justify-between px-1 mb-2">
             <div className="flex items-center gap-1 bg-[#1a201c] p-0.5 rounded-lg border border-[#2b332e]">
@@ -538,7 +745,18 @@ export default function ProtectedLayout() {
                     : "text-[#7f8682] hover:text-[#c5ccc7]"
                 }`}
               >
-                🗂️ Deck {decks.length > 0 ? `(${decks.length})` : ""}
+                🗂️ Deck ({rootDecksCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuickTab("jlpt")}
+                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                  quickTab === "jlpt"
+                    ? "bg-[#2d3832] text-[#fff]"
+                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                }`}
+              >
+                🎯 JLPT
               </button>
             </div>
 
@@ -649,6 +867,29 @@ export default function ProtectedLayout() {
                   )}
                 </>
               )}
+
+              {quickTab === "jlpt" && (
+                <div className="rounded-xl border border-[#2a302c] bg-[#1e2320] p-2.5 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] text-[#9ea4a0]">
+                    <span>Pilih Level Ujian:</span>
+                    <span lang="ja" className="text-[#e87f67] font-serif font-bold">
+                      模擬試験
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1">
+                    {(["N5", "N4", "N3", "N2", "N1"] as const).map((lvl) => (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => navigate(`/exam?level=${lvl}`)}
+                        className="rounded-md border border-[#303833] bg-[#252c28] hover:border-[#df674d] hover:bg-[#df674d] hover:text-white py-1 text-[10px] font-bold text-[#dfe5e1] transition-colors"
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -715,8 +956,14 @@ export default function ProtectedLayout() {
             className={`nav-item ${active === "Pengaturan" ? "active" : ""}`}
             title={effectiveCollapsed ? "Pengaturan & Kamus Yomitan" : undefined}
           >
-            <Icon name="settings" />
-            <span>Pengaturan</span>
+            <div className="nav-item-icon">
+              <Icon name="settings" size={19} />
+            </div>
+            <div className="nav-item-label">
+              <span className="truncate font-semibold">Pengaturan</span>
+              <small lang="ja">設定・辞書</small>
+            </div>
+            <span className="nav-collapsed-caption">Setelan</span>
           </Link>
 
           {/* Pepatah Jepang Interaktif ("Kotowaza") dengan Furigana, TTS Audio, & Terjemahan Flip */}

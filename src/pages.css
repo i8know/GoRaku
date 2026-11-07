@@ -28,11 +28,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .pg-stats strong { font: 600 24px 'Noto Serif JP', serif; }
 .pg-stats span { margin-top: 3px; color: #8e8a82; font-size: 10px; }
 .pg-stats .hot strong { color: #d35d46; }
-.pg-deck-grid { margin-bottom: 20px; }
+.pg-deck-grid { margin-bottom: 20px; align-items: start; }
 .deck-art.ochre { background: #b88b4a; } .deck-art.plum { background: #7a5568; } .deck-art.slate { background: #3f4f55; }
 .pg-deck-foot { display: flex; justify-content: space-between; align-items: center; }
 .pg-deck-foot small { color: #9b978e; font-size: 8px; }
-.pg-newdeck { min-height: 232px; border: 1.5px dashed #cfc9bd; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #6f6b63; transition: .2s ease; }
+.pg-newdeck { align-self: start; min-height: 232px; border: 1.5px dashed #cfc9bd; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #6f6b63; transition: .2s ease; }
 .pg-newdeck span { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: #f0e3dc; color: #c4543f; margin-bottom: 6px; }
 .pg-newdeck strong { font: 600 14px 'Noto Serif JP', serif; color: #25231f; }
 .pg-newdeck small { font-size: 10px; }

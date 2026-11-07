@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 export type IconName =
   | "home" | "cards" | "mine" | "book" | "chart" | "settings" | "search" | "bell" | "plus"
   | "arrow" | "flame" | "clock" | "play" | "close" | "check" | "filter" | "star" | "volume"
   | "target" | "trash" | "sparkle" | "grid" | "list" | "upload" | "bookmark" | "user" | "calendar"
-  | "edit" | "bolt" | "lock" | "key" | "download" | "refresh" | "alert" | "deck" | "arrow-left" | "eye";
+  | "edit" | "bolt" | "lock" | "key" | "download" | "refresh" | "alert" | "deck" | "arrow-left" | "eye"
+  | "chevron-down" | "chevron-up";
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, ReactNode> = {
@@ -45,6 +46,8 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     deck: <><rect x="3" y="3" width="9" height="9" /><rect x="12" y="3" width="9" height="9" /><rect x="3" y="12" width="9" height="9" /><rect x="12" y="12" width="9" height="9" /></>,
     "arrow-left": <><path d="M19 12H5M12 19l-7-7 7-7" /></>,
     eye: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" /><circle cx="12" cy="12" r="3" /></>,
+    "chevron-down": <path d="m6 9 6 6 6-6" />,
+    "chevron-up": <path d="m18 15-6-6-6 6" />,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -54,11 +57,11 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 export function Button({
-  children, className = "", onClick, ariaLabel, type = "button", disabled, style,
+  children, className = "", onClick, ariaLabel, title, type = "button", disabled, style,
 }: {
-  children: ReactNode; className?: string; onClick?: () => void; ariaLabel?: string; type?: "button" | "submit"; disabled?: boolean; style?: React.CSSProperties;
+  children: ReactNode; className?: string; onClick?: (e: MouseEvent<HTMLButtonElement>) => void; ariaLabel?: string; title?: string; type?: "button" | "submit"; disabled?: boolean; style?: React.CSSProperties;
 }) {
-  return <button type={type} className={className} onClick={onClick} aria-label={ariaLabel} disabled={disabled} style={style}>{children}</button>;
+  return <button type={type} className={className} onClick={onClick} aria-label={ariaLabel} title={title} disabled={disabled} style={style}>{children}</button>;
 }
 
 export function PageHead({ eyebrow, title, accent, copy, children }: { eyebrow: string; title: string; accent?: string; copy: string; children?: ReactNode }) {
