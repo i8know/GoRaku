@@ -151,7 +151,12 @@ export default function TestSessionRunner({
         u.lang = "ja-JP";
         u.rate = audioSpeed;
         // Variasikan pitch sedikit antara pembicara 男 dan 女 agar dialog terasa hidup
-        u.pitch = turn.speaker === "男" ? 0.85 : turn.speaker === "女" ? 1.18 : 1.0;
+        u.pitch =
+          turn.speaker === "男" || turn.gender === "male"
+            ? 0.85
+            : turn.speaker === "女" || turn.gender === "female"
+            ? 1.18
+            : 1.0;
         if (idx === turns.length - 1) {
           u.onend = () => setIsPlayingAudio(false);
           u.onerror = () => setIsPlayingAudio(false);

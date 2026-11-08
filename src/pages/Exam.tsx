@@ -7,6 +7,8 @@ import {
 import {
   generateOfficial2018N5MockTest,
   generateOfficial2018N4MockTest,
+  generateOfficial2022N3MockTest,
+  generateOfficial2016N2MockTest,
   getQuestionsForTestAndSection
 } from "../components/jlpt/mockTestData";
 import { calculateOfficialJLPTScore } from "../components/jlpt/jlpt2018N5Data";
@@ -36,7 +38,7 @@ interface MondaiBreakdownItem {
 }
 
 const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
-  "N5" | "N4",
+  "N5" | "N4" | "N3" | "N2",
   Record<string, MondaiBreakdownItem[]>
 > = {
   N5: {
@@ -305,12 +307,342 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
         badge: "3選択肢"
       }
     ]
+  },
+  N3: {
+    vocab: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：漢字の読み",
+        titleId: "Bacaan Kanji N3 dalam Hiragana",
+        count: 8,
+        rangeLabel: "No. 1–8",
+        startIndex: 0
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：表記",
+        titleId: "Penulisan Kanji N3",
+        count: 6,
+        rangeLabel: "No. 9–14",
+        startIndex: 8
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：文脈規定",
+        titleId: "Kosakata Kontekstual Kalimat",
+        count: 11,
+        rangeLabel: "No. 15–25",
+        startIndex: 14
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：言い換え類義",
+        titleId: "Sinonim & Parafrasa Kalimat",
+        count: 5,
+        rangeLabel: "No. 26–30",
+        startIndex: 25
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：用法",
+        titleId: "Penggunaan Kata yang Tepat dalam Kalimat",
+        count: 5,
+        rangeLabel: "No. 31–35",
+        startIndex: 30,
+        badge: "用法"
+      }
+    ],
+    grammar_reading: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：文法形式の判断",
+        titleId: "Tata Bahasa, Ungkapan Formal & Ekspresi N3",
+        count: 13,
+        rangeLabel: "No. 1–13",
+        startIndex: 0
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：★ 並べ替え",
+        titleId: "Menyusun Kalimat Bintang ★ N3",
+        count: 5,
+        rangeLabel: "No. 14–18",
+        startIndex: 13,
+        badge: "★ 並べ替え"
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：文章の文法",
+        titleId: "Karangan Nguyen Thi Lan「京都旅行」",
+        count: 4,
+        rangeLabel: "No. 19–22",
+        startIndex: 18,
+        badge: "文章文法"
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：内容理解（短文）",
+        titleId: "4 Bacaan Pendek (営業課コピー機・ボール投げ・財布専門店メール・古い靴割引券)",
+        count: 4,
+        rangeLabel: "No. 23–26",
+        startIndex: 22,
+        badge: "短文4題"
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：内容理解（中文）",
+        titleId: "2 Wacana Menengah (父の古いラジオ & 田舎で農業を始める・説明会)",
+        count: 6,
+        rangeLabel: "No. 27–32",
+        startIndex: 26,
+        badge: "中文2題"
+      },
+      {
+        mondai: 6,
+        titleJa: "問題 6：内容理解（長文）",
+        titleId: "Wacana Panjang「眠りと体の中心の温度」",
+        count: 4,
+        rangeLabel: "No. 33–36",
+        startIndex: 32,
+        badge: "長文読解"
+      },
+      {
+        mondai: 7,
+        titleJa: "問題 7：情報検索",
+        titleId: "Brosur「秋の日帰りバス旅行のご案内」& Aturan キャンセル料",
+        count: 2,
+        rangeLabel: "No. 37–38",
+        startIndex: 36,
+        badge: "情報検索"
+      }
+    ],
+    listening: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：課題理解",
+        titleId: "Pemahaman Tugas & Tindakan Selanjutnya",
+        count: 6,
+        rangeLabel: "1番–6番",
+        startIndex: 0,
+        badge: "課題理解"
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：ポイント理解",
+        titleId: "Pemahaman Poin Kunci & Alasan",
+        count: 6,
+        rangeLabel: "1番–6番",
+        startIndex: 6,
+        badge: "ポイント"
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：概要理解",
+        titleId: "Pemahaman Garis Besar & Tema Pembicaraan",
+        count: 3,
+        rangeLabel: "1番–3番",
+        startIndex: 12,
+        badge: "概要理解"
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：発話表現",
+        titleId: "Ungkapan Situasional Tanda Panah (➡)",
+        count: 4,
+        rangeLabel: "1番–4番",
+        startIndex: 15,
+        badge: "3選択肢"
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：即時応答",
+        titleId: "Respons Cepat Percakapan Sehari-hari",
+        count: 9,
+        rangeLabel: "1番–9番",
+        startIndex: 19,
+        badge: "3選択肢"
+      }
+    ]
+  },
+  N2: {
+    vocab: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：漢字の読み",
+        titleId: "Bacaan Kanji N2 dalam Hiragana",
+        count: 5,
+        rangeLabel: "No. 1–5",
+        startIndex: 0
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：表記",
+        titleId: "Penulisan Kanji N2",
+        count: 5,
+        rangeLabel: "No. 6–10",
+        startIndex: 5
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：語形成",
+        titleId: "Pembentukan Kata Majemuk & Prefiks/Sufiks",
+        count: 5,
+        rangeLabel: "No. 11–15",
+        startIndex: 10,
+        badge: "語形成"
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：文脈規定",
+        titleId: "Kosakata Kontekstual Kalimat N2",
+        count: 7,
+        rangeLabel: "No. 16–22",
+        startIndex: 15
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：言い換え類義",
+        titleId: "Sinonim & Parafrasa Kalimat N2",
+        count: 5,
+        rangeLabel: "No. 23–27",
+        startIndex: 22
+      },
+      {
+        mondai: 6,
+        titleJa: "問題 6：用法",
+        titleId: "Penggunaan Kata yang Tepat dalam Kalimat",
+        count: 5,
+        rangeLabel: "No. 28–32",
+        startIndex: 27,
+        badge: "用法"
+      }
+    ],
+    grammar_reading: [
+      {
+        mondai: 7,
+        titleJa: "問題 7：文法形式の判断",
+        titleId: "Tata Bahasa, Keigo & Ungkapan Kalimat N2",
+        count: 12,
+        rangeLabel: "No. 33–44",
+        startIndex: 0
+      },
+      {
+        mondai: 8,
+        titleJa: "問題 8：★ 並べ替え",
+        titleId: "Menyusun Kalimat Bintang ★ N2",
+        count: 5,
+        rangeLabel: "No. 45–49",
+        startIndex: 12,
+        badge: "★ 並べ替え"
+      },
+      {
+        mondai: 9,
+        titleJa: "問題 9：文章の文法",
+        titleId: "Kolom Majalah「日本発のトイレマーク」",
+        count: 5,
+        rangeLabel: "No. 50–54",
+        startIndex: 17,
+        badge: "文章文法"
+      },
+      {
+        mondai: 10,
+        titleJa: "問題 10：内容理解（短文）",
+        titleId: "5 Bacaan Pendek (ルール・暖房文書・目の前の目標・野田コーヒー・日記)",
+        count: 5,
+        rangeLabel: "No. 55–59",
+        startIndex: 22,
+        badge: "短文5題"
+      },
+      {
+        mondai: 11,
+        titleJa: "問題 11：内容理解（中文）",
+        titleId: "3 Wacana Menengah (個性とは何か・話し言葉と書き言葉・目的重視の旅)",
+        count: 9,
+        rangeLabel: "No. 60–68",
+        startIndex: 27,
+        badge: "中文3題"
+      },
+      {
+        mondai: 12,
+        titleJa: "問題 12：統合理解（A・B）",
+        titleId: "Perbandingan 2 Teks「公立の図書館で人気の高い本を複数冊置くこと」",
+        count: 2,
+        rangeLabel: "No. 69–70",
+        startIndex: 36,
+        badge: "統合理解A/B"
+      },
+      {
+        mondai: 13,
+        titleJa: "問題 13：主張理解（長文）",
+        titleId: "Esai Desainer「感動の森とアイディア」",
+        count: 3,
+        rangeLabel: "No. 71–73",
+        startIndex: 38,
+        badge: "長文読解"
+      },
+      {
+        mondai: 14,
+        titleJa: "問題 14：情報検索",
+        titleId: "Panduan「ミハマホテル ビュッフェのご案内」（ベルン＆みよし）",
+        count: 2,
+        rangeLabel: "No. 74–75",
+        startIndex: 41,
+        badge: "情報検索"
+      }
+    ],
+    listening: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：課題理解",
+        titleId: "Pemahaman Tugas & Tindakan Selanjutnya",
+        count: 5,
+        rangeLabel: "1番–5番",
+        startIndex: 0,
+        badge: "課題理解"
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：ポイント理解",
+        titleId: "Pemahaman Poin Kunci & Alasan",
+        count: 6,
+        rangeLabel: "1番–6番",
+        startIndex: 5,
+        badge: "ポイント"
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：概要理解",
+        titleId: "Pemahaman Garis Besar & Maksud Pembicara",
+        count: 5,
+        rangeLabel: "1番–5番",
+        startIndex: 11,
+        badge: "概要理解"
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：即時応答",
+        titleId: "Respons Cepat Percakapan N2",
+        count: 11,
+        rangeLabel: "1番–11番",
+        startIndex: 16,
+        badge: "3選択肢"
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：統合理解",
+        titleId: "Diskusi Panjang & 3番（北中・大川・上田・山下通り）質問1・質問2",
+        count: 4,
+        rangeLabel: "1番–3番(質問1・2)",
+        startIndex: 27,
+        badge: "統合理解"
+      }
+    ]
   }
 };
 
 export default function ExamPage({ notify }: ExamPageProps) {
-  // Level ujian resmi aktif (N5 atau N4)
-  const [activeExamLevel, setActiveExamLevel] = useState<"N5" | "N4">("N5");
+  // Level ujian resmi aktif (N5, N4, N3, atau N2)
+  const [activeExamLevel, setActiveExamLevel] = useState<"N5" | "N4" | "N3" | "N2">("N5");
 
   // Status Modal
   const [audioModalOpen, setAudioModalOpen] = useState<boolean>(false);
@@ -348,12 +680,20 @@ export default function ExamPage({ notify }: ExamPageProps) {
     }
   }, [sessions]);
 
-  // Ujian Resmi 2018年 日本語能力試験 N5 (91 Soal) & N4 (98 Soal)
+  // Ujian Resmi 2018年 N5 (91 Soal), 2018年 N4 (98 Soal), 2022年12月 N3 (101 Soal) & 2016年12月 N2 (106 Soal)
   const official2018N5Test = useMemo(() => generateOfficial2018N5MockTest(), []);
   const official2018N4Test = useMemo(() => generateOfficial2018N4MockTest(), []);
+  const official2022N3Test = useMemo(() => generateOfficial2022N3MockTest(), []);
+  const official2016N2Test = useMemo(() => generateOfficial2016N2MockTest(), []);
 
   const currentExamTest =
-    activeExamLevel === "N4" ? official2018N4Test : official2018N5Test;
+    activeExamLevel === "N2"
+      ? official2016N2Test
+      : activeExamLevel === "N3"
+      ? official2022N3Test
+      : activeExamLevel === "N4"
+      ? official2018N4Test
+      : official2018N5Test;
 
   // Handler Memulai Seksi (atau langsung melompat ke Mondai tertentu)
   const handleStartSection = (
@@ -532,7 +872,11 @@ export default function ExamPage({ notify }: ExamPageProps) {
           <div className="space-y-1.5">
             <div className="flex items-center flex-wrap gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#263d36] text-white">
-                {`2018年 日本語能力試験 ${currentExamTest.levelLabel}`}
+                {`${
+                  currentExamTest.officialYear?.includes("年")
+                    ? currentExamTest.officialYear
+                    : `${currentExamTest.officialYear || "2018"}年`
+                } 日本語能力試験 ${currentExamTest.levelLabel}`}
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#f1e6df] text-[#bf5b46]">
                 {`全${currentExamTest.totalQuestions}問 • ${currentExamTest.totalDurationMinutes}分 • 180点満点`}
@@ -572,20 +916,34 @@ export default function ExamPage({ notify }: ExamPageProps) {
         </div>
       </header>
 
-      {/* 2. Pemilih Level Ujian Resmi (N5 & N4 2018年 公式過去問) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 2. Pemilih Level Ujian Resmi (N5, N4, N3 & N2 公式過去問) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[
           {
             lvl: "N5" as const,
             test: official2018N5Test,
+            yearLabel: "2018年 公式過去問",
             desc: "35 文字・語彙 • 32 文法・読解（高木大学ルート表） • 24 聴解"
           },
           {
             lvl: "N4" as const,
             test: official2018N4Test,
+            yearLabel: "2018年 公式過去問",
             desc: "35 文字・語彙（用法付） • 35 文法・読解（水泳・東京駅・青野市予定表） • 28 聴解"
+          },
+          {
+            lvl: "N3" as const,
+            test: official2022N3Test,
+            yearLabel: "2022年12月 公式過去問",
+            desc: "35 文字・語彙 • 38 文法・読解（京都旅行・古いラジオ・眠りと体温・バス旅行） • 28 聴解"
+          },
+          {
+            lvl: "N2" as const,
+            test: official2016N2Test,
+            yearLabel: "2016年12月 公式過去問",
+            desc: "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・公立図書館A/B・ミハマホテル） • 31 聴解"
           }
-        ].map(({ lvl, test, desc }) => {
+        ].map(({ lvl, test, yearLabel, desc }) => {
           const isSelected = activeExamLevel === lvl;
           return (
             <button
@@ -599,7 +957,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               }`}
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap gap-2">
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                       isSelected
@@ -614,7 +972,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                       isSelected ? "text-[#d8e8e1]" : "text-[#bf5b46]"
                     }`}
                   >
-                    {`2018年 公式過去問 • 全${test.totalQuestions}問 (${test.totalDurationMinutes}分)`}
+                    {`${yearLabel} • 全${test.totalQuestions}問 (${test.totalDurationMinutes}分)`}
                   </span>
                 </div>
                 <div className="font-bold text-base font-['Noto_Serif_JP',serif]">
@@ -676,7 +1034,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 ? "未受験 • Siap Mulai Ujian"
                 : currentExamSummary.scaled.overallPassed
                 ? "合格圏内 • Lulus Standar JLPT"
-                : "不合格圏 • Perlu Mencapai 90点 & 基準点"}
+                : `不合格圏 • Perlu Mencapai ${currentExamSummary.scaled.passThresholdTotal}点 & 基準点`}
             </span>
           </div>
         </div>
@@ -738,7 +1096,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 総合得点（Total Nilai Skala）
               </span>
               <span className="px-2 py-0.5 rounded bg-[#f8ede9] text-[#bf5b46] text-[10px] font-bold">
-                合格点: 90点
+                {`合格点: ${currentExamSummary.scaled.passThresholdTotal}点`}
               </span>
             </div>
             <div className="text-2xl font-extrabold text-[#263d36] font-['Noto_Serif_JP',serif]">

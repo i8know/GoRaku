@@ -41,7 +41,8 @@ export interface QuestionExplanation {
 }
 
 export interface QuestionDialogueTurn {
-  speaker: "男" | "女" | "アナウンス" | "質問";
+  speaker: "男" | "女" | "アナウンス" | "質問" | string;
+  gender?: "male" | "female";
   text: string;
 }
 

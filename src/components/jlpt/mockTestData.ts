@@ -12,8 +12,24 @@ import {
   get2018N4GrammarReadingQuestions,
   get2018N4ListeningQuestions
 } from "./jlpt2018N4Data";
+import {
+  generateOfficial2022N3MockTest,
+  get2022N3VocabQuestions,
+  get2022N3GrammarReadingQuestions,
+  get2022N3ListeningQuestions
+} from "./jlpt2022N3Data";
+import {
+  generateOfficial2016N2MockTest,
+  get2016N2VocabQuestions,
+  get2016N2GrammarReadingQuestions,
+  get2016N2ListeningQuestions
+} from "./jlpt2016N2Data";
 
-export { generateOfficial2018N4MockTest };
+export {
+  generateOfficial2018N4MockTest,
+  generateOfficial2022N3MockTest,
+  generateOfficial2016N2MockTest
+};
 
 export const CATEGORY_LABELS: Record<string, { ja: string; id: string }> = {
   vocab: {
@@ -400,7 +416,21 @@ export function getQuestionsForTestAndSection(
   section: MockSection,
   pack: QuestionPack
 ): QuestionItem[] {
-  // 0. Jika tes adalah 2018年 日本語能力試験 N4 (98 soal lengkap dari PDF N4)
+  // 0a. Jika tes adalah 2016年12月 日本語能力試験 N2 (106 soal lengkap dari PDF N2)
+  if (test.id === 20162 || (test.isOfficialPastPaper && test.levelLabel === "N2")) {
+    if (section.category === "vocab") return get2016N2VocabQuestions();
+    if (section.category === "grammar_reading") return get2016N2GrammarReadingQuestions();
+    if (section.category === "listening") return get2016N2ListeningQuestions();
+  }
+
+  // 0b. Jika tes adalah 2022年12月 日本語能力試験 N3 (101 soal lengkap dari PDF N3)
+  if (test.id === 20223 || (test.isOfficialPastPaper && test.levelLabel === "N3")) {
+    if (section.category === "vocab") return get2022N3VocabQuestions();
+    if (section.category === "grammar_reading") return get2022N3GrammarReadingQuestions();
+    if (section.category === "listening") return get2022N3ListeningQuestions();
+  }
+
+  // 0c. Jika tes adalah 2018年 日本語能力試験 N4 (98 soal lengkap dari PDF N4)
   if (test.id === 20184 || (test.isOfficialPastPaper && test.levelLabel === "N4")) {
     if (section.category === "vocab") return get2018N4VocabQuestions();
     if (section.category === "grammar_reading") return get2018N4GrammarReadingQuestions();

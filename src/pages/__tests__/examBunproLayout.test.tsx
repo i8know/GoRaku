@@ -7,6 +7,8 @@ import ExamPage from "../Exam";
 import {
   generateOfficial2018N5MockTest,
   generateOfficial2018N4MockTest,
+  generateOfficial2022N3MockTest,
+  generateOfficial2016N2MockTest,
   getQuestionsForTestAndSection
 } from "../../components/jlpt/mockTestData";
 import {
@@ -20,6 +22,16 @@ import {
   get2018N4GrammarReadingQuestions,
   get2018N4ListeningQuestions
 } from "../../components/jlpt/jlpt2018N4Data";
+import {
+  get2022N3VocabQuestions,
+  get2022N3GrammarReadingQuestions,
+  get2022N3ListeningQuestions
+} from "../../components/jlpt/jlpt2022N3Data";
+import {
+  get2016N2VocabQuestions,
+  get2016N2GrammarReadingQuestions,
+  get2016N2ListeningQuestions
+} from "../../components/jlpt/jlpt2016N2Data";
 import AudioCheckModal from "../../components/jlpt/AudioCheckModal";
 import TestDetailsModal from "../../components/jlpt/TestDetailsModal";
 import seedPackData from "../../data/seedQuestionPack.json";
@@ -92,8 +104,93 @@ describe("Ujian JLPT Format Baru — 2018年 日本語能力試験 N5 (91問) & 
     });
   });
 
-  describe("3. Render Halaman Utama Ujian Format Baru (ExamPage)", () => {
-    it("merender pemilih level JLPT N5 & JLPT N4 beserta papan skor 0-180 dan 3 bagian ujian", () => {
+  describe("3. Dataset Lengkap 2022年12月 日本語能力試験 N3 (101 Soal PDF)", () => {
+    it("memuat seluruh 101 soal asli 2022-2 JLPT N3 (35 Kosakata + 38 Grammar/Dokkai + 28 Choukai)", () => {
+      const test2022N3 = generateOfficial2022N3MockTest();
+      expect(test2022N3.totalQuestions).toBe(101);
+      expect(test2022N3.totalDurationMinutes).toBe(140);
+      expect(test2022N3.passingScoreTotal).toBe(95);
+      expect(test2022N3.mock_sections.length).toBe(3);
+
+      const vocabN3 = get2022N3VocabQuestions();
+      const grN3 = get2022N3GrammarReadingQuestions();
+      const listenN3 = get2022N3ListeningQuestions();
+
+      expect(vocabN3.length).toBe(35);
+      expect(grN3.length).toBe(38);
+      expect(listenN3.length).toBe(28);
+
+      // Pastikan Mondai 5 用法 (5 soal), ★ 並べ替え (5 soal), Wacana 京都旅行, 古いラジオ, 眠りと体の中心の温度, serta 秋の日帰りバス旅行 tersedia
+      expect(vocabN3.filter((q) => q.mondaiNumber === 5).length).toBe(5);
+      expect(grN3.filter((q) => q.isStarQuestion).length).toBe(5);
+      expect(grN3.some((q) => q.passageHtml?.includes("京都旅行"))).toBe(true);
+      expect(grN3.some((q) => q.passageHtml?.includes("古いラジオ"))).toBe(true);
+      expect(grN3.some((q) => q.passageHtml?.includes("体の中心の温度"))).toBe(true);
+      expect(grN3.some((q) => q.passageHtml?.includes("秋の日帰りバス旅行のご案内"))).toBe(true);
+      expect(listenN3.every((q) => (q.dialogueScript?.length ?? 0) > 0)).toBe(true);
+
+      // Verifikasi pemetaan getQuestionsForTestAndSection untuk N3
+      expect(
+        getQuestionsForTestAndSection(test2022N3, test2022N3.mock_sections[0], seedPack).length
+      ).toBe(35);
+      expect(
+        getQuestionsForTestAndSection(test2022N3, test2022N3.mock_sections[1], seedPack).length
+      ).toBe(38);
+      expect(
+        getQuestionsForTestAndSection(test2022N3, test2022N3.mock_sections[2], seedPack).length
+      ).toBe(28);
+    });
+
+    it("menghitung skor skala resmi 0-180 untuk N3 dengan kriteria lulus 95点 dan batas minimum seksi (38/120 & 19/60)", () => {
+      const passScoreN3 = calculateOfficialJLPTScore(26, 35, 28, 38, 20, 28, "N3");
+      expect(passScoreN3.passThresholdTotal).toBe(95);
+      expect(passScoreN3.totalScaled).toBeGreaterThanOrEqual(95);
+      expect(passScoreN3.langReadingPassed).toBe(true);
+      expect(passScoreN3.listeningPassed).toBe(true);
+      expect(passScoreN3.overallPassed).toBe(true);
+    });
+  });
+
+  describe("4. Dataset Lengkap 2016年12月 日本語能力試験 N2 (106 Soal PDF)", () => {
+    it("memuat seluruh 106 soal asli 2016-2 JLPT N2 (32 Kosakata + 43 Grammar/Dokkai + 31 Choukai)", () => {
+      const test2016N2 = generateOfficial2016N2MockTest();
+      expect(test2016N2.totalQuestions).toBe(106);
+      expect(test2016N2.totalDurationMinutes).toBe(155);
+      expect(test2016N2.passingScoreTotal).toBe(90);
+      expect(test2016N2.mock_sections.length).toBe(3);
+
+      const vocabN2 = get2016N2VocabQuestions();
+      const grN2 = get2016N2GrammarReadingQuestions();
+      const listenN2 = get2016N2ListeningQuestions();
+
+      expect(vocabN2.length).toBe(32);
+      expect(grN2.length).toBe(43);
+      expect(listenN2.length).toBe(31);
+
+      // Pastikan Mondai 3 語形成 (5 soal), Mondai 6 用法 (5 soal), ★ 並べ替え (5 soal), トイレマーク, 公立の図書館 A/B, ミハマホテル tersedia
+      expect(vocabN2.filter((q) => q.mondaiNumber === 3).length).toBe(5);
+      expect(vocabN2.filter((q) => q.mondaiNumber === 6).length).toBe(5);
+      expect(grN2.filter((q) => q.isStarQuestion).length).toBe(5);
+      expect(grN2.some((q) => q.passageHtml?.includes("日本発のトイレマーク"))).toBe(true);
+      expect(grN2.some((q) => q.passageHtml?.includes("公立の図書館"))).toBe(true);
+      expect(grN2.some((q) => q.passageHtml?.includes("ミハマホテル"))).toBe(true);
+      expect(listenN2.every((q) => (q.dialogueScript?.length ?? 0) > 0)).toBe(true);
+
+      // Verifikasi pemetaan getQuestionsForTestAndSection untuk N2
+      expect(
+        getQuestionsForTestAndSection(test2016N2, test2016N2.mock_sections[0], seedPack).length
+      ).toBe(32);
+      expect(
+        getQuestionsForTestAndSection(test2016N2, test2016N2.mock_sections[1], seedPack).length
+      ).toBe(43);
+      expect(
+        getQuestionsForTestAndSection(test2016N2, test2016N2.mock_sections[2], seedPack).length
+      ).toBe(31);
+    });
+  });
+
+  describe("5. Render Halaman Utama Ujian Format Baru (ExamPage)", () => {
+    it("merender pemilih level JLPT N5, JLPT N4, JLPT N3 & JLPT N2 beserta papan skor 0-180 dan 3 bagian ujian", () => {
       const html = renderToString(
         <MemoryRouter>
           <ExamPage />
@@ -102,8 +199,12 @@ describe("Ujian JLPT Format Baru — 2018年 日本語能力試験 N5 (91問) & 
 
       expect(html).toContain("JLPT N5");
       expect(html).toContain("JLPT N4");
+      expect(html).toContain("JLPT N3");
+      expect(html).toContain("JLPT N2");
       expect(html).toContain("2018年 日本語能力試験 N5【完全再現】");
       expect(html).toContain("2018年 日本語能力試験 N4【完全再現】");
+      expect(html).toContain("2022年12月 日本語能力試験 N3【完全再現】");
+      expect(html).toContain("2016年12月 日本語能力試験 N2【完全再現】");
       expect(html).toContain("基準点: 38点");
       expect(html).toContain("基準点: 19点");
       expect(html).toContain("合格点: 90点");
