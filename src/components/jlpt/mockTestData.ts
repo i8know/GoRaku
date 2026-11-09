@@ -24,11 +24,18 @@ import {
   get2016N2GrammarReadingQuestions,
   get2016N2ListeningQuestions
 } from "./jlpt2016N2Data";
+import {
+  generateOfficial2023N1MockTest,
+  get2023N1VocabQuestions,
+  get2023N1GrammarReadingQuestions,
+  get2023N1ListeningQuestions
+} from "./jlpt2023N1Data";
 
 export {
   generateOfficial2018N4MockTest,
   generateOfficial2022N3MockTest,
-  generateOfficial2016N2MockTest
+  generateOfficial2016N2MockTest,
+  generateOfficial2023N1MockTest
 };
 
 export const CATEGORY_LABELS: Record<string, { ja: string; id: string }> = {
@@ -416,14 +423,21 @@ export function getQuestionsForTestAndSection(
   section: MockSection,
   pack: QuestionPack
 ): QuestionItem[] {
-  // 0a. Jika tes adalah 2016年12月 日本語能力試験 N2 (106 soal lengkap dari PDF N2)
+  // 0a. Jika tes adalah 2023年7月 日本語能力試験 N1 (96 soal lengkap dari PDF N1)
+  if (test.id === 20231 || (test.isOfficialPastPaper && test.levelLabel === "N1")) {
+    if (section.category === "vocab") return get2023N1VocabQuestions();
+    if (section.category === "grammar_reading") return get2023N1GrammarReadingQuestions();
+    if (section.category === "listening") return get2023N1ListeningQuestions();
+  }
+
+  // 0b. Jika tes adalah 2016年12月 日本語能力試験 N2 (106 soal lengkap dari PDF N2)
   if (test.id === 20162 || (test.isOfficialPastPaper && test.levelLabel === "N2")) {
     if (section.category === "vocab") return get2016N2VocabQuestions();
     if (section.category === "grammar_reading") return get2016N2GrammarReadingQuestions();
     if (section.category === "listening") return get2016N2ListeningQuestions();
   }
 
-  // 0b. Jika tes adalah 2022年12月 日本語能力試験 N3 (101 soal lengkap dari PDF N3)
+  // 0c. Jika tes adalah 2022年12月 日本語能力試験 N3 (101 soal lengkap dari PDF N3)
   if (test.id === 20223 || (test.isOfficialPastPaper && test.levelLabel === "N3")) {
     if (section.category === "vocab") return get2022N3VocabQuestions();
     if (section.category === "grammar_reading") return get2022N3GrammarReadingQuestions();

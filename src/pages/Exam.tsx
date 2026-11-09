@@ -9,6 +9,7 @@ import {
   generateOfficial2018N4MockTest,
   generateOfficial2022N3MockTest,
   generateOfficial2016N2MockTest,
+  generateOfficial2023N1MockTest,
   getQuestionsForTestAndSection
 } from "../components/jlpt/mockTestData";
 import { calculateOfficialJLPTScore } from "../components/jlpt/jlpt2018N5Data";
@@ -38,7 +39,7 @@ interface MondaiBreakdownItem {
 }
 
 const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
-  "N5" | "N4" | "N3" | "N2",
+  "N5" | "N4" | "N3" | "N2" | "N1",
   Record<string, MondaiBreakdownItem[]>
 > = {
   N5: {
@@ -637,12 +638,178 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
         badge: "統合理解"
       }
     ]
+  },
+  N1: {
+    vocab: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：漢字の読み",
+        titleId: "Bacaan Kanji N1 dalam Hiragana",
+        count: 6,
+        rangeLabel: "No. 1–6",
+        startIndex: 0
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：文脈規定",
+        titleId: "Kosakata Kontekstual Kalimat N1",
+        count: 7,
+        rangeLabel: "No. 7–13",
+        startIndex: 6
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：言い換え類義",
+        titleId: "Sinonim & Parafrasa Kalimat N1",
+        count: 6,
+        rangeLabel: "No. 14–19",
+        startIndex: 13
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：用法",
+        titleId: "Penggunaan Kata yang Tepat dalam Kalimat",
+        count: 6,
+        rangeLabel: "No. 20–25",
+        startIndex: 19,
+        badge: "用法"
+      }
+    ],
+    grammar_reading: [
+      {
+        mondai: 5,
+        titleJa: "問題 5：文法形式の判断",
+        titleId: "Tata Bahasa, Keigo & Ekspresi Kalimat N1",
+        count: 10,
+        rangeLabel: "No. 26–35",
+        startIndex: 0
+      },
+      {
+        mondai: 6,
+        titleJa: "問題 6：★ 並べ替え",
+        titleId: "Menyusun Kalimat Bintang ★ N1",
+        count: 5,
+        rangeLabel: "No. 36–40",
+        startIndex: 10,
+        badge: "★ 並べ替え"
+      },
+      {
+        mondai: 7,
+        titleJa: "問題 7：文章の文法",
+        titleId: "Esai Sastra「一生の仕事」",
+        count: 4,
+        rangeLabel: "No. 41–44",
+        startIndex: 15,
+        badge: "文章文法"
+      },
+      {
+        mondai: 8,
+        titleJa: "問題 8：内容理解（短文）",
+        titleId: "4 Bacaan Pendek (情報化社会・書くことと批判・広告の本質・対話と思考)",
+        count: 4,
+        rangeLabel: "No. 45–48",
+        startIndex: 19,
+        badge: "短文4題"
+      },
+      {
+        mondai: 9,
+        titleJa: "問題 9：内容理解（中文）",
+        titleId: "4 Wacana Menengah (常識を疑う学問・カタクリとアリ・こどもの模倣・UDと平等)",
+        count: 8,
+        rangeLabel: "No. 49–56",
+        startIndex: 23,
+        badge: "中文4題"
+      },
+      {
+        mondai: 10,
+        titleJa: "問題 10：内容理解（長文）",
+        titleId: "Wacana Panjang「ロボピーと『心とは観察する側の問題である』」",
+        count: 3,
+        rangeLabel: "No. 57–59",
+        startIndex: 31,
+        badge: "長文読解"
+      },
+      {
+        mondai: 11,
+        titleJa: "問題 11：統合理解（A・B）",
+        titleId: "Perbandingan 2 Opini「メモを取ることと話の聞き方」",
+        count: 2,
+        rangeLabel: "No. 60–61",
+        startIndex: 34,
+        badge: "統合理解A/B"
+      },
+      {
+        mondai: 12,
+        titleJa: "問題 12：主張理解（長文）",
+        titleId: "Esai Kritis「教育の不確定性と過剰な期待への警報」",
+        count: 3,
+        rangeLabel: "No. 62–64",
+        startIndex: 36,
+        badge: "主張長文"
+      },
+      {
+        mondai: 13,
+        titleJa: "問題 13：情報検索",
+        titleId: "Brosur「木原市健康づくりセンター いきいき運動教室のご案内」",
+        count: 2,
+        rangeLabel: "No. 65–66",
+        startIndex: 39,
+        badge: "情報検索"
+      }
+    ],
+    listening: [
+      {
+        mondai: 1,
+        titleJa: "問題 1：課題理解",
+        titleId: "Pemahaman Tugas & Tindakan Selanjutnya",
+        count: 5,
+        rangeLabel: "1番–5番",
+        startIndex: 0,
+        badge: "課題理解"
+      },
+      {
+        mondai: 2,
+        titleJa: "問題 2：ポイント理解",
+        titleId: "Pemahaman Poin Kunci & Alasan",
+        count: 6,
+        rangeLabel: "1番–6番",
+        startIndex: 5,
+        badge: "ポイント"
+      },
+      {
+        mondai: 3,
+        titleJa: "問題 3：概要理解",
+        titleId: "Pemahaman Garis Besar & Maksud Pembicara",
+        count: 5,
+        rangeLabel: "1番–5番",
+        startIndex: 11,
+        badge: "概要理解"
+      },
+      {
+        mondai: 4,
+        titleJa: "問題 4：即時応答",
+        titleId: "Respons Cepat Percakapan N1",
+        count: 11,
+        rangeLabel: "1番–11番",
+        startIndex: 16,
+        badge: "3選択肢"
+      },
+      {
+        mondai: 5,
+        titleJa: "問題 5：統合理解",
+        titleId: "Diskusi Panjang & 2番（島田・森山・ミナミ・北川書店）質問1・質問2",
+        count: 3,
+        rangeLabel: "1番–2番(質問1・2)",
+        startIndex: 27,
+        badge: "統合理解"
+      }
+    ]
   }
 };
 
 export default function ExamPage({ notify }: ExamPageProps) {
-  // Level ujian resmi aktif (N5, N4, N3, atau N2)
-  const [activeExamLevel, setActiveExamLevel] = useState<"N5" | "N4" | "N3" | "N2">("N5");
+  // Level ujian resmi aktif (N5, N4, N3, N2, atau N1)
+  const [activeExamLevel, setActiveExamLevel] = useState<"N5" | "N4" | "N3" | "N2" | "N1">("N5");
 
   // Status Modal
   const [audioModalOpen, setAudioModalOpen] = useState<boolean>(false);
@@ -680,14 +847,17 @@ export default function ExamPage({ notify }: ExamPageProps) {
     }
   }, [sessions]);
 
-  // Ujian Resmi 2018年 N5 (91 Soal), 2018年 N4 (98 Soal), 2022年12月 N3 (101 Soal) & 2016年12月 N2 (106 Soal)
+  // Ujian Resmi 2018年 N5 (91 Soal), 2018年 N4 (98 Soal), 2022年12月 N3 (101 Soal), 2016年12月 N2 (106 Soal) & 2023年7月 N1 (96 Soal)
   const official2018N5Test = useMemo(() => generateOfficial2018N5MockTest(), []);
   const official2018N4Test = useMemo(() => generateOfficial2018N4MockTest(), []);
   const official2022N3Test = useMemo(() => generateOfficial2022N3MockTest(), []);
   const official2016N2Test = useMemo(() => generateOfficial2016N2MockTest(), []);
+  const official2023N1Test = useMemo(() => generateOfficial2023N1MockTest(), []);
 
   const currentExamTest =
-    activeExamLevel === "N2"
+    activeExamLevel === "N1"
+      ? official2023N1Test
+      : activeExamLevel === "N2"
       ? official2016N2Test
       : activeExamLevel === "N3"
       ? official2022N3Test
@@ -916,8 +1086,8 @@ export default function ExamPage({ notify }: ExamPageProps) {
         </div>
       </header>
 
-      {/* 2. Pemilih Level Ujian Resmi (N5, N4, N3 & N2 公式過去問) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* 2. Pemilih Level Ujian Resmi (N5, N4, N3, N2 & N1 公式過去問) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
             lvl: "N5" as const,
@@ -942,6 +1112,12 @@ export default function ExamPage({ notify }: ExamPageProps) {
             test: official2016N2Test,
             yearLabel: "2016年12月 公式過去問",
             desc: "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・公立図書館A/B・ミハマホテル） • 31 聴解"
+          },
+          {
+            lvl: "N1" as const,
+            test: official2023N1Test,
+            yearLabel: "2023年7月 公式過去問",
+            desc: "25 文字・語彙（用法付） • 41 文法・読解（一生の仕事・ロボピーと心・メモA/B・教育論・木原市運動教室） • 30 聴解"
           }
         ].map(({ lvl, test, yearLabel, desc }) => {
           const isSelected = activeExamLevel === lvl;
