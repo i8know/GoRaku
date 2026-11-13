@@ -1,6 +1,6 @@
 import React from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
-import { calculateOfficialJLPTScore } from "./jlpt2018N5Data";
+import { calculateOfficialJLPTScore } from "./jlptScoring";
 import { Icon } from "../../ui";
 
 interface TestDetailsModalProps {
@@ -87,34 +87,34 @@ export default function TestDetailsModal({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
-      <div className="w-full max-w-2xl bg-[#fffdf8] rounded-2xl border border-[#e2ded5] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[#25231f]">
+      <div className="w-full max-w-2xl bg-[var(--panel)] rounded-2xl border border-[var(--garis)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[var(--tinta)]">
         {/* Header Modal */}
-        <div className="flex items-center justify-between p-5 border-b border-[#e2ded5] bg-[#f8f5ef] shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--garis)] bg-[var(--tsuki)] shrink-0">
           <div className="space-y-1">
             <div className="flex items-center flex-wrap gap-2">
-              <h2 className="text-xl font-bold text-[#25231f] font-['Noto_Serif_JP',serif]">
+              <h2 className="text-xl font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
                 {test.title}
               </h2>
               <div className="flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#e8efec] text-[#233c35]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">
                   {test.levelLabel}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f5f1e8] border border-[#dedad1] text-[#686359]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)]">
                   {`${test.totalDurationMinutes}mnt`}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f1e6df] text-[#bf5b46]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--mizu-soft)] text-[var(--ai)]">
                   {test.difficultyLabel}
                 </span>
               </div>
             </div>
             {test.subtitle && (
-              <p className="text-xs text-[#686359]">{test.subtitle}</p>
+              <p className="text-xs text-[var(--tinta-2)]">{test.subtitle}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#77736b] hover:text-[#25231f] hover:bg-[#eee8dd] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[var(--mizu-soft)] transition-colors"
             title="Tutup menu"
           >
             <Icon name="close" size={18} />
@@ -124,13 +124,13 @@ export default function TestDetailsModal({
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Total Score Banner + Official 0-180 Scale */}
-          <div className="p-4 rounded-xl border border-[#ece7de] bg-[#f9f7f2] space-y-3">
+          <div className="p-4 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)] space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase tracking-wider font-bold text-[#a06658]">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--ai)]">
                   Total Nilai
                 </span>
-                <div className="text-2xl font-bold text-[#25231f] mt-0.5 font-['Noto_Serif_JP',serif]">
+                <div className="text-2xl font-bold text-[var(--tinta)] mt-0.5 [font-family:var(--font-serif)]">
                   {hasAnyCompleted
                     ? `${totalCorrect} / ${totalQuestionsCount}`
                     : `ー / ${test.totalQuestions}`}
@@ -142,24 +142,24 @@ export default function TestDetailsModal({
                   <div
                     className={`text-2xl font-extrabold ${
                       officialScore.overallPassed
-                        ? "text-[#263d36]"
-                        : "text-[#bf5b46]"
+                        ? "text-[var(--ok)]"
+                        : "text-[var(--shu)]"
                     }`}
                   >
                     {officialScore.totalScaled} / 180点 ({overallPercentage}%)
                   </div>
-                  <div className="text-xs font-semibold text-[#77736b]">
+                  <div className="text-xs font-semibold text-[var(--tinta-2)]">
                     {officialScore.overallPassed
-                      ? "合格圏内！ お疲れ様！ (Lulus Standar JLPT)"
+                      ? "合格圏内！ お疲れ様！ (Mencapai Target Simulasi)"
                       : "頑張ってください！ (Belum Mencapai Ambang Lulus)"}
                   </div>
                 </div>
               ) : (
                 <div className="text-right">
-                  <span className="text-xs text-[#88847b]">
+                  <span className="text-xs text-[var(--tinta-2)]">
                     Belum ada bagian yang dikerjakan
                   </span>
-                  <p className="text-xs font-semibold text-[#bf5b46]">
+                  <p className="text-xs font-semibold text-[var(--ai)]">
                     頑張ってください！
                   </p>
                 </div>
@@ -167,28 +167,28 @@ export default function TestDetailsModal({
             </div>
 
             {/* Tabel Standar Penilaian Resmi 0-180 (Sesuai Halaman 2 PDF 2018 N5) */}
-            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#e5dfd3] text-xs">
-              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
-                <span className="text-[10px] text-[#77736b] block">
+            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[var(--garis)] text-xs">
+              <div className="p-2.5 rounded-lg bg-[var(--panel)] border border-[var(--garis)]">
+                <span className="text-[10px] text-[var(--tinta-2)] block">
                   言語知識・読解 (0〜120)
                 </span>
-                <span className="font-bold text-[#25231f]">
+                <span className="font-bold text-[var(--tinta)]">
                   {hasAnyCompleted ? `${officialScore.langReadingScaled} / 120点` : "基準点: 38点"}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
-                <span className="text-[10px] text-[#77736b] block">
+              <div className="p-2.5 rounded-lg bg-[var(--panel)] border border-[var(--garis)]">
+                <span className="text-[10px] text-[var(--tinta-2)] block">
                   聴解 (0〜60)
                 </span>
-                <span className="font-bold text-[#25231f]">
+                <span className="font-bold text-[var(--tinta)]">
                   {hasAnyCompleted ? `${officialScore.listeningScaled} / 60点` : "基準点: 19点"}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#fffdfa] border border-[#ece7de]">
-                <span className="text-[10px] text-[#77736b] block">
+              <div className="p-2.5 rounded-lg bg-[var(--panel)] border border-[var(--garis)]">
+                <span className="text-[10px] text-[var(--tinta-2)] block">
                   総合得点 (0〜180)
                 </span>
-                <span className="font-bold text-[#bf5b46]">
+                <span className="font-bold text-[var(--ai)]">
                   合格点: {officialScore.passThresholdTotal}点
                 </span>
               </div>
@@ -197,7 +197,7 @@ export default function TestDetailsModal({
 
           {/* List of Sections */}
           <div className="space-y-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#a06658]">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)]">
               Bagian Ujian ({test.mock_sections.length} Seksi)
             </h3>
 
@@ -209,19 +209,19 @@ export default function TestDetailsModal({
               return (
                 <div
                   key={sec.id}
-                  className="rounded-xl border border-[#e2ded5] bg-[#fffdfa] p-4 transition-all hover:border-[#d5cfc4] space-y-3"
+                  className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-4 transition-all hover:border-[var(--ai)] space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-[#f2eee6] text-[#595750] text-xs font-bold flex items-center justify-center">
+                        <span className="w-5 h-5 rounded-full bg-[var(--mizu-soft)] text-[var(--kon)] text-xs font-bold flex items-center justify-center">
                           {idx + 1}
                         </span>
-                        <h4 className="font-bold text-sm text-[#25231f] font-['Noto_Serif_JP',serif]">
+                        <h4 className="font-bold text-sm text-[var(--tinta)] [font-family:var(--font-serif)]">
                           {sec.titleJa}
                         </h4>
                       </div>
-                      <p className="text-xs text-[#77736b] ml-7">
+                      <p className="text-xs text-[var(--tinta-2)] ml-7">
                         {`${sec.titleId} • ${sec.mock_questions_count} Pertanyaan`}
                       </p>
                     </div>
@@ -233,14 +233,14 @@ export default function TestDetailsModal({
                           <button
                             type="button"
                             onClick={() => onReviewSection(test, sec)}
-                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#263d36] hover:bg-[#1d302a] text-white shadow-sm transition-colors"
+                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white shadow-sm transition-colors"
                           >
                             Buka
                           </button>
                           <button
                             type="button"
                             onClick={() => onRetakeSection(test, sec)}
-                            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[#dcd7cc] text-[#494740] hover:border-[#d95b43] hover:text-[#d95b43] bg-white transition-colors"
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--garis)] text-[var(--tinta-2)] hover:border-[var(--ai)] hover:text-[var(--ai)] bg-[var(--panel)] transition-colors"
                           >
                             Ulangi
                           </button>
@@ -249,7 +249,7 @@ export default function TestDetailsModal({
                         <button
                           type="button"
                           onClick={() => onStartSection(test, sec)}
-                          className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[#d95b43] hover:bg-[#c4543f] text-white shadow-[0_2px_8px_rgba(217,91,67,0.22)] transition-colors flex items-center gap-1.5"
+                          className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.22)] transition-colors flex items-center gap-1.5"
                         >
                           <Icon name="play" size={14} />
                           <span>Mulai</span>
@@ -259,28 +259,28 @@ export default function TestDetailsModal({
                   </div>
 
                   {/* Section Metrics Details */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-[#ece7de] text-xs">
-                    <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                      <span className="text-[10px] text-[#88847b] block">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-[var(--garis)] text-xs">
+                    <div className="p-2 rounded-lg bg-[var(--tsuki)]">
+                      <span className="text-[10px] text-[var(--tinta-2)] block">
                         Waktu Dialokasikan
                       </span>
-                      <span className="font-semibold text-[#25231f]">
+                      <span className="font-semibold text-[var(--tinta)]">
                         {`${sec.duration_minutes} Menit`}
                       </span>
                     </div>
 
                     {isCompleted ? (
                       <>
-                        <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                          <span className="text-[10px] text-[#88847b] block">
+                        <div className="p-2 rounded-lg bg-[var(--tsuki)]">
+                          <span className="text-[10px] text-[var(--tinta-2)] block">
                             Waktumu
                           </span>
                           <span
                             className={`font-semibold ${
                               sess.durationTakenSeconds <=
                               sec.duration_minutes * 60
-                                ? "text-[#263d36]"
-                                : "text-[#bf5b46]"
+                                ? "text-[var(--ok)]"
+                                : "text-[var(--shu)]"
                             }`}
                           >
                             {`${Math.floor(sess.durationTakenSeconds / 60)}m ${
@@ -289,21 +289,21 @@ export default function TestDetailsModal({
                           </span>
                         </div>
 
-                        <div className="p-2 rounded-lg bg-[#f9f7f2] col-span-2 sm:col-span-1">
-                          <span className="text-[10px] text-[#88847b] block">
+                        <div className="p-2 rounded-lg bg-[var(--tsuki)] col-span-2 sm:col-span-1">
+                          <span className="text-[10px] text-[var(--tinta-2)] block">
                             Skor Bagian
                           </span>
-                          <span className="font-bold text-[#25231f]">
+                          <span className="font-bold text-[var(--tinta)]">
                             {`${sess.correctCount} / ${sec.mock_questions_count} (${sess.percentageScore}%)`}
                           </span>
                         </div>
                       </>
                     ) : (
-                      <div className="p-2 rounded-lg bg-[#f9f7f2]">
-                        <span className="text-[10px] text-[#88847b] block">
+                      <div className="p-2 rounded-lg bg-[var(--tsuki)]">
+                        <span className="text-[10px] text-[var(--tinta-2)] block">
                           Total Soal
                         </span>
-                        <span className="font-semibold text-[#25231f]">
+                        <span className="font-semibold text-[var(--tinta)]">
                           {`${sec.mock_questions_count} Soal`}
                         </span>
                       </div>
@@ -316,12 +316,12 @@ export default function TestDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#e2ded5] flex items-center justify-between gap-3 bg-[#f8f5ef] shrink-0">
+        <div className="p-4 border-t border-[var(--garis)] flex items-center justify-between gap-3 bg-[var(--tsuki)] shrink-0">
           {nextPendingSection && (
             <button
               type="button"
               onClick={() => onStartSection(test, nextPendingSection)}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#263d36] hover:bg-[#1d302a] text-white transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5"
             >
               <Icon name="play" size={14} />
               <span>Kerjakan {nextPendingSection.titleId} Sekarang</span>
@@ -330,7 +330,7 @@ export default function TestDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[#33312c] transition-colors ml-auto"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--mizu-soft)] hover:bg-[var(--garis)] text-[var(--tinta)] transition-colors ml-auto"
           >
             Tutup
           </button>

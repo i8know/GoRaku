@@ -20,7 +20,6 @@ import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "
 import { toPlain } from "../lib/ankiText";
 import CardEditorModal from "../components/CardEditorModal";
 import DeckIdentityFields, { type DeckIdentity } from "../components/DeckIdentityFields";
-import "../decks.css";
 
 const TABS = ["Ringkasan", "Kartu", "Pengaturan"] as const;
 type Tab = (typeof TABS)[number];
@@ -353,13 +352,14 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
             <article className="dd-subdecks" style={{ gridColumn: "1 / -1" }}>
               <div className="dd-panel-head">
                 <div>
-                  <h3>Pilih Sub-deck untuk Belajar</h3>
+                  <h2>Pilih Sub-deck untuk Belajar</h2>
                   <span className="goal">Tekan sub-deck di bawah untuk memilih level belajar (misal N5 dulu atau N1)</span>
                 </div>
                 {leafDescendants.length > childSubdecks.length && (
-                  <div className="dd-subdeck-view-switcher">
+                  <div className="dd-subdeck-view-switcher" role="group" aria-label="Mode tampilan sub-deck">
                     <button
                       type="button"
+                      aria-pressed={subdeckViewMode === "direct"}
                       className={`dd-subdeck-view-btn ${subdeckViewMode === "direct" ? "active" : ""}`}
                       onClick={() => setSubdeckViewMode("direct")}
                     >
@@ -367,6 +367,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                     </button>
                     <button
                       type="button"
+                      aria-pressed={subdeckViewMode === "all-levels"}
                       className={`dd-subdeck-view-btn ${subdeckViewMode === "all-levels" ? "active" : ""}`}
                       onClick={() => setSubdeckViewMode("all-levels")}
                     >
@@ -374,6 +375,13 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                     </button>
                   </div>
                 )}
+              </div>
+
+              <div className="anki-legend" aria-label="Keterangan urutan angka kartu">
+                <span className="anki-legend-label">Urutan status:</span>
+                <span className="anki-hdr-badge anki-hdr-new">Baru</span>
+                <span className="anki-hdr-badge anki-hdr-learn">Belajar</span>
+                <span className="anki-hdr-badge anki-hdr-due">Ulasan</span>
               </div>
 
               <div className="dd-subdeck-grid">
@@ -393,23 +401,30 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                     : liveDeckStats(sub, allSrsCards[sub.id], allIntros[sub.id], settings);
 
                   return (
-                    <div
+                    <article
                       key={sub.id}
-                      className="dd-subdeck-card cursor-pointer"
-                      onClick={() => {
-                        if (isContainer) {
-                          navigate(`/deck/${sub.id}`);
-                        } else {
-                          navigate(subSt.due > 0 ? `/deck/${sub.id}/review` : `/deck/${sub.id}`);
-                        }
-                      }}
+                      className="dd-subdeck-card"
                     >
                       <div className="dd-subdeck-card-top">
-                        <div className={`dd-subdeck-card-art ${sub.color}`}>
+                        <div className={`dd-subdeck-card-art ${sub.color}`} aria-hidden="true">
                           <span>{sub.kanji}</span>
                         </div>
                         <div className="dd-subdeck-card-info">
-                          <h4 className="dd-subdeck-card-title">{sub.subdeckName || sub.title}</h4>
+                          <h3 className="dd-subdeck-card-title">
+                            <button
+                              type="button"
+                              className="w-full text-left bg-transparent border-0 p-0 cursor-pointer hover:text-[var(--ai)] truncate"
+                              onClick={() => {
+                                if (isContainer) {
+                                  navigate(`/deck/${sub.id}`);
+                                } else {
+                                  navigate(subSt.due > 0 ? `/deck/${sub.id}/review` : `/deck/${sub.id}`);
+                                }
+                              }}
+                            >
+                              {sub.subdeckName || sub.title}
+                            </button>
+                          </h3>
                           <div className="dd-subdeck-card-pills">
                             <span className="dk-subdeck-pill">{sub.level}</span>
                             {isContainer && (
@@ -417,7 +432,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                                 {subChildren.length} Sub-deck
                               </span>
                             )}
-                            <small style={{ color: "#777" }}>{sub.total.toLocaleString("id-ID")} kartu</small>
+                            <small style={{ color: "var(--tinta-2)" }}>{sub.total.toLocaleString("id-ID")} kartu</small>
                           </div>
                         </div>
                       </div>
@@ -429,26 +444,29 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                             title={`${subSt.newToday} kartu baru`}
                           >
                             {subSt.newToday}
+                            <span className="sr-only"> baru</span>
                           </span>
                           <span
                             className={`anki-num anki-num-learn ${subSt.learning > 0 ? "has-cards" : "zero"}`}
                             title={`${subSt.learning} sedang belajar`}
                           >
                             {subSt.learning}
+                            <span className="sr-only"> belajar</span>
                           </span>
                           <span
                             className={`anki-num anki-num-due ${subSt.reviewDue > 0 ? "has-cards" : "zero"}`}
                             title={`${subSt.reviewDue} ulasan jatuh tempo`}
                           >
                             {subSt.reviewDue}
+                            <span className="sr-only"> ulasan</span>
                           </span>
                         </div>
-                        <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--hot)" : "#777" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--shu)" : "var(--tinta-2)" }}>
                           {subSt.due > 0 ? `${subSt.due} tugas` : "✓ Tuntas"}
                         </span>
                       </div>
 
-                      <div className="dd-subdeck-card-actions" onClick={(e) => e.stopPropagation()}>
+                      <div className="dd-subdeck-card-actions">
                         <Button
                           className="primary-light"
                           style={{ flex: 1, padding: "6px 12px", fontSize: "12px", justifyContent: "center" }}
@@ -463,11 +481,11 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                             onClick={() => navigate(`/deck/${sub.id}`)}
                             title="Buka sub-deck di dalamnya"
                           >
-                            Buka Sub-deck →
+                            Buka Sub-deck
                           </Button>
                         )}
                       </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>
@@ -501,7 +519,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
           </article>
 
           <article className="dd-panel dd-comp">
-            <div className="dd-panel-head"><h3>Komposisi deck</h3><span className="goal">{stats.progress}% dikuasai</span></div>
+            <div className="dd-panel-head"><h2>Komposisi deck</h2><span className="goal">{stats.progress}% dikuasai</span></div>
             <div className="dd-stack" role="img" aria-label={comp.map((c) => `${c.label} ${c.n}`).join(", ")}>
               {comp.map((c) => c.n > 0 && <i key={c.key} className={c.key} style={{ flexGrow: c.n }} />)}
               {deck.total === 0 && <i className="empty" style={{ flexGrow: 1 }} />}
@@ -514,7 +532,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
           </article>
 
           <article className="dd-panel dd-forecast">
-            <div className="dd-panel-head"><h3>Perkiraan 7 hari</h3><small>{fc.reduce((a, b) => a + b, 0)} ulasan terjadwal</small></div>
+            <div className="dd-panel-head"><h2>Perkiraan 7 hari</h2><small>{fc.reduce((a, b) => a + b, 0)} ulasan terjadwal</small></div>
             <div className="dd-bars">
               {fc.map((n, i) => (
                 <div key={i} className={`dd-bar ${i === 0 ? "today" : ""}`}>
@@ -527,7 +545,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
           </article>
 
           <article className="dd-panel dd-hard">
-            <div className="dd-panel-head"><h3>Kartu paling sulit</h3><button className="imp-link" onClick={() => { setSort("Tersulit"); setFilter("all"); setTab("Kartu"); }}>Lihat semua</button></div>
+            <div className="dd-panel-head"><h2>Kartu paling sulit</h2><button type="button" className="imp-link" onClick={() => { setSort("Tersulit"); setFilter("all"); setTab("Kartu"); }}>Lihat semua</button></div>
             {hardest.length === 0 ? (
               <p className="dd-muted">Belum ada data. Kartu yang sering kamu lupakan akan muncul di sini.</p>
             ) : (
@@ -599,7 +617,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
           {cards !== null && cards.length === 0 ? (
             <div className="dd-empty">
               <div className="imp-stack" aria-hidden="true"><span className="c1">語</span><span className="c2">単</span><span className="c3">札</span></div>
-              <h3>Deck ini belum punya kartu</h3>
+              <h2>Deck ini belum punya kartu</h2>
               <p>Tambahkan kosakata secara manual, atau kirim kata dari halaman Sentence Mining.</p>
               <div className="imp-done-actions">
                 <Button className="outline-button" onClick={() => navigate("/mining")}><Icon name="mine" size={15} /> Buka Mining</Button>
@@ -615,12 +633,19 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
               {pageSlice.map((c) => {
                 const st = cardState(getCardSrs(c));
                 return (
-                  <div key={c.id} className="dd-row" role="row" tabIndex={0} onClick={() => setEditor({ mode: "edit", card: c })} onKeyDown={(e) => e.key === "Enter" && setEditor({ mode: "edit", card: c })}>
+                  <div key={c.id} className="dd-row" role="row">
                     <strong lang="ja">
-                      {c.word}
+                      <button
+                        type="button"
+                        className="text-left bg-transparent border-0 p-0 cursor-pointer hover:text-[var(--ai)]"
+                        style={{ font: "inherit", color: "inherit" }}
+                        onClick={() => setEditor({ mode: "edit", card: c })}
+                      >
+                        {c.word}
+                      </button>
                       {c.subdeck && <span className="dk-subdeck-pill ml-1.5">{c.subdeck}</span>}
                       {(c.audio || c.image) && (
-                        <span className="dd-media" onClick={(e) => e.stopPropagation()}>
+                        <span className="dd-media">
                           {c.audio && (
                             <button
                               type="button"
@@ -638,10 +663,10 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                     <span className="dk-read" lang="ja">{c.reading}</span>
                     <span className="dk-mean">{getPlainMeaning(c)}{c.tags?.length > 0 && <span className="dd-tags">{c.tags.slice(0, 3).map((t) => <em key={t}>{t}</em>)}</span>}</span>
                     <em className={`dk-state ${st.key}`}>{st.label}</em>
-                    <span className="dd-row-actions" onClick={(e) => e.stopPropagation()}>
-                      <button aria-label={`Edit ${c.word}`} title="Edit" onClick={() => setEditor({ mode: "edit", card: c })}><Icon name="edit" size={14} /></button>
-                      <button aria-label={`Reset progres ${c.word}`} title="Reset progres" disabled={!srsDeck?.[c.id]} onClick={() => resetCard(c)}><Icon name="refresh" size={14} /></button>
-                      <button aria-label={`Hapus ${c.word}`} title="Hapus" className="danger" onClick={() => void deleteCard(c)}><Icon name="trash" size={14} /></button>
+                    <span className="dd-row-actions">
+                      <button type="button" aria-label={`Edit ${c.word}`} title="Edit" onClick={() => setEditor({ mode: "edit", card: c })}><Icon name="edit" size={14} /></button>
+                      <button type="button" aria-label={`Reset progres ${c.word}`} title="Reset progres" disabled={!srsDeck?.[c.id]} onClick={() => resetCard(c)}><Icon name="refresh" size={14} /></button>
+                      <button type="button" aria-label={`Hapus ${c.word}`} title="Hapus" className="danger" onClick={() => void deleteCard(c)}><Icon name="trash" size={14} /></button>
                     </span>
                   </div>
                 );

@@ -2183,71 +2183,8 @@ export function getCuratedQuestionsForLevel(
   return pool.slice(0, Math.min(count, pool.length));
 }
 
-/**
- * Menghitung skor skala resmi JLPT (0-180) untuk hasil pengerjaan tes N5.
- * Standar Resmi 2018 JLPT N5 (Halaman 2 PDF):
- * - 言語知識（文字・語彙・文法）・読解: 0 ~ 120 poin (基準点 / Batas minimum seksi: 38 poin)
- * - 聴解: 0 ~ 60 poin (基準点 / Batas minimum seksi: 19 poin)
- * - 総合得点 (Total): 0 ~ 180 poin (合格点 / Batas lulus total: 90 poin)
- */
-export interface OfficialJLPTScoreSummary {
-  langReadingScaled: number; // 0..120
-  langReadingPassed: boolean; // >= 38
-  listeningScaled: number; // 0..60
-  listeningPassed: boolean; // >= 19
-  totalScaled: number; // 0..180
-  overallPassed: boolean; // total >= 90 && langReading >= 38 && listening >= 19
-  passThresholdTotal: number;
-  passThresholdLangReading: number;
-  passThresholdListening: number;
-}
-
-export function calculateOfficialJLPTScore(
-  vocabCorrect: number,
-  vocabTotal: number,
-  grCorrect: number,
-  grTotal: number,
-  listenCorrect: number,
-  listenTotal: number,
-  levelLabel: JLPTLevel = "N5"
-): OfficialJLPTScoreSummary {
-  const langTotalQ = Math.max(1, vocabTotal + grTotal);
-  const langCorrectQ = vocabCorrect + grCorrect;
-  const langReadingScaled = Math.round((langCorrectQ / langTotalQ) * 120);
-  const listeningScaled =
-    listenTotal > 0 ? Math.round((listenCorrect / listenTotal) * 60) : 0;
-  const totalScaled = langReadingScaled + listeningScaled;
-
-  const passThresholdTotal =
-    levelLabel === "N1"
-      ? 100
-      : levelLabel === "N2"
-      ? 90
-      : levelLabel === "N3"
-      ? 95
-      : levelLabel === "N4"
-      ? 90
-      : 80; // Untuk 2018 N5 PDF tertulis 90点 (standar tinggi) / 80点; kita gunakan 90点 sesuai tabel halaman 2 PDF!
-
-  const officialTotalTarget = levelLabel === "N5" ? 90 : passThresholdTotal;
-  const passThresholdLangReading = 38;
-  const passThresholdListening = 19;
-
-  const langReadingPassed = langReadingScaled >= passThresholdLangReading;
-  const listeningPassed = listeningScaled >= passThresholdListening;
-  const overallPassed =
-    totalScaled >= officialTotalTarget && langReadingPassed && listeningPassed;
-
-  return {
-    langReadingScaled,
-    langReadingPassed,
-    listeningScaled,
-    listeningPassed,
-    totalScaled,
-    overallPassed,
-    passThresholdTotal: officialTotalTarget,
-    passThresholdLangReading,
-    passThresholdListening
-  };
-}
+export {
+  calculateOfficialJLPTScore,
+  type OfficialJLPTScoreSummary
+} from "./jlptScoring";
 

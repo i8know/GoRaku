@@ -1,5 +1,5 @@
 import { QuestionItem, QuestionDialogueTurn } from "../../lib/questionPack";
-import { MockTest } from "./types";
+export { generateOfficial2018N4MockTest } from "./mockTestCatalog";
 
 interface Raw2018N4VocabItem {
   num: number;
@@ -2064,61 +2064,5 @@ export function get2018N4ListeningQuestions(): QuestionItem[] {
       }
     };
   });
-}
-
-/**
- * Membangun objek ujian lengkap 2018年 日本語能力試験 N4（公式過去問・全98問）
- * sesuai dokumen PDF N4-2018年 (35 文字・語彙 + 35 文法・読解 + 28 聴解 = 98 Soal, 115 Menit).
- */
-export function generateOfficial2018N4MockTest(): MockTest {
-  return {
-    id: 20184,
-    title: "2018年 日本語能力試験 N4【完全再現】",
-    subtitle: "35 文字・語彙（用法付） • 35 文法・読解（★並べ替え・水泳・東京駅・青野市予定表） • 28 聴解（会話原文付）",
-    badgeLabel: "2018年 公式過去問 • 98問",
-    isOfficialPastPaper: true,
-    officialYear: "2018",
-    level: 4,
-    levelLabel: "N4",
-    difficulty: "standard",
-    difficultyLabel: "Standar",
-    totalDurationMinutes: 115,
-    totalQuestions: 98,
-    passingScoreTotal: 90,
-    passingScoreLangReading: 38,
-    passingScoreListening: 19,
-    mock_sections: [
-      {
-        id: 2018401,
-        mock_test_id: 20184,
-        position: 1,
-        category: "vocab",
-        duration_minutes: 30,
-        mock_questions_count: 35,
-        titleJa: "言語知識（文字・語彙）",
-        titleId: "Kosakata"
-      },
-      {
-        id: 2018402,
-        mock_test_id: 20184,
-        position: 2,
-        category: "grammar_reading",
-        duration_minutes: 60,
-        mock_questions_count: 35,
-        titleJa: "言語知識（文法）・読解",
-        titleId: "Tata Bahasa & Membaca"
-      },
-      {
-        id: 2018403,
-        mock_test_id: 20184,
-        position: 3,
-        category: "listening",
-        duration_minutes: 35,
-        mock_questions_count: 28,
-        titleJa: "聴解",
-        titleId: "Mendengarkan"
-      }
-    ]
-  };
 }
 

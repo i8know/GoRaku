@@ -255,7 +255,7 @@ export default function MangaOcrPanel({
       {/* Baris Header Panel OCR + Daftar Cache Gelembung di Halaman Ini */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#c4543f] text-white">
+          <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--ai)] text-white">
             OCR Gelembung • Hal. {pageIndex + 1}
           </span>
           {bbox && (
@@ -312,10 +312,10 @@ export default function MangaOcrPanel({
                 className="inline-flex items-center rounded-lg border text-[11.5px] overflow-hidden shrink-0"
                 style={{
                   borderColor: isSelected
-                    ? "#c4543f"
+                    ? "var(--mizu)"
                     : "rgba(255,255,255,0.16)",
                   background: isSelected
-                    ? "rgba(196, 84, 63, 0.22)"
+                    ? "rgba(38, 72, 122, 0.45)"
                     : "rgba(255,255,255,0.05)",
                 }}
               >
@@ -519,7 +519,7 @@ export default function MangaOcrPanel({
                 <button
                   type="button"
                   onClick={() => onConfirmText(editedText)}
-                  className="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[12px] font-semibold bg-[#c4543f] hover:opacity-95 text-white transition"
+                  className="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[12px] font-semibold bg-[var(--ai)] hover:opacity-95 text-white transition"
                 >
                   <Icon name="check" size={14} /> Konfirmasi &amp; Simpan ke Cache
                 </button>
@@ -533,14 +533,14 @@ export default function MangaOcrPanel({
               value={editedText}
               onChange={(e) => onChangeEditedText(e.target.value)}
               placeholder="Hasil OCR akan muncul di sini. Anda juga dapat langsung mengetik atau mengoreksi teks bahasa Jepang di kotak ini..."
-              className="w-full rounded-xl border border-white/15 bg-[#1b1b20] px-3 py-2 text-[15px] leading-relaxed text-white focus:outline-none focus:border-[#c4543f]"
+              className="w-full rounded-xl border border-white/15 bg-[#1b1b20] px-3 py-2 text-[15px] leading-relaxed text-white focus:outline-none focus:border-[var(--mizu)]"
             />
           </div>
 
           {/* 2. Area Teks Karakter Dapat Diklik -> Memanggil lookup(text, startIndex) & ReaderPopup */}
-          <div className="rounded-xl border border-white/15 bg-[#1c1b18] p-3.5 flex flex-col gap-2">
+          <div className="rounded-xl border border-white/15 bg-[#141923] p-3.5 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11.5px] font-semibold text-amber-300">
+              <span className="text-[11.5px] font-semibold text-[var(--mizu)]">
                 2. Klik Karakter/Kata di Bawah untuk Membuka Kamus Yomitan &amp;
                 Tambah ke Deck:
               </span>
@@ -575,14 +575,14 @@ export default function MangaOcrPanel({
                       <span
                         key={`${idx}-${ch}`}
                         onClick={(e) => void handleCharacterClick(idx, e)}
-                        className="px-0.5 rounded cursor-pointer transition-colors hover:bg-[#c4543f]/40 hover:text-white"
+                        className="px-0.5 rounded cursor-pointer transition-colors hover:bg-[var(--ai)]/40 hover:text-white"
                         style={{
                           background: isHighlighted
-                            ? "#c4543f"
+                            ? "rgba(38, 72, 122, 0.55)"
                             : "transparent",
-                          color: isHighlighted ? "#ffffff" : "#f7f4ec",
+                          color: isHighlighted ? "#ffffff" : "var(--tsuki)",
                           borderBottom: isHighlighted
-                            ? "2px solid #fbbf24"
+                            ? "2px solid var(--mizu)"
                             : "1px dashed rgba(255,255,255,0.18)",
                         }}
                         title={`Klik untuk mencari kata mulai dari "${ch}"`}

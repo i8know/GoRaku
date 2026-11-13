@@ -8,7 +8,6 @@ import { loadDeckCards } from "../lib/deckCards";
 import { initCard, isDue, reviewCard, type SRSCard } from "../lib/srs";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
-import "../decks.css";
 
 type ReviewCard = {
   id: string;
@@ -247,7 +246,7 @@ export default function ReviewPage() {
     return (
       <div className="review-empty">
         <p>Deck tidak ditemukan.</p>
-        <Button onClick={() => navigate("/deck")}>Kembali ke Decks</Button>
+        <Button onClick={() => navigate("/deck")}>Kembali ke Deck Saya</Button>
       </div>
     );
   }
@@ -288,7 +287,7 @@ export default function ReviewPage() {
               <Icon name="home" size={16} /> Ke Beranda
             </Button>
             <Button className="outline-button" onClick={() => navigate("/deck")}>
-              <Icon name="deck" size={16} /> Lihat Decks
+              <Icon name="deck" size={16} /> Lihat Deck Saya
             </Button>
           </div>
         </div>
@@ -316,7 +315,7 @@ export default function ReviewPage() {
             disabled={history.length === 0}
             onClick={handleUndo}
             title="Batalkan penilaian sebelumnya (Ctrl+Z)"
-            className="rounded-lg border border-[#d8d3c9] bg-[#fffdfa] px-2.5 py-1 text-[11px] font-semibold text-[#494740] hover:border-[#c9604b] hover:text-[#c0503b] disabled:opacity-40 transition-colors"
+            className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1 text-[11px] font-semibold text-[var(--tinta-2)] hover:border-[var(--ai)] hover:text-[var(--ai)] disabled:opacity-40 transition-colors"
           >
             ↶ Undo
           </button>
@@ -327,8 +326,8 @@ export default function ReviewPage() {
             title="Tampilkan/sembunyikan furigana"
             className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
               settings.furi
-                ? "border-[#233c35] bg-[#233c35] text-white"
-                : "border-[#d8d3c9] bg-[#fffdfa] text-[#6f6b63]"
+                ? "border-[var(--kon)] bg-[var(--kon)] text-white"
+                : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)]"
             }`}
           >
             あ Furigana
@@ -340,8 +339,8 @@ export default function ReviewPage() {
             title="Putar audio otomatis saat jawaban dibuka"
             className={`rounded-lg border px-2 py-1 text-[11px] font-semibold transition-colors ${
               settings.audio
-                ? "border-[#d95b43] bg-[#f1e6df] text-[#bf5b46]"
-                : "border-[#d8d3c9] bg-[#fffdfa] text-[#6f6b63]"
+                ? "border-[var(--ai)] bg-[var(--ai)] text-white"
+                : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)]"
             }`}
           >
             <Icon name="volume" size={14} />

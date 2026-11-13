@@ -224,15 +224,33 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
             </div>
 
             <p className="mn-sentence" lang="ja">
-              <span className="mn-quote">「</span>
-              {cur.tokens.map((t, i) =>
-                t.m ? (
-                  <button key={i} className={`mn-tok ${sel === i ? "on" : ""} ${queue.some((m) => m.word === t.t) ? "saved" : ""}`} onClick={() => setSel(i)}>
-                    {furigana && <rt>{t.r}</rt>}{t.t}
-                  </button>
-                ) : <span key={i} className="mn-plain">{t.t}</span>,
-              )}
-              <span className="mn-quote">」</span>
+              {(() => {
+                const len = cur.tokens.length;
+                const tailCount = len >= 2 && !cur.tokens[len - 1]?.m ? 2 : len >= 1 ? 1 : 0;
+                const head = cur.tokens.slice(0, len - tailCount);
+                const tail = cur.tokens.slice(len - tailCount);
+                const renderTok = (t: Tok, idx: number) =>
+                  t.m ? (
+                    <button key={idx} className={`mn-tok ${sel === idx ? "on" : ""} ${queue.some((m) => m.word === t.t) ? "saved" : ""}`} onClick={() => setSel(idx)}>
+                      {furigana && <rt>{t.r}</rt>}{t.t}
+                    </button>
+                  ) : (
+                    <span key={idx} className="mn-plain">{t.t}</span>
+                  );
+                return (
+                  <>
+                    <span className="inline-flex items-end whitespace-nowrap">
+                      <span className="mn-quote">「</span>
+                      {head[0] && renderTok(head[0], 0)}
+                    </span>
+                    {head.slice(1).map((t, i) => renderTok(t, i + 1))}
+                    <span className="inline-flex items-end whitespace-nowrap">
+                      {tail.map((t, i) => renderTok(t, len - tailCount + i))}
+                      <span className="mn-quote">」</span>
+                    </span>
+                  </>
+                );
+              })()}
             </p>
             <p className="mn-trans">{cur.tr}</p>
 
@@ -277,7 +295,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                   onChange={(e) => setCustomText(e.target.value)}
                   rows={5}
                   placeholder="Tempel kalimat atau paragraf bahasa Jepang di sini..."
-                  className="w-full flex-1 rounded-xl border border-white/25 bg-black/25 p-3.5 text-base leading-relaxed text-white placeholder-white/50 focus:outline-none focus:border-[#d95b43]"
+                  className="w-full flex-1 rounded-xl border border-white/25 bg-black/25 p-3.5 text-base leading-relaxed text-white placeholder-white/50 focus:outline-none focus:border-[var(--mizu)]"
                   lang="ja"
                 />
                 <div className="flex items-center justify-between gap-2 text-xs text-white/75">
@@ -306,7 +324,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       onClick={() => void handleCustomCharClick(idx)}
                       className={`cursor-pointer rounded-xs px-0.5 transition-colors ${
                         isHighlighted
-                          ? "bg-[#f7f3e9] text-[#1c2d28] font-bold border-b-2 border-[#d95b43]"
+                          ? "bg-[var(--panel)] text-[var(--kon)] font-bold border-b-2 border-[var(--shu)]"
                           : "hover:bg-white/15"
                       }`}
                     >
@@ -348,7 +366,8 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       type="button"
                       onClick={() => speakJapanese(tok.r || tok.t)}
                       title="Dengarkan pengucapan kata"
-                      className="rounded-lg border border-[#dfd9ce] bg-[#f8f5ef] p-1.5 text-[#c4543f] hover:bg-[#f1e6df] transition-colors"
+                      aria-label="Dengarkan pengucapan kata"
+                      className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 min-w-[32px] min-h-[32px] inline-flex items-center justify-center text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors shrink-0"
                     >
                       <Icon name="volume" size={15} />
                     </button>
@@ -388,10 +407,10 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                         );
                         setCustomReasons(item.deinflectReasons);
                       }}
-                      className={`rounded-lg border px-2 py-1 text-xs font-semibold shrink-0 ${
+                      className={`rounded-lg border px-2.5 py-1 min-h-[28px] inline-flex items-center text-xs font-semibold shrink-0 ${
                         customWord === item.expression
-                          ? "border-[#d95b43] bg-[#f1e6df] text-[#bf5b46]"
-                          : "border-[#e1ddd4] bg-white text-[#494740]"
+                          ? "border-[var(--ai)] bg-[var(--ai)] text-white"
+                          : "border-[var(--garis)] bg-white text-[var(--tinta-2)]"
                       }`}
                     >
                       {item.expression}
@@ -400,16 +419,16 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#ebe7de]">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--garis)]">
                 <div>
-                  <small className="text-xs text-[#a06658] block">{customReading || "Bacaan (kana)"}</small>
-                  <strong lang="ja" className="text-2xl font-serif text-[#25231f]">
+                  <small className="text-xs text-[var(--ai)] block">{customReading || "Bacaan (kana)"}</small>
+                  <strong lang="ja" className="text-2xl font-serif text-[var(--tinta)]">
                     {customWord || "Pilih kata"}
                   </strong>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {customReasons.length > 0 && (
-                    <span className="rounded-md bg-[#f1e6df] px-2 py-0.5 text-[10px] font-bold text-[#bf5b46]">
+                    <span className="rounded-md bg-[rgba(38,72,122,0.1)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)]">
                       {customReasons.join(" ← ")}
                     </span>
                   )}
@@ -417,7 +436,8 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                     type="button"
                     onClick={() => speakJapanese(customReading || customWord)}
                     title="Dengarkan pengucapan kata"
-                    className="rounded-lg border border-[#dfd9ce] bg-[#f8f5ef] p-1.5 text-[#c4543f] hover:bg-[#f1e6df]"
+                    aria-label="Dengarkan pengucapan kata"
+                    className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 min-w-[32px] min-h-[32px] inline-flex items-center justify-center text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors shrink-0"
                   >
                     <Icon name="volume" size={15} />
                   </button>

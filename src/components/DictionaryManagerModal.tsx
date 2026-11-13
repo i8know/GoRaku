@@ -22,16 +22,16 @@ function Badge({
 }) {
   const styles: Record<string, React.CSSProperties> = {
     accent: {
-      background: "rgba(194, 78, 52, 0.12)",
-      color: "var(--accent, #c24e34)",
+      background: "var(--mizu-soft)",
+      color: "var(--ai)",
     },
     sage: {
-      background: "rgba(47, 107, 79, 0.14)",
-      color: "var(--sage, #2f6b4f)",
+      background: "rgba(31, 122, 92, 0.14)",
+      color: "var(--ok)",
     },
     neutral: {
-      background: "rgba(0, 0, 0, 0.06)",
-      color: "var(--ink-2, #4d4841)",
+      background: "rgba(16, 33, 58, 0.06)",
+      color: "var(--tinta-2)",
     },
   };
   return (
@@ -63,19 +63,19 @@ function Btn({
     size === "sm" ? "px-3 py-1.5 text-[12px]" : "px-4 py-2 text-[13px]";
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      background: "var(--accent, #c24e34)",
+      background: "var(--kon)",
       color: "#fff",
       borderColor: "transparent",
     },
     secondary: {
-      background: "var(--bg-canvas, #faf7f2)",
-      color: "var(--ink, #1d1b18)",
-      borderColor: "var(--line, #e6e0d6)",
+      background: "var(--tsuki)",
+      color: "var(--tinta)",
+      borderColor: "var(--garis)",
     },
     danger: {
-      background: "rgba(180, 35, 24, 0.1)",
-      color: "#b42318",
-      borderColor: "rgba(180, 35, 24, 0.25)",
+      background: "rgba(185, 60, 34, 0.1)",
+      color: "var(--shu)",
+      borderColor: "rgba(185, 60, 34, 0.25)",
     },
   };
   return (
@@ -332,31 +332,31 @@ export default function DictionaryManagerModal({
       <div
         className="w-full max-w-3xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         style={{
-          background: "var(--bg-canvas)",
-          borderColor: "var(--line)",
-          color: "var(--ink)",
+          background: "var(--panel)",
+          borderColor: "var(--garis)",
+          color: "var(--tinta)",
         }}
       >
         {/* Header */}
         <div
           className="px-6 py-4 border-b flex items-center justify-between"
-          style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+          style={{ borderColor: "var(--garis)", background: "var(--tsuki)" }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{
-                background: "var(--accent-soft)",
-                color: "var(--accent)",
+                background: "var(--mizu-soft)",
+                color: "var(--ai)",
               }}
             >
               <Icon name="book" size={18} />
             </div>
             <div>
-              <h2 className="text-[17px] font-semibold leading-tight">
+              <h2 className="text-[17px] font-semibold leading-tight" style={{ fontFamily: "var(--font-serif)" }}>
                 Kelola Kamus Yomitan
               </h2>
-              <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+              <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
                 Impor kamus ZIP berformat Yomitan (JMdict / Jitendex) untuk fitur
                 pembaca novel &amp; sentence mining
               </p>
@@ -368,7 +368,7 @@ export default function DictionaryManagerModal({
             onClick={importing ? undefined : onClose}
             disabled={importing}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40"
-            style={{ color: "var(--ink-3)" }}
+            style={{ color: "var(--tinta-2)" }}
             title="Tutup"
           >
             <Icon name="close" size={18} />
@@ -381,13 +381,13 @@ export default function DictionaryManagerModal({
           <div
             className="rounded-xl p-4 border text-[12.5px] leading-relaxed"
             style={{
-              background: "var(--surface)",
-              borderColor: "var(--line)",
-              color: "var(--ink-2)",
+              background: "var(--tsuki)",
+              borderColor: "var(--garis)",
+              color: "var(--tinta-2)",
             }}
           >
             <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="font-semibold text-[13px]" style={{ color: "var(--ink)" }}>
+              <div className="font-semibold text-[13px]" style={{ color: "var(--tinta)" }}>
                 Petunjuk Unduh Kamus (Format Yomitan v3)
               </div>
               <Badge tone="accent">100% Lokal di Browser</Badge>
@@ -407,7 +407,7 @@ export default function DictionaryManagerModal({
                   target="_blank"
                   rel="noreferrer"
                   className="underline font-medium"
-                  style={{ color: "var(--accent)" }}
+                  style={{ color: "var(--ai)" }}
                 >
                   yomitan.wiki/dictionaries
                 </a>{" "}
@@ -420,13 +420,13 @@ export default function DictionaryManagerModal({
                   target="_blank"
                   rel="noreferrer"
                   className="underline font-medium"
-                  style={{ color: "var(--accent)" }}
+                  style={{ color: "var(--ai)" }}
                 >
                   jitendex.org
                 </a>
               </li>
             </ul>
-            <p className="mt-2 text-[11px]" style={{ color: "var(--ink-3)" }}>
+            <p className="mt-2 text-[11px]" style={{ color: "var(--tinta-2)" }}>
               Lisensi data: Kamus berbasis JMdict merupakan hak cipta{" "}
               <strong>
                 Electronic Dictionary Research and Development Group (EDRDG)
@@ -448,8 +448,8 @@ export default function DictionaryManagerModal({
           <div
             className="rounded-xl p-5 border border-dashed"
             style={{
-              background: "var(--bg-elevated)",
-              borderColor: "var(--line-strong)",
+              background: "var(--panel)",
+              borderColor: "var(--garis)",
             }}
           >
             <input
@@ -466,7 +466,7 @@ export default function DictionaryManagerModal({
                   <div className="text-[14px] font-medium">
                     Tambah Kamus Baru (.zip)
                   </div>
-                  <div className="text-[12px] mt-0.5" style={{ color: "var(--ink-3)" }}>
+                  <div className="text-[12px] mt-0.5" style={{ color: "var(--tinta-2)" }}>
                     Mendukung berkas <code>index.json</code>,{" "}
                     <code>term_bank_N.json</code>, <code>tag_bank_N.json</code>,
                     dan <code>term_meta_bank_N.json</code>.
@@ -478,7 +478,7 @@ export default function DictionaryManagerModal({
                       onChange={(e) => setReplaceExisting(e.target.checked)}
                       className="rounded"
                     />
-                    <span style={{ color: "var(--ink-2)" }}>
+                    <span style={{ color: "var(--tinta-2)" }}>
                       Timpa jika kamus dengan nama yang sama sudah ada
                     </span>
                   </label>
@@ -503,7 +503,7 @@ export default function DictionaryManagerModal({
                     </div>
                     <div
                       className="text-[12px] mt-0.5"
-                      style={{ color: "var(--ink-3)" }}
+                      style={{ color: "var(--tinta-2)" }}
                     >
                       {progress?.message}
                     </div>
@@ -515,7 +515,7 @@ export default function DictionaryManagerModal({
                     {progress && progress.totalFiles > 0 && (
                       <div
                         className="text-[11px] font-mono"
-                        style={{ color: "var(--ink-3)" }}
+                        style={{ color: "var(--tinta-2)" }}
                       >
                         Berkas {progress.processedFiles}/{progress.totalFiles}
                       </div>
@@ -526,13 +526,13 @@ export default function DictionaryManagerModal({
                 {/* Progress bar */}
                 <div
                   className="w-full h-2.5 rounded-full overflow-hidden"
-                  style={{ background: "var(--line)" }}
+                  style={{ background: "var(--garis)" }}
                 >
                   <div
                     className="h-full transition-all duration-200 rounded-full"
                     style={{
                       width: `${Math.max(2, progress?.percent ?? 2)}%`,
-                      background: "var(--accent)",
+                      background: "var(--ai)",
                     }}
                   />
                 </div>
@@ -540,7 +540,7 @@ export default function DictionaryManagerModal({
                 <div className="flex items-center justify-between pt-1">
                   <div
                     className="text-[12px] font-mono"
-                    style={{ color: "var(--ink-2)" }}
+                    style={{ color: "var(--tinta-2)" }}
                   >
                     Entri tersimpan:{" "}
                     <strong>
@@ -567,9 +567,9 @@ export default function DictionaryManagerModal({
             <div
               className="rounded-xl px-4 py-3 border text-[13px] flex items-start justify-between gap-3"
               style={{
-                background: "rgba(180, 35, 24, 0.08)",
-                borderColor: "rgba(180, 35, 24, 0.3)",
-                color: "#b42318",
+                background: "rgba(185, 60, 34, 0.08)",
+                borderColor: "rgba(185, 60, 34, 0.3)",
+                color: "var(--shu)",
               }}
             >
               <span>{errorMsg}</span>
@@ -587,9 +587,9 @@ export default function DictionaryManagerModal({
             <div
               className="rounded-xl px-4 py-3 border text-[13px] flex items-start justify-between gap-3"
               style={{
-                background: "rgba(47, 107, 79, 0.1)",
-                borderColor: "rgba(47, 107, 79, 0.3)",
-                color: "var(--sage)",
+                background: "rgba(31, 122, 92, 0.1)",
+                borderColor: "rgba(31, 122, 92, 0.3)",
+                color: "var(--ok)",
               }}
             >
               <span>{successMsg}</span>
@@ -609,7 +609,7 @@ export default function DictionaryManagerModal({
               <div className="text-[14px] font-semibold">
                 Daftar Kamus Terpasang ({dictionaries.length})
               </div>
-              <span className="text-[11.5px]" style={{ color: "var(--ink-3)" }}>
+              <span className="text-[11.5px]" style={{ color: "var(--tinta-2)" }}>
                 Urutan atas memiliki prioritas pencarian lebih tinggi
               </span>
             </div>
@@ -618,8 +618,8 @@ export default function DictionaryManagerModal({
               <div
                 className="rounded-xl p-8 text-center text-[13px]"
                 style={{
-                  background: "var(--surface)",
-                  color: "var(--ink-3)",
+                  background: "var(--tsuki)",
+                  color: "var(--tinta-2)",
                 }}
               >
                 Memuat daftar kamus...
@@ -628,8 +628,8 @@ export default function DictionaryManagerModal({
               <div
                 className="rounded-xl p-8 border text-center"
                 style={{
-                  background: "var(--surface)",
-                  borderColor: "var(--line)",
+                  background: "var(--tsuki)",
+                  borderColor: "var(--garis)",
                 }}
               >
                 <div className="text-[14px] font-medium">
@@ -637,7 +637,7 @@ export default function DictionaryManagerModal({
                 </div>
                 <p
                   className="text-[12.5px] mt-1 max-w-md mx-auto"
-                  style={{ color: "var(--ink-3)" }}
+                  style={{ color: "var(--tinta-2)" }}
                 >
                   Unggah arsip ZIP kamus Yomitan (seperti{" "}
                   <code>JMdict_english.zip</code>) agar Anda dapat mengeklik kata
@@ -656,9 +656,9 @@ export default function DictionaryManagerModal({
                       className="rounded-xl p-4 border transition-all"
                       style={{
                         background: dict.enabled
-                          ? "var(--surface)"
-                          : "var(--bg-elevated)",
-                        borderColor: "var(--line)",
+                          ? "var(--tsuki)"
+                          : "var(--panel)",
+                        borderColor: "var(--garis)",
                         opacity: dict.enabled ? 1 : 0.72,
                       }}
                     >
@@ -681,8 +681,8 @@ export default function DictionaryManagerModal({
                               <span
                                 className="font-mono text-[11px] px-2 py-0.5 rounded font-semibold"
                                 style={{
-                                  background: "var(--bg-canvas)",
-                                  color: "var(--ink-2)",
+                                  background: "var(--panel)",
+                                  color: "var(--tinta-2)",
                                 }}
                               >
                                 #{idx + 1}
@@ -698,7 +698,7 @@ export default function DictionaryManagerModal({
 
                             <div
                               className="text-[12px] mt-1 flex items-center gap-3 flex-wrap"
-                              style={{ color: "var(--ink-3)" }}
+                              style={{ color: "var(--tinta-2)" }}
                             >
                               <span>Revisi: {dict.revision}</span>
                               <span>•</span>
@@ -729,7 +729,7 @@ export default function DictionaryManagerModal({
                             {dict.description && (
                               <p
                                 className="text-[12px] mt-1.5 line-clamp-2"
-                                style={{ color: "var(--ink-2)" }}
+                                style={{ color: "var(--tinta-2)" }}
                               >
                                 {dict.description}
                               </p>
@@ -745,7 +745,7 @@ export default function DictionaryManagerModal({
                                   )
                                 }
                                 className="underline font-medium"
-                                style={{ color: "var(--accent)" }}
+                                style={{ color: "var(--ai)" }}
                               >
                                 {showAttr
                                   ? "Sembunyikan Atribusi & Metadata"
@@ -757,7 +757,7 @@ export default function DictionaryManagerModal({
                                   target="_blank"
                                   rel="noreferrer"
                                   className="underline"
-                                  style={{ color: "var(--ink-3)" }}
+                                  style={{ color: "var(--tinta-2)" }}
                                 >
                                   Situs Sumber
                                 </a>
@@ -768,9 +768,9 @@ export default function DictionaryManagerModal({
                               <div
                                 className="mt-2.5 p-3 rounded-lg border text-[11.5px] whitespace-pre-wrap leading-relaxed"
                                 style={{
-                                  background: "var(--bg-canvas)",
-                                  borderColor: "var(--line)",
-                                  color: "var(--ink-2)",
+                                  background: "var(--panel)",
+                                  borderColor: "var(--garis)",
+                                  color: "var(--tinta-2)",
                                 }}
                               >
                                 {dict.author && (
@@ -796,8 +796,8 @@ export default function DictionaryManagerModal({
                             disabled={idx === 0 || importing || isDeleting}
                             className="px-2.5 py-1.5 rounded-lg border text-[12px] font-medium disabled:opacity-35"
                             style={{
-                              borderColor: "var(--line)",
-                              background: "var(--bg-canvas)",
+                              borderColor: "var(--garis)",
+                              background: "var(--panel)",
                             }}
                             title="Naikkan prioritas"
                           >
@@ -813,8 +813,8 @@ export default function DictionaryManagerModal({
                             }
                             className="px-2.5 py-1.5 rounded-lg border text-[12px] font-medium disabled:opacity-35"
                             style={{
-                              borderColor: "var(--line)",
-                              background: "var(--bg-canvas)",
+                              borderColor: "var(--garis)",
+                              background: "var(--panel)",
                             }}
                             title="Turunkan prioritas"
                           >
@@ -841,9 +841,9 @@ export default function DictionaryManagerModal({
         {/* Footer */}
         <div
           className="px-6 py-3.5 border-t flex items-center justify-between"
-          style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+          style={{ borderColor: "var(--garis)", background: "var(--tsuki)" }}
         >
-          <span className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+          <span className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
             Total kamus aktif:{" "}
             <strong>{dictionaries.filter((d) => d.enabled).length}</strong> dari{" "}
             {dictionaries.length}

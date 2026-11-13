@@ -1,60 +1,47 @@
 import { MockTest, JLPTLevel, MockSection } from "./types";
 import { QuestionPack, QuestionItem } from "../../lib/questionPack";
 import {
+  CATEGORY_LABELS,
+  generateOfficial2018N5MockTest,
+  generateOfficial2018N4MockTest,
+  generateOfficial2022N3MockTest,
+  generateOfficial2016N2MockTest,
+  generateOfficial2023N1MockTest
+} from "./mockTestCatalog";
+import {
   get2018N5VocabQuestions,
   get2018N5GrammarReadingQuestions,
   get2018N5ListeningQuestions,
   getCuratedQuestionsForLevel
 } from "./jlpt2018N5Data";
 import {
-  generateOfficial2018N4MockTest,
   get2018N4VocabQuestions,
   get2018N4GrammarReadingQuestions,
   get2018N4ListeningQuestions
 } from "./jlpt2018N4Data";
 import {
-  generateOfficial2022N3MockTest,
   get2022N3VocabQuestions,
   get2022N3GrammarReadingQuestions,
   get2022N3ListeningQuestions
 } from "./jlpt2022N3Data";
 import {
-  generateOfficial2016N2MockTest,
   get2016N2VocabQuestions,
   get2016N2GrammarReadingQuestions,
   get2016N2ListeningQuestions
 } from "./jlpt2016N2Data";
 import {
-  generateOfficial2023N1MockTest,
   get2023N1VocabQuestions,
   get2023N1GrammarReadingQuestions,
   get2023N1ListeningQuestions
 } from "./jlpt2023N1Data";
 
 export {
+  CATEGORY_LABELS,
+  generateOfficial2018N5MockTest,
   generateOfficial2018N4MockTest,
   generateOfficial2022N3MockTest,
   generateOfficial2016N2MockTest,
   generateOfficial2023N1MockTest
-};
-
-export const CATEGORY_LABELS: Record<string, { ja: string; id: string }> = {
-  vocab: {
-    ja: "言語知識（文字・語彙）",
-    id: "Kosakata"
-  },
-  grammar_reading: {
-    ja: "言語知識（文法）・読解",
-    id: "Tata Bahasa & Membaca"
-  },
-  listening: {
-    ja: "聴解",
-    id: "Mendengarkan"
-  },
-  vocab_grammar_reading: {
-    ja: "言語知識（文字・語彙・文法）・読解",
-    id: "Kosakata, Tata Bahasa & Membaca"
-  }
 };
 
 /**
@@ -356,62 +343,6 @@ function sliceWithWrap<T>(arr: T[], start: number, count: number): T[] {
     result.push(arr[idx]);
   }
   return result;
-}
-
-/**
- * Membangun objek ujian lengkap 2018年 日本語能力試験 N5（公式過去問・全91問）
- * sesuai dokumen PDF N5-2018年 (35 Kosakata + 32 Tata Bahasa & Dokkai + 24 Choukai = 91 Soal).
- */
-export function generateOfficial2018N5MockTest(): MockTest {
-  return {
-    id: 2018,
-    title: "2018年 日本語能力試験 N5【完全再現】",
-    subtitle: "35 文字・語彙 • 32 文法・読解（★並べ替え・長文・高木大学ルート表） • 24 聴解（イラスト・会話音声付）",
-    badgeLabel: "2018年 公式過去問 • 91問",
-    isOfficialPastPaper: true,
-    officialYear: "2018",
-    level: 5,
-    levelLabel: "N5",
-    difficulty: "standard",
-    difficultyLabel: "Standar",
-    totalDurationMinutes: 90,
-    totalQuestions: 91,
-    passingScoreTotal: 90,
-    passingScoreLangReading: 38,
-    passingScoreListening: 19,
-    mock_sections: [
-      {
-        id: 201801,
-        mock_test_id: 2018,
-        position: 1,
-        category: "vocab",
-        duration_minutes: 20,
-        mock_questions_count: 35,
-        titleJa: CATEGORY_LABELS.vocab.ja,
-        titleId: CATEGORY_LABELS.vocab.id
-      },
-      {
-        id: 201802,
-        mock_test_id: 2018,
-        position: 2,
-        category: "grammar_reading",
-        duration_minutes: 40,
-        mock_questions_count: 32,
-        titleJa: CATEGORY_LABELS.grammar_reading.ja,
-        titleId: CATEGORY_LABELS.grammar_reading.id
-      },
-      {
-        id: 201803,
-        mock_test_id: 2018,
-        position: 3,
-        category: "listening",
-        duration_minutes: 30,
-        mock_questions_count: 24,
-        titleJa: CATEGORY_LABELS.listening.ja,
-        titleId: CATEGORY_LABELS.listening.id
-      }
-    ]
-  };
 }
 
 /**

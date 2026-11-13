@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DictionaryManagerModal from "../components/DictionaryManagerModal";
-import MangaManageModal from "../components/MangaManageModal";
+
+const DictionaryManagerModal = lazy(() => import("../components/DictionaryManagerModal"));
+const MangaManageModal = lazy(() => import("../components/MangaManageModal"));
 import {
   addNovelFile,
   deleteNovel,
@@ -34,14 +35,9 @@ type BookSort = (typeof BOOK_SORTS)[number];
 
 const TONE_CLASSES = ["novel", "kitchen", "anime", "manga", "family", "ghibli"];
 
-export function isMangaBook(book: BookRecord): boolean {
-  return (
-    book.type === "manga" ||
-    book.format === "cbz" ||
-    book.format === "zip" ||
-    book.format === "images"
-  );
-}
+import { isMangaBook } from "../lib/bookUtils";
+
+export { isMangaBook };
 
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) {
@@ -482,30 +478,38 @@ export default function LibraryPage({
         }}
       />
 
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
 
-      <MangaManageModal
-        book={managingBook}
-        onClose={() => setManagingBook(null)}
-        onSaved={(newTitle) => {
-          setManagingBook(null);
-          notify(`Perubahan pada "${newTitle}" disimpan`);
-          void refreshBooks();
-        }}
-      />
+      {managingBook && (
+        <Suspense fallback={null}>
+          <MangaManageModal
+            book={managingBook}
+            onClose={() => setManagingBook(null)}
+            onSaved={(newTitle) => {
+              setManagingBook(null);
+              notify(`Perubahan pada "${newTitle}" disimpan`);
+              void refreshBooks();
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Pesan Error */}
       {errorMsg && (
         <div
           className="mb-5 rounded-xl px-4 py-3 border text-[13px] flex items-center justify-between gap-3"
           style={{
-            background: "rgba(180, 35, 24, 0.08)",
-            borderColor: "rgba(180, 35, 24, 0.3)",
-            color: "#b42318",
+            background: "rgba(185, 60, 34, 0.08)",
+            borderColor: "rgba(185, 60, 34, 0.3)",
+            color: "var(--shu)",
           }}
         >
           <span>{errorMsg}</span>
@@ -532,7 +536,7 @@ export default function LibraryPage({
               <button
                 type="button"
                 onClick={() => setManagingBook(heroBook)}
-                className="p-1.5 rounded-lg opacity-80 hover:opacity-100 transition"
+                className="p-1.5 min-w-[28px] min-h-[28px] max-sm:min-w-[36px] max-sm:min-h-[36px] inline-flex items-center justify-center rounded-lg opacity-80 hover:opacity-100 transition-opacity"
                 title="Edit judul atau urutan halaman"
                 aria-label={`Edit ${heroBook.title}`}
               >
@@ -557,8 +561,7 @@ export default function LibraryPage({
                 className="primary-light"
                 onClick={() => navigate(getBookReaderPath(heroBook))}
               >
-                {heroBook.progress > 0 ? "Lanjutkan Membaca" : "Mulai Membaca"}{" "}
-                <Icon name="arrow" size={17} />
+                {heroBook.progress > 0 ? "Lanjutkan Membaca" : "Mulai Membaca"}
               </Button>
               <span>
                 <Icon name="mine" size={16} /> {heroBook.minedCount ?? 0} kalimat
@@ -584,18 +587,18 @@ export default function LibraryPage({
             await handleFilesSelected(droppedFiles);
           }
         }}
-        className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-all flex flex-col sm:flex-row items-center justify-between gap-4"
+        className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-colors flex flex-col lg:flex-row items-center justify-between gap-4"
         style={{
-          borderColor: isDragging ? "var(--accent)" : "var(--line-strong)",
-          background: isDragging ? "var(--accent-soft)" : "var(--surface)",
+          borderColor: isDragging ? "var(--ai)" : "var(--garis)",
+          background: isDragging ? "rgba(180, 201, 219, 0.16)" : "var(--panel)",
         }}
       >
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3.5 min-w-0 flex-1 w-full">
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
             style={{
-              background: "var(--bg-elevated)",
-              color: "var(--accent)",
+              background: "var(--tsuki)",
+              color: "var(--ai)",
             }}
           >
             <Icon name="upload" size={20} />
@@ -605,14 +608,14 @@ export default function LibraryPage({
               Seret &amp; lepas novel (<code>.epub</code>, <code>.txt</code>) atau
               manga (<code>.cbz</code>, <code>.zip</code>, gambar, atau folder)
             </div>
-            <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
-              Arsip manga disimpan sebagai Blob lokal dan dibaca secara malas (lazy)
-              per halaman dengan natural sort otomatis.
+            <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
+              Novel dan arsip manga disimpan langsung di perangkat dan dimuat per
+              halaman sesuai urutan asli secara otomatis.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
           <Button
             className="outline-button"
             disabled={uploading}
@@ -682,8 +685,8 @@ export default function LibraryPage({
         <div
           className="rounded-2xl border p-10 text-center my-4"
           style={{
-            background: "var(--surface)",
-            borderColor: "var(--line)",
+            background: "var(--panel)",
+            borderColor: "var(--garis)",
           }}
         >
           <p className="text-[15px] font-semibold">
@@ -693,7 +696,7 @@ export default function LibraryPage({
           </p>
           <p
             className="text-[13px] mt-1 max-w-md mx-auto"
-            style={{ color: "var(--ink-3)" }}
+            style={{ color: "var(--tinta-2)" }}
           >
             {books.length === 0
               ? "Tambahkan berkas novel (.epub/.txt) atau manga (.cbz/.zip/kumpulan gambar/folder), atau muat contoh untuk menguji fitur pembaca dan sentence mining."
@@ -771,7 +774,7 @@ export default function LibraryPage({
                   <button
                     type="button"
                     onClick={() => setManagingBook(book)}
-                    className="p-1 rounded opacity-60 hover:opacity-100 shrink-0"
+                    className="p-1 min-w-[28px] min-h-[28px] max-sm:min-w-[36px] max-sm:min-h-[36px] inline-flex items-center justify-center rounded opacity-60 hover:opacity-100 shrink-0"
                     title={
                       isManga
                         ? "Edit judul & urutan halaman"
@@ -814,8 +817,7 @@ export default function LibraryPage({
                     className="deck-open"
                     onClick={() => navigate(getBookReaderPath(book))}
                   >
-                    {book.progress === 0 ? "Mulai" : "Lanjutkan"}{" "}
-                    <Icon name="arrow" size={15} />
+                    {book.progress === 0 ? "Mulai" : "Lanjutkan"}
                   </Button>
                 </div>
               </article>
