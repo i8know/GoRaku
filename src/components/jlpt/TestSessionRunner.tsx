@@ -280,7 +280,7 @@ export default function TestSessionRunner({
           <button
             type="button"
             onClick={handleRequestExit}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--tinta-2)] hover:text-[#d95b43] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--tinta-2)] hover:text-[var(--ai)] transition-colors"
           >
             <Icon name="arrow-left" size={16} />
             <span className="hidden sm:inline">Keluar ke Ringkasan Tes</span>
@@ -289,7 +289,7 @@ export default function TestSessionRunner({
 
           {/* Judul Seksi */}
           <div className="text-center">
-            <h1 className="text-xs font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h1 className="text-xs font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
               {test.title} • {section.titleJa}
             </h1>
             <span className="text-[10px] text-[var(--tinta-2)]">{section.titleId}</span>
@@ -301,10 +301,10 @@ export default function TestSessionRunner({
             <div
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider transition-colors ${
                 isTimeUp
-                  ? "bg-[#fcedea] text-[#943828] border border-[#dc6048]"
+                  ? "bg-[rgba(185,60,34,0.1)] text-[var(--shu)] border border-[var(--shu)]"
                   : isLowTime
-                  ? "bg-[#f8ede9] text-[#bf5b46] border border-[#d95b43]/40 animate-pulse"
-                  : "bg-[#f4f0e6] text-[#686359] border border-[var(--garis)]"
+                  ? "bg-[rgba(185,60,34,0.08)] text-[var(--shu)] border border-[var(--shu)]/40 animate-pulse"
+                  : "bg-[var(--tsuki)] text-[var(--tinta-2)] border border-[var(--garis)]"
               }`}
               title="Sisa waktu ujian"
             >
@@ -318,7 +318,7 @@ export default function TestSessionRunner({
               onClick={() => setShowFurigana((v) => !v)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
                 showFurigana
-                  ? "bg-[#f1e6df] border-[#d95b43]/40 text-[#bf5b46] font-semibold"
+                  ? "bg-[var(--mizu-soft)] border-[var(--ai)]/40 text-[var(--ai)] font-semibold"
                   : "bg-[var(--panel)] border-[var(--garis)] text-[var(--tinta-2)]"
               }`}
               title="Tampilkan / Sembunyikan Furigana"
@@ -346,13 +346,13 @@ export default function TestSessionRunner({
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
                         isActiveMondai
                           ? "bg-[var(--kon)] text-white shadow-sm"
-                          : "bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] hover:border-[#d95b43]"
+                          : "bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] hover:border-[var(--ai)]"
                       }`}
                     >
                       <span>もんだい {g.mondai}</span>
                       <span
                         className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                          isActiveMondai ? "bg-white/20 text-white" : "bg-[#f2eee6] text-[var(--tinta-2)]"
+                          isActiveMondai ? "bg-white/20 text-white" : "bg-[var(--tsuki)] text-[var(--tinta-2)]"
                         }`}
                       >
                         {g.count}問
@@ -364,14 +364,14 @@ export default function TestSessionRunner({
             )}
 
             {/* Mondai Instruction Banner */}
-            <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_2px_12px_rgba(62,52,41,0.03)] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_2px_12px_rgba(16,33,58,0.03)] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center flex-wrap gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--kon)] text-white">
                     Soal {currentIndex + 1} dari {questions.length}
                   </span>
                   {currentQ.isStarQuestion && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#f8ede9] text-[#bf5b46] border border-[#d95b43]/30">
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[var(--mizu-soft)] text-[var(--ai)] border border-[var(--ai)]/30">
                       ★ 並べ替え（Menyusun Kalimat Bintang）
                     </span>
                   )}
@@ -379,7 +379,7 @@ export default function TestSessionRunner({
                     Sisa: {unansweredCount} belum dijawab
                   </span>
                 </div>
-                <p className="text-xs font-semibold text-[var(--tinta)] font-['Noto_Serif_JP',serif] leading-relaxed pt-1">
+                <p className="text-xs font-semibold text-[var(--tinta)] [font-family:var(--font-serif)] leading-relaxed pt-1">
                   {getMondaiHeader(currentQ)}
                 </p>
                 {currentQ.mondaiLabelId && (
@@ -394,8 +394,8 @@ export default function TestSessionRunner({
                   onClick={handleToggleFlag}
                   className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-colors ${
                     isCurrentFlagged
-                      ? "bg-[#fff4d6] border-[#d49b27] text-[#8a5d07]"
-                      : "bg-white border-[#dcd7cc] text-[var(--tinta-2)] hover:border-[#d49b27]"
+                      ? "bg-[#FEF6E0] border-[#D49B27] text-[#8A5D07]"
+                      : "bg-[var(--panel)] border-[var(--garis)] text-[var(--tinta-2)] hover:border-[#D49B27]"
                   }`}
                   title="Tandai soal untuk diperiksa kembali (Tombol F)"
                 >
@@ -405,7 +405,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={() => setAudioSpeed((s) => (s === 0.9 ? 0.75 : 0.9))}
-                  className="px-2.5 py-1.5 rounded-xl border border-[#dcd7cc] bg-white text-[11px] font-bold text-[var(--tinta-2)] hover:border-[#d95b43]"
+                  className="px-2.5 py-1.5 rounded-xl border border-[var(--garis)] bg-[var(--panel)] text-[11px] font-bold text-[var(--tinta-2)] hover:border-[var(--ai)]"
                   title="Ubah kecepatan suara TTS Jepang"
                 >
                   {audioSpeed === 0.9 ? "1.0x" : "0.8x"}
@@ -416,8 +416,8 @@ export default function TestSessionRunner({
                   onClick={handlePlayAudio}
                   className={`px-3 py-1.5 rounded-xl border transition-colors flex items-center gap-1.5 text-xs font-bold ${
                     isPlayingAudio
-                      ? "bg-[#d95b43] text-white border-[#d95b43]"
-                      : "border-[#dcd7cc] text-[var(--tinta)] hover:text-[#d95b43] hover:border-[#d95b43] bg-white"
+                      ? "bg-[var(--ai)] text-white border-[var(--ai)]"
+                      : "border-[var(--garis)] text-[var(--tinta)] hover:text-[var(--ai)] hover:border-[var(--ai)] bg-[var(--panel)]"
                   }`}
                   title="Dengarkan percakapan / kalimat (Audio TTS)"
                 >
@@ -429,7 +429,7 @@ export default function TestSessionRunner({
 
             {/* Kotak Wacana Membaca / Dokkai / Tabel Informasi (jika soal memiliki passageHtml) */}
             {currentQ.passageHtml && (
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#f9f6ee] border-2 border-[#dcd6c8] shadow-sm space-y-2">
+              <div className="p-5 sm:p-6 rounded-2xl bg-[var(--tsuki)] border-2 border-[var(--garis)] shadow-sm space-y-2">
                 {currentQ.passageTitle && (
                   <div className="flex items-center justify-between border-b border-[var(--garis)] pb-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-[var(--kon)]">
@@ -466,23 +466,23 @@ export default function TestSessionRunner({
                   <button
                     type="button"
                     onClick={() => setShowScriptPreview((v) => !v)}
-                    className="text-xs font-semibold text-[#bf5b46] hover:underline"
+                    className="text-xs font-semibold text-[var(--ai)] hover:underline"
                   >
                     {showScriptPreview ? "Sembunyikan Naskah" : "Lihat Naskah (スクリプト)"}
                   </button>
                 </div>
 
                 {showScriptPreview && (
-                  <div className="p-3.5 rounded-xl bg-[#f9f7f2] border border-[#ece7de] space-y-2 text-xs sm:text-sm font-['Noto_Serif_JP',serif]">
+                  <div className="p-3.5 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-2 text-xs sm:text-sm [font-family:var(--font-serif)]">
                     {currentQ.dialogueScript.map((turn, tIdx) => (
                       <div key={tIdx} className="flex items-start gap-2.5">
                         <span
                           className={`px-2 py-0.5 rounded text-[11px] font-bold shrink-0 ${
                             turn.speaker === "男"
-                              ? "bg-[#e8efec] text-[var(--kon)]"
+                              ? "bg-[var(--mizu-soft)] text-[var(--kon)]"
                               : turn.speaker === "女"
-                              ? "bg-[#f8ede9] text-[#bf5b46]"
-                              : "bg-[#eee8dd] text-[var(--tinta-2)]"
+                              ? "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
+                              : "bg-[var(--panel)] text-[var(--tinta-2)]"
                           }`}
                         >
                           {turn.speaker}
@@ -496,9 +496,9 @@ export default function TestSessionRunner({
             )}
 
             {/* Prompt Kalimat */}
-            <div className="p-7 sm:p-9 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_4px_24px_rgba(62,52,41,0.04)] text-center">
+            <div className="p-7 sm:p-9 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_4px_24px_rgba(16,33,58,0.04)] text-center">
               <div
-                className="font-['Noto_Serif_JP',serif] text-xl sm:text-2xl font-medium text-[var(--tinta)] leading-loose"
+                className="[font-family:var(--font-serif)] text-xl sm:text-2xl font-medium text-[var(--tinta)] leading-loose"
                 dangerouslySetInnerHTML={{
                   __html: renderQuestionPrompt(currentQ, showFurigana)
                 }}
@@ -518,21 +518,21 @@ export default function TestSessionRunner({
                     onClick={() => handleSelectOption(optIdx)}
                     className={`group p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
                       isSelected
-                        ? "bg-[#f8ede9] border-[#d95b43] ring-2 ring-[#d95b43]/20 text-[var(--tinta)]"
-                        : "bg-[var(--panel)] border-[var(--garis)] hover:border-[#d95b43] hover:bg-[#fff9f7] text-[var(--tinta)]"
+                        ? "bg-[var(--mizu-soft)] border-[var(--ai)] ring-2 ring-[var(--ai)]/20 text-[var(--tinta)]"
+                        : "bg-[var(--panel)] border-[var(--garis)] hover:border-[var(--ai)] hover:bg-[var(--tsuki)] text-[var(--tinta)]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
                         className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
-                            ? "bg-[#d95b43] text-white"
-                            : "bg-[#f2eee6] text-[var(--tinta-2)] group-hover:bg-[#eae4d8]"
+                            ? "bg-[var(--ai)] text-white"
+                            : "bg-[var(--tsuki)] text-[var(--tinta-2)] group-hover:bg-[var(--mizu-soft)]"
                         }`}
                       >
                         {hotkeyLabel}
                       </span>
-                      <span className="font-['Noto_Serif_JP',serif] text-base font-semibold">
+                      <span className="[font-family:var(--font-serif)] text-base font-semibold">
                         {opt}
                       </span>
                     </div>
@@ -541,7 +541,7 @@ export default function TestSessionRunner({
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                         isSelected
-                          ? "border-[#d95b43] bg-[#d95b43] text-white"
+                          ? "border-[var(--ai)] bg-[var(--ai)] text-white"
                           : "border-[var(--garis)]"
                       }`}
                     >
@@ -581,16 +581,16 @@ export default function TestSessionRunner({
                     onClick={() => setCurrentIndex(idx)}
                     className={`relative w-7 h-7 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
                       isCurrent
-                        ? "bg-[#d95b43] text-white ring-2 ring-[#d95b43]/40"
+                        ? "bg-[var(--ai)] text-white ring-2 ring-[var(--ai)]/40"
                         : isAnswered
                         ? "bg-[var(--kon)] text-white"
-                        : "bg-[#f2eee6] text-[#686359] hover:bg-[#eae4d8]"
+                        : "bg-[var(--tsuki)] text-[var(--tinta-2)] hover:bg-[var(--mizu-soft)]"
                     }`}
                     title={`Soal ${idx + 1}${isFlagged ? " (Ditandai)" : ""}`}
                   >
                     {idx + 1}
                     {isFlagged && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#d49b27] border border-white" />
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#D49B27] border border-white" />
                     )}
                   </button>
                 );
@@ -604,7 +604,7 @@ export default function TestSessionRunner({
               type="button"
               disabled={currentIndex === 0}
               onClick={handlePrev}
-              className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[#dcd7cc] bg-[var(--panel)] disabled:opacity-30 disabled:cursor-not-allowed text-[var(--tinta-2)] hover:border-[#d95b43] hover:text-[#d95b43] transition-colors"
+              className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[var(--garis)] bg-[var(--panel)] disabled:opacity-30 disabled:cursor-not-allowed text-[var(--tinta-2)] hover:border-[var(--ai)] hover:text-[var(--ai)] transition-colors"
             >
               ← Sebelumnya
             </button>
@@ -614,7 +614,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={handleRequestSubmit}
-                  className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[#d95b43]/40 bg-[#f8ede9] hover:bg-[#f1e6df] text-[#bf5b46] transition-colors"
+                  className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[var(--ai)]/40 bg-[var(--mizu-soft)] hover:bg-[var(--garis)] text-[var(--kon)] transition-colors"
                 >
                   Selesai & Nilai ({answeredCount}/{questions.length})
                 </button>
@@ -624,7 +624,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={handleRequestSubmit}
-                  className="px-6 py-2.5 text-xs font-bold rounded-xl bg-[#d95b43] hover:bg-[#c4543f] text-white shadow-[0_2px_8px_rgba(217,91,67,0.25)] transition-colors flex items-center gap-1.5"
+                  className="px-6 py-2.5 text-xs font-bold rounded-xl bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.25)] transition-colors flex items-center gap-1.5"
                 >
                   <Icon name="check" size={16} />
                   <span>Kirim Jawaban</span>
@@ -633,7 +633,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-[var(--kon)] hover:bg-[#1d302a] text-white shadow-sm transition-colors"
+                  className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white shadow-sm transition-colors"
                 >
                   Berikutnya →
                 </button>
@@ -651,7 +651,7 @@ export default function TestSessionRunner({
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
           <div className="w-full max-w-sm bg-[var(--panel)] rounded-2xl border border-[var(--garis)] p-6 space-y-4 shadow-xl text-[var(--tinta)]">
-            <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h3 className="font-bold text-base text-[var(--tinta)] [font-family:var(--font-serif)]">
               Akhiri sesi tanpa mengirim jawaban?
             </h3>
             <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
@@ -661,7 +661,7 @@ export default function TestSessionRunner({
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
               >
                 Tidak, kembali
               </button>
@@ -671,7 +671,7 @@ export default function TestSessionRunner({
                   setShowExitConfirm(false);
                   onExit();
                 }}
-                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#dc6048] text-white hover:bg-[#b0432e]"
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--shu)] text-white hover:bg-[#9E321B]"
               >
                 Ya, akhiri sesi
               </button>
@@ -688,7 +688,7 @@ export default function TestSessionRunner({
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
           <div className="w-full max-w-sm bg-[var(--panel)] rounded-2xl border border-[var(--garis)] p-6 space-y-4 shadow-xl text-[var(--tinta)]">
-            <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h3 className="font-bold text-base text-[var(--tinta)] [font-family:var(--font-serif)]">
               Kirim jawabanmu sekarang?
             </h3>
             <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
@@ -698,7 +698,7 @@ export default function TestSessionRunner({
               <button
                 type="button"
                 onClick={() => setShowSubmitConfirm(false)}
-                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
               >
                 Tidak, periksa lagi
               </button>
@@ -708,7 +708,7 @@ export default function TestSessionRunner({
                   setShowSubmitConfirm(false);
                   handleFinalSubmit();
                 }}
-                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#d95b43] text-white hover:bg-[#c4543f]"
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--shu)] text-white hover:bg-[#9E321B]"
               >
                 Ya, kirim jawaban
               </button>

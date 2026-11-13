@@ -90,7 +90,7 @@ export default function TestReviewView({
         <button
           type="button"
           onClick={onBackToOverview}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--tinta-2)] hover:text-[#d95b43] transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--tinta-2)] hover:text-[var(--ai)] transition-colors"
         >
           <Icon name="arrow-left" size={16} />
           <span>Kembali ke Ringkasan Tes</span>
@@ -101,7 +101,7 @@ export default function TestReviewView({
           onClick={() => setShowFurigana((v) => !v)}
           className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
             showFurigana
-              ? "bg-[#f1e6df] border-[#d95b43]/40 text-[#bf5b46] font-semibold"
+              ? "bg-[var(--mizu-soft)] border-[var(--ai)]/40 text-[var(--ai)] font-semibold"
               : "bg-[var(--panel)] border-[var(--garis)] text-[var(--tinta-2)]"
           }`}
         >
@@ -110,16 +110,16 @@ export default function TestReviewView({
       </div>
 
       {/* Result Score Banner */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_4px_24px_rgba(62,52,41,0.04)] space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ece7de] pb-6">
+      <div className="p-6 sm:p-8 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_4px_24px_rgba(16,33,58,0.04)] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--garis)] pb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#e8efec] text-[var(--kon)]">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">
                 {test.levelLabel}
               </span>
               <span className="text-xs text-[var(--tinta-2)]">{section.titleId}</span>
             </div>
-            <h1 className="text-2xl font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h1 className="text-2xl font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
               {test.title} • {section.titleJa}
             </h1>
             <p className="text-xs text-[var(--tinta-2)] mt-1">
@@ -131,8 +131,8 @@ export default function TestReviewView({
             <span
               className={`inline-block px-3.5 py-1 rounded-full text-xs font-bold ${
                 isPassed
-                  ? "bg-[#e8efec] text-[var(--kon)]"
-                  : "bg-[#f1e6df] text-[#bf5b46]"
+                  ? "bg-emerald-50 text-[var(--ok)]"
+                  : "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
               }`}
             >
               {isPassed ? "お疲れ様！ Lulus Seksi" : "頑張ってください！ Perlu Latihan"}
@@ -142,26 +142,26 @@ export default function TestReviewView({
 
         {/* 3 Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de]">
-            <span className="text-[10px] font-bold text-[#a06658] block uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]">
+            <span className="text-[10px] font-bold text-[var(--ai)] block uppercase tracking-wider">
               Skor Pengerjaan & Skala JLPT
             </span>
-            <div className="text-3xl font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif] mt-1">
+            <div className="text-3xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)] mt-1">
               {correctCount}{" "}
               <span className="text-base font-normal text-[var(--tinta-2)]">
                 / {totalQuestions}
               </span>
             </div>
-            <div className="text-xs font-semibold text-[#bf5b46] mt-1">
+            <div className="text-xs font-semibold text-[var(--ai)] mt-1">
               {percentageScore}% Benar • Skala: {scaledScore} / 60点
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de]">
-            <span className="text-[10px] font-bold text-[#a06658] block uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]">
+            <span className="text-[10px] font-bold text-[var(--ai)] block uppercase tracking-wider">
               Waktu yang Digunakan
             </span>
-            <div className="text-3xl font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif] mt-1">
+            <div className="text-3xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)] mt-1">
               {Math.floor(durationTakenSeconds / 60)}m {durationTakenSeconds % 60}d
             </div>
             <div className="text-xs text-[var(--tinta-2)] mt-1">
@@ -169,9 +169,9 @@ export default function TestReviewView({
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] flex flex-col justify-between">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] flex flex-col justify-between">
             <div>
-              <span className="text-[10px] font-bold text-[#a06658] block uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[var(--ai)] block uppercase tracking-wider">
                 Aksi Lanjutan
               </span>
               <p className="text-xs text-[var(--tinta-2)] mt-1">
@@ -181,7 +181,7 @@ export default function TestReviewView({
             <button
               type="button"
               onClick={onRetake}
-              className="mt-3 w-full py-2 px-3 text-xs font-semibold rounded-lg bg-[var(--kon)] hover:bg-[#1d302a] text-white shadow-sm transition-colors"
+              className="mt-3 w-full py-2 px-3 text-xs font-semibold rounded-lg bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white shadow-sm transition-colors"
             >
               Ulangi Seksi Ini
             </button>
@@ -190,14 +190,14 @@ export default function TestReviewView({
       </div>
 
       {/* Filter Tabs for Questions */}
-      <div className="flex items-center gap-2 border-b border-[#ece7de] pb-3">
+      <div className="flex items-center gap-2 border-b border-[var(--garis)] pb-3">
         <button
           type="button"
           onClick={() => setFilterMode("all")}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
             filterMode === "all"
               ? "bg-[var(--kon)] text-white"
-              : "text-[var(--tinta-2)] hover:bg-[#f2eee6]"
+              : "text-[var(--tinta-2)] hover:bg-[var(--mizu-soft)]"
           }`}
         >
           Semua Pertanyaan ({totalQuestions})
@@ -208,12 +208,12 @@ export default function TestReviewView({
           onClick={() => setFilterMode("incorrect")}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
             filterMode === "incorrect"
-              ? "bg-[#dc6048] text-white"
-              : "text-[var(--tinta-2)] hover:bg-[#fcedea] hover:text-[#dc6048]"
+              ? "bg-[var(--shu)] text-white"
+              : "text-[var(--tinta-2)] hover:bg-[rgba(185,60,34,0.08)] hover:text-[var(--shu)]"
           }`}
         >
           <span>Jawaban Salah</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#fcedea] text-[#943828]">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[rgba(185,60,34,0.12)] text-[var(--shu)]">
             {incorrectCount}
           </span>
         </button>
@@ -224,11 +224,11 @@ export default function TestReviewView({
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
             filterMode === "correct"
               ? "bg-[var(--kon)] text-white"
-              : "text-[var(--tinta-2)] hover:bg-[#e8efec] hover:text-[var(--kon)]"
+              : "text-[var(--tinta-2)] hover:bg-[var(--mizu-soft)] hover:text-[var(--kon)]"
           }`}
         >
           <span>Jawaban Benar</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#e8efec] text-[var(--kon)]">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--mizu-soft)] text-[var(--kon)]">
             {correctCount}
           </span>
         </button>
@@ -245,18 +245,18 @@ export default function TestReviewView({
                 key={q.id}
                 className={`p-6 rounded-2xl bg-[var(--panel)] border transition-all space-y-4 ${
                   isCorrect
-                    ? "border-[var(--garis)] shadow-[0_2px_12px_rgba(62,52,41,0.03)]"
-                    : "border-[#f3d3cb] bg-[#fff9f8] shadow-[0_2px_12px_rgba(217,91,67,0.04)]"
+                    ? "border-[var(--garis)] shadow-[0_2px_12px_rgba(16,33,58,0.03)]"
+                    : "border-[var(--shu)]/35 bg-[rgba(185,60,34,0.03)] shadow-[0_2px_12px_rgba(185,60,34,0.04)]"
                 }`}
               >
                 {/* Header Card */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#f2eee6] text-[var(--tinta-2)]">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[var(--tsuki)] text-[var(--tinta-2)] border border-[var(--garis)]">
                       Soal #{idx + 1}
                     </span>
                     {q.mondaiNumber && (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e8efec] text-[var(--kon)]">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[var(--mizu-soft)] text-[var(--kon)]">
                         もんだい {q.mondaiNumber}
                       </span>
                     )}
@@ -271,8 +271,8 @@ export default function TestReviewView({
                       onClick={() => handlePlayQuestionAudio(q)}
                       className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
                         playingQuestionId === q.id
-                          ? "bg-[#d95b43] text-white border-[#d95b43]"
-                          : "bg-white border-[#dcd7cc] text-[var(--tinta-2)] hover:border-[#d95b43]"
+                          ? "bg-[var(--ai)] text-white border-[var(--ai)]"
+                          : "bg-[var(--panel)] border-[var(--garis)] text-[var(--tinta-2)] hover:border-[var(--ai)]"
                       }`}
                     >
                       <Icon name="volume" size={14} />
@@ -282,8 +282,8 @@ export default function TestReviewView({
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
                         isCorrect
-                          ? "bg-[#e8efec] text-[var(--kon)]"
-                          : "bg-[#fcedea] text-[#943828]"
+                          ? "bg-emerald-50 text-[var(--ok)]"
+                          : "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
                       }`}
                     >
                       {isCorrect ? "✓ Benar" : "✗ Salah"}
@@ -294,7 +294,7 @@ export default function TestReviewView({
                 {/* Wacana Membaca jika ada */}
                 {q.passageHtml && (
                   <div
-                    className="p-4 rounded-xl bg-[#f9f6ee] border border-[#dcd6c8]"
+                    className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]"
                     dangerouslySetInnerHTML={{ __html: q.passageHtml }}
                   />
                 )}
@@ -306,7 +306,7 @@ export default function TestReviewView({
 
                 {/* Prompt Kalimat */}
                 <div
-                  className="font-['Noto_Serif_JP',serif] text-lg font-medium text-[var(--tinta)] leading-relaxed"
+                  className="[font-family:var(--font-serif)] text-lg font-medium text-[var(--tinta)] leading-relaxed"
                   dangerouslySetInnerHTML={{
                     __html: renderQuestionPrompt(q, showFurigana)
                   }}
@@ -321,10 +321,10 @@ export default function TestReviewView({
                     let optClass = "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)]";
                     if (isKey) {
                       optClass =
-                        "border-[var(--kon)] bg-[#e8efec] text-[#1b3a2e] font-bold ring-1 ring-[var(--kon)]";
+                        "border-[var(--ok)] bg-emerald-50 text-[var(--ok)] font-bold ring-1 ring-[var(--ok)]";
                     } else if (isUserChoice && !isCorrect) {
                       optClass =
-                        "border-[#dc6048] bg-[#fcedea] text-[#943828] line-through ring-1 ring-[#dc6048]";
+                        "border-[var(--shu)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)] line-through ring-1 ring-[var(--shu)]";
                     }
 
                     return (
@@ -334,17 +334,17 @@ export default function TestReviewView({
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-bold opacity-70">{optIdx + 1}.</span>
-                          <span className="font-['Noto_Serif_JP',serif] text-sm">
+                          <span className="[font-family:var(--font-serif)] text-sm">
                             {opt}
                           </span>
                         </div>
                         {isKey && (
-                          <span className="text-[var(--kon)] text-xs font-bold">
+                          <span className="text-[var(--ok)] text-xs font-bold">
                             ✓ Kunci
                           </span>
                         )}
                         {isUserChoice && !isKey && (
-                          <span className="text-[#943828] text-xs font-bold">
+                          <span className="text-[var(--shu)] text-xs font-bold">
                             ✗ Pilihanmu
                           </span>
                         )}
@@ -355,13 +355,13 @@ export default function TestReviewView({
 
                 {/* Naskah Lengkap Choukai (聴解原文) jika ada */}
                 {q.dialogueScript && q.dialogueScript.length > 0 && (
-                  <div className="p-3.5 rounded-xl bg-[var(--panel)] border border-[var(--garis)] space-y-2 text-xs font-['Noto_Serif_JP',serif]">
+                  <div className="p-3.5 rounded-xl bg-[var(--panel)] border border-[var(--garis)] space-y-2 text-xs [font-family:var(--font-serif)]">
                     <div className="font-bold text-[var(--kon)]">
                       🎧 聴解スクリプト（Naskah Lengkap Mendengarkan）:
                     </div>
                     {q.dialogueScript.map((turn, tIdx) => (
                       <div key={tIdx} className="flex items-start gap-2">
-                        <span className="font-bold text-[#bf5b46] shrink-0">
+                        <span className="font-bold text-[var(--ai)] shrink-0">
                           {turn.speaker}：
                         </span>
                         <span className="text-[var(--tinta)]">{turn.text}</span>
@@ -371,11 +371,11 @@ export default function TestReviewView({
                 )}
 
                 {/* Pembahasan & Penjelasan Detail */}
-                <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] space-y-2 text-xs">
+                <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-2 text-xs">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="font-bold text-[var(--tinta)]">
                       Target Uji:{" "}
-                      <span className="font-['Noto_Serif_JP',serif] text-[#d95b43] font-semibold">
+                      <span className="[font-family:var(--font-serif)] text-[var(--ai)] font-semibold">
                         {q.explanation.targetWord}
                       </span>{" "}
                       【{q.explanation.reading}】
@@ -395,7 +395,7 @@ export default function TestReviewView({
                   </div>
 
                   {q.explanation.notes && (
-                    <div className="text-[11px] text-[var(--tinta-2)] pt-1.5 border-t border-[#ece7de] leading-relaxed">
+                    <div className="text-[11px] text-[var(--tinta-2)] pt-1.5 border-t border-[var(--garis)] leading-relaxed">
                       💡 <strong>Pembahasan:</strong> {q.explanation.notes}
                     </div>
                   )}

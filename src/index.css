@@ -1461,7 +1461,7 @@ a.nav-item {
   border-radius: 20px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #d95b43 0%, #c4543f 100%);
+  background: var(--bokashi);
   color: white;
   font-size: 48px;
   font-weight: 700;
@@ -1470,7 +1470,7 @@ a.nav-item {
 
 .prof-header-info h1 {
   margin: 0 0 8px;
-  font: 700 32px 'Noto Serif JP', serif;
+  font: 700 32px var(--font-serif);
   color: var(--tinta);
 }
 
@@ -1483,7 +1483,7 @@ a.nav-item {
 
 .prof-email {
   margin: 0 0 16px;
-  color: #a37365;
+  color: var(--ai);
   font-size: 12px;
 }
 
@@ -1501,9 +1501,9 @@ a.nav-item {
 }
 
 .prof-edit-btn:hover {
-  background: #efe8de;
-  border-color: #c4543f;
-  color: #c4543f;
+  background: var(--mizu-soft);
+  border-color: var(--ai);
+  color: var(--ai);
 }
 
 .prof-edit-form {
@@ -1517,7 +1517,9 @@ a.nav-item {
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
+  background: var(--panel);
+  color: var(--tinta);
 }
 
 .prof-edit-actions {
@@ -1555,7 +1557,7 @@ a.nav-item {
 }
 
 .prof-stat-hot strong {
-  color: #d35f48;
+  color: var(--shu);
 }
 
 .prof-grid {
@@ -1596,7 +1598,7 @@ a.nav-item {
 .prof-link {
   border: 0;
   background: transparent;
-  color: #d35f48;
+  color: var(--ai);
   font-size: 11px;
   font-weight: 600;
   padding: 0;
@@ -1639,7 +1641,7 @@ a.nav-item {
 
 .prof-progress-bar div {
   height: 100%;
-  background: #d35f48;
+  background: var(--ai);
   border-radius: 8px;
   transition: width 0.3s ease;
 }
@@ -1664,8 +1666,8 @@ a.nav-item {
 }
 
 .prof-action-btn:hover {
-  background: #efe8de;
-  border-color: #c4543f;
+  background: var(--mizu-soft);
+  border-color: var(--ai);
 }
 
 .prof-action-btn strong {
@@ -1718,12 +1720,12 @@ a.nav-item {
 }
 
 .prof-card-danger {
-  border-color: #e8afa8;
-  background: #fef4f3;
+  border-color: rgba(185, 60, 34, 0.3);
+  background: rgba(185, 60, 34, 0.06);
 }
 
 .prof-card-danger h3 {
-  color: #c44a3f;
+  color: var(--shu);
 }
 
 .prof-danger-text {
@@ -1734,14 +1736,14 @@ a.nav-item {
 }
 
 .prof-card button.warn {
-  border-color: #e8afa8;
-  color: #c44a3f;
+  border-color: rgba(185, 60, 34, 0.35);
+  color: var(--shu);
   width: 100%;
   justify-content: center;
 }
 
 .prof-card button.warn:hover {
-  background: #c44a3f;
+  background: var(--shu);
   color: white;
 }
 

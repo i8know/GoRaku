@@ -10,20 +10,20 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
   switch (sceneKey) {
     case "MAP_KISSATEN_MIDORI":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-[var(--tinta-2)]">
             <span className="font-bold text-[var(--tinta)]">🗺️ 地図イラスト（もんだい1・1番）</span>
             <span>「きっさてん みどり」は 1〜4 のどれですか</span>
           </div>
           <svg
             viewBox="0 0 420 210"
-            className="w-full max-w-md mx-auto rounded-xl bg-[#f7f4eb] border border-[var(--garis)]"
+            className="w-full max-w-md mx-auto rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]"
             role="img"
             aria-label="Peta Kissaten Midori"
           >
             {/* Jalan Vertikal & Horizontal */}
-            <rect x="175" y="10" width="54" height="190" fill="#e6e1d4" />
-            <rect x="20" y="78" width="380" height="48" fill="#e6e1d4" />
+            <rect x="175" y="10" width="54" height="190" fill="var(--mizu-soft)" />
+            <rect x="20" y="78" width="380" height="48" fill="var(--mizu-soft)" />
             <line x1="202" y1="15" x2="202" y2="195" stroke="var(--panel)" strokeDasharray="6 6" strokeWidth="2" />
             <line x1="25" y1="102" x2="395" y2="102" stroke="var(--panel)" strokeDasharray="6 6" strokeWidth="2" />
 
@@ -32,10 +32,10 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
             <text x="149" y="39" textAnchor="middle" className="text-xs font-bold fill-[var(--tinta)]">4</text>
 
             {/* Bank & Gedung 3 (Kiri setelah belok kiri di perempatan) */}
-            <rect x="92" y="132" width="68" height="34" rx="4" fill="#e8efec" stroke="var(--kon)" strokeWidth="2" />
+            <rect x="92" y="132" width="68" height="34" rx="4" fill="var(--mizu-soft)" stroke="var(--kon)" strokeWidth="2" />
             <text x="126" y="153" textAnchor="middle" className="text-[11px] font-bold fill-[var(--kon)]">ぎんこう</text>
 
-            <rect x="34" y="132" width="48" height="34" rx="4" fill="var(--panel)" stroke="#d95b43" strokeWidth="2" />
+            <rect x="34" y="132" width="48" height="34" rx="4" fill="var(--panel)" stroke="var(--ai)" strokeWidth="2" />
             <text x="58" y="154" textAnchor="middle" className="text-xs font-bold fill-[var(--tinta)]">3</text>
 
             {/* Gedung 1 (Kiri Atas jalan) */}
@@ -47,7 +47,7 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
             <text x="279" y="58" textAnchor="middle" className="text-xs font-bold fill-[var(--tinta)]">2</text>
 
             {/* Posisi Pembicara (Bawah) */}
-            <circle cx="202" cy="182" r="10" fill="#d95b43" />
+            <circle cx="202" cy="182" r="10" fill="var(--shu)" />
             <text x="202" y="186" textAnchor="middle" className="text-[10px] font-bold fill-white">▲</text>
             <text x="248" y="186" className="text-[11px] font-bold fill-[var(--tinta-2)]">現在地（ここ）</text>
           </svg>
@@ -56,7 +56,7 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
 
     case "MAGAZINE_TOKEI_7":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="text-xs font-bold text-[var(--tinta)]">📚 雑誌のイラスト（もんだい1・2番）</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
@@ -67,7 +67,7 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
             ].map((m) => (
               <div
                 key={m.no}
-                className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)] text-center space-y-1 font-['Noto_Serif_JP',serif]"
+                className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-1 [font-family:var(--font-serif)]"
               >
                 <div className="text-xs font-bold text-[var(--tinta-2)]">選択肢 {m.no}</div>
                 <div className="text-2xl">{m.icon}</div>
@@ -83,35 +83,35 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
 
     case "CALENDAR_LIBRARY_10":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="text-xs font-bold text-[var(--tinta)]">📅 図書館カレンダー（もんだい1・3番）</div>
           <div className="overflow-x-auto">
-            <table className="w-full text-center text-xs border-collapse font-['Noto_Serif_JP',serif]">
+            <table className="w-full text-center text-xs border-collapse [font-family:var(--font-serif)]">
               <thead>
-                <tr className="bg-[#f2eee6] text-[var(--tinta-2)]">
+                <tr className="bg-[var(--tsuki)] text-[var(--tinta-2)]">
                   {["日", "月", "火", "水", "木", "金", "土"].map((d) => (
-                    <th key={d} className="p-1.5 border border-[#dcd7cc]">{d}</th>
+                    <th key={d} className="p-1.5 border border-[var(--garis)]">{d}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-2 border border-[#dcd7cc]">2日</td>
-                  <td className="p-2 border border-[#dcd7cc] font-bold bg-[#fff9f5]">3日 ①</td>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828]">4日 休</td>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828]">5日 休</td>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828]">6日 休</td>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828] font-bold">7日 ②休</td>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828]">8日 休</td>
+                  <td className="p-2 border border-[var(--garis)]">2日</td>
+                  <td className="p-2 border border-[var(--garis)] font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">3日 ①</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)]">4日 休</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)]">5日 休</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)]">6日 休</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)] font-bold">7日 ②休</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)]">8日 休</td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-[#dcd7cc] bg-[#fcedea] text-[#943828] font-bold">9日 ③休</td>
-                  <td className="p-2 border border-[#dcd7cc] font-bold bg-[#e8efec] text-[var(--kon)]">10日 ④</td>
-                  <td className="p-2 border border-[#dcd7cc]">11日</td>
-                  <td className="p-2 border border-[#dcd7cc]">12日</td>
-                  <td className="p-2 border border-[#dcd7cc]">13日</td>
-                  <td className="p-2 border border-[#dcd7cc]">14日</td>
-                  <td className="p-2 border border-[#dcd7cc]">15日</td>
+                  <td className="p-2 border border-[var(--garis)] bg-[rgba(185,60,34,0.08)] text-[var(--shu)] font-bold">9日 ③休</td>
+                  <td className="p-2 border border-[var(--garis)] font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">10日 ④</td>
+                  <td className="p-2 border border-[var(--garis)]">11日</td>
+                  <td className="p-2 border border-[var(--garis)]">12日</td>
+                  <td className="p-2 border border-[var(--garis)]">13日</td>
+                  <td className="p-2 border border-[var(--garis)]">14日</td>
+                  <td className="p-2 border border-[var(--garis)]">15日</td>
                 </tr>
               </tbody>
             </table>
@@ -121,29 +121,29 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
 
     case "SHOPPING_EGGS3_MILK1_FISH":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="text-xs font-bold text-[var(--tinta)]">🛒 買い物メモのイラスト（もんだい1・4番）</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-['Noto_Serif_JP',serif]">
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)] text-center space-y-1">
-              <div className="font-bold text-[#bf5b46]">1</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs [font-family:var(--font-serif)]">
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-1">
+              <div className="font-bold text-[var(--ai)]">1</div>
               <div>🥚 たまご × 1</div>
               <div>🥛 ぎゅうにゅう × 1</div>
               <div>🐟 さかな</div>
             </div>
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)] text-center space-y-1">
-              <div className="font-bold text-[#bf5b46]">2</div>
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-1">
+              <div className="font-bold text-[var(--ai)]">2</div>
               <div>🥚🥚🥚 たまご × 3</div>
               <div>🥛 ぎゅうにゅう × 1</div>
               <div>🐟 さかな</div>
             </div>
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)] text-center space-y-1">
-              <div className="font-bold text-[#bf5b46]">3</div>
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-1">
+              <div className="font-bold text-[var(--ai)]">3</div>
               <div>🥚 たまご × 1</div>
               <div>🥛 ぎゅうにゅう × 1</div>
               <div>🥩 にく</div>
             </div>
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)] text-center space-y-1">
-              <div className="font-bold text-[#bf5b46]">4</div>
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-1">
+              <div className="font-bold text-[var(--ai)]">4</div>
               <div>🥚🥚🥚 たまご × 3</div>
               <div>🥛 ぎゅうにゅう × 1</div>
               <div>🥩 にく</div>
@@ -154,22 +154,22 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
 
     case "CLASSROOM_2F_ROOM4":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="text-xs font-bold text-[var(--tinta)]">🏫 校舎の案内図（もんだい1・6番）</div>
-          <div className="space-y-2 font-['Noto_Serif_JP',serif] text-xs">
+          <div className="space-y-2 [font-family:var(--font-serif)] text-xs">
             <div className="grid grid-cols-5 gap-1.5 items-center">
               <span className="font-bold text-[var(--kon)]">2かい</span>
-              <div className="p-2 rounded bg-[#f2eee6] text-center">1ばん</div>
-              <div className="p-2 rounded bg-[#fff9f5] border border-[#d95b43] text-center font-bold">2ばん (③)</div>
-              <div className="p-2 rounded bg-[#f2eee6] text-center">3ばん</div>
-              <div className="p-2 rounded bg-[#fff9f5] border border-[#d95b43] text-center font-bold">4ばん (④)</div>
+              <div className="p-2 rounded bg-[var(--tsuki)] text-center">1ばん</div>
+              <div className="p-2 rounded bg-[var(--mizu-soft)] border border-[var(--ai)] text-center font-bold">2ばん (③)</div>
+              <div className="p-2 rounded bg-[var(--tsuki)] text-center">3ばん</div>
+              <div className="p-2 rounded bg-[var(--mizu-soft)] border border-[var(--ai)] text-center font-bold">4ばん (④)</div>
             </div>
             <div className="grid grid-cols-5 gap-1.5 items-center">
               <span className="font-bold text-[var(--tinta-2)]">1かい</span>
-              <div className="p-2 rounded bg-[#fff9f5] border border-[#d95b43] text-center font-bold">1ばん (①)</div>
-              <div className="p-2 rounded bg-[#f2eee6] text-center">2ばん</div>
-              <div className="p-2 rounded bg-[#fff9f5] border border-[#d95b43] text-center font-bold">3ばん (②)</div>
-              <div className="p-2 rounded bg-[#f2eee6] text-center">事務室</div>
+              <div className="p-2 rounded bg-[var(--mizu-soft)] border border-[var(--ai)] text-center font-bold">1ばん (①)</div>
+              <div className="p-2 rounded bg-[var(--tsuki)] text-center">2ばん</div>
+              <div className="p-2 rounded bg-[var(--mizu-soft)] border border-[var(--ai)] text-center font-bold">3ばん (②)</div>
+              <div className="p-2 rounded bg-[var(--tsuki)] text-center">事務室</div>
             </div>
           </div>
         </div>
@@ -177,15 +177,15 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
 
     case "FLOOR_DIRECTORY_PIZZA":
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2">
           <div className="text-xs font-bold text-[var(--tinta)]">🍽️ レストラン案内板（もんだい2・6番）</div>
-          <div className="grid grid-cols-2 gap-3 text-xs font-['Noto_Serif_JP',serif]">
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)]">
+          <div className="grid grid-cols-2 gap-3 text-xs [font-family:var(--font-serif)]">
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]">
               <div className="font-bold text-[var(--kon)] mb-1">4かい（4F）</div>
               <div>🍜 1. そば　／　🍣 3. すし</div>
             </div>
-            <div className="p-3 rounded-xl bg-[#f9f7f2] border border-[var(--garis)]">
-              <div className="font-bold text-[#bf5b46] mb-1">3かい（3F）</div>
+            <div className="p-3 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]">
+              <div className="font-bold text-[var(--ai)] mb-1">3かい（3F）</div>
               <div>🍕 2. ピザ　／　🍛 4. カレー</div>
             </div>
           </div>
@@ -226,9 +226,9 @@ export default function ListeningSceneCard({ sceneKey }: ListeningSceneCardProps
       };
       const info = sceneDescriptions[sceneKey];
       return (
-        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[#dcd7cc] shadow-sm space-y-2 text-center">
-          <div className="text-xs font-bold text-[#a06658]">{info.title}</div>
-          <div className="py-3 px-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] text-base sm:text-lg font-bold font-['Noto_Serif_JP',serif]">
+        <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm space-y-2 text-center">
+          <div className="text-xs font-bold text-[var(--ai)]">{info.title}</div>
+          <div className="py-3 px-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-base sm:text-lg font-bold [font-family:var(--font-serif)]">
             {info.visual}
           </div>
           <div className="text-[11px] text-[var(--tinta-2)]">{info.speakerRole}</div>

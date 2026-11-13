@@ -165,7 +165,7 @@ export default function MangaManageModal({
         <h2 className="text-xl font-bold mb-1">
           {isManga ? "Edit Judul & Urutan Halaman" : "Edit Judul Novel"}
         </h2>
-        <p className="text-[13px] mb-4" style={{ color: "var(--ink-3)" }}>
+        <p className="text-[13px] mb-4" style={{ color: "var(--tinta-2)" }}>
           {isManga
             ? "Ubah judul tampilan manga atau atur urutan halaman secara manual bila urutan bawaan arsip tidak sesuai."
             : "Ubah judul tampilan novel Anda di Perpustakaan."}

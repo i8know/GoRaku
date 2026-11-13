@@ -417,7 +417,7 @@ export default function LandingPage() {
       ? { bg: "#171a18", fg: "#ebe7df", border: "#2c322e", sub: "#98a09b", badgeBg: "#24302b" }
       : heroTheme === "sepia"
         ? { bg: "#f3ead6", fg: "#2b231a", border: "#d9c8ad", sub: "#6e5d4a", badgeBg: "#e7dac1" }
-        : { bg: "var(--panel)", fg: "var(--tinta)", border: "var(--garis)", sub: "#7a756c", badgeBg: "var(--tsuki)" };
+        : { bg: "var(--panel)", fg: "var(--tinta)", border: "var(--garis)", sub: "var(--tinta-2)", badgeBg: "var(--tsuki)" };
 
   return (
     <div className="landing">

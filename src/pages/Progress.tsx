@@ -29,7 +29,7 @@ const jlpt = [
   { lv: "N2", p: 9, n: "140 / 1.600" }, { lv: "N1", p: 0, n: "0 / 2.600" },
 ];
 const sourcesMix = [
-  { n: "Novel", p: 58, c: "var(--kon)" }, { n: "Manga", p: 42, c: "#52667b" },
+  { n: "Novel", p: 58, c: "var(--kon)" }, { n: "Manga", p: 42, c: "var(--ai)" },
 ];
 const forecast = [44, 31, 52, 27, 38, 60, 22];
 const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
@@ -72,7 +72,7 @@ function Line({
         x2={selPt[0]}
         y1={pad}
         y2={H - pad}
-        stroke="#d95b43"
+        stroke="var(--ai)"
         strokeWidth="1.2"
         strokeDasharray="3 3"
       />
@@ -178,7 +178,7 @@ export default function ProgressPage() {
             Sudah dipelajari: <strong className="text-[var(--kon)]">{realStats.totalStudiedCards} kartu</strong>
           </span>
           <span>
-            Dikuasai (≥3x): <strong className="text-[#c4543f]">{realStats.totalMasteredCards} kartu</strong>
+            Dikuasai (≥3x): <strong className="text-[var(--ai)]">{realStats.totalMasteredCards} kartu</strong>
           </span>
         </div>
       </section>
@@ -216,7 +216,7 @@ export default function ProgressPage() {
           </div>
           <div className="pr-streaks items-center">
             {activeHeatInfo && (
-              <span className="rounded-lg bg-[#f1e6df] px-2.5 py-1 text-[10px] font-bold text-[#bf5b46]">
+              <span className="rounded-lg bg-[var(--mizu-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--ai)]">
                 {activeHeatInfo}
               </span>
             )}

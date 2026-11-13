@@ -115,13 +115,13 @@ async function prepareData(page) {
           req.onerror = () => resolve([]);
         });
 
-      const lexDb = await openDb("goraku-lexicon");
+      const lexDb = await openDb("ma-immersion-lexicon");
       const books = await readAll(lexDb, "books");
-      const novel = books.find((b) => b.format !== "cbz" && b.kind !== "manga");
-      const manga = books.find((b) => b.format === "cbz" || b.kind === "manga");
+      const novel = books.find((b) => b.format !== "cbz" && b.type !== "manga");
+      const manga = books.find((b) => b.format === "cbz" || b.type === "manga");
 
       let deck = null;
-      const storeRaw = localStorage.getItem("goraku-app-store");
+      const storeRaw = localStorage.getItem("japanese-learning-storage");
       if (storeRaw) {
         try {
           const parsed = JSON.parse(storeRaw);

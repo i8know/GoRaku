@@ -45,15 +45,15 @@ export default function AudioCheckModal({ isOpen, onClose }: AudioCheckModalProp
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[var(--garis)] bg-[var(--tsuki)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#f1e6df] text-[#bf5b46] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--mizu-soft)] text-[var(--ai)] flex items-center justify-center">
               <Icon name="volume" size={18} />
             </div>
-            <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">Cek Audio</h3>
+            <h3 className="font-bold text-base text-[var(--tinta)] [font-family:var(--font-serif)]">Cek Audio</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[#eee8dd] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[var(--mizu-soft)] transition-colors"
             title="Tutup dialog"
           >
             <Icon name="close" size={16} />
@@ -66,8 +66,8 @@ export default function AudioCheckModal({ isOpen, onClose }: AudioCheckModalProp
             Gunakan contoh ini untuk memastikan audionya berfungsi dengan baik di perangkat Anda sebelum memulai tes mendengarkan!
           </p>
 
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] text-center space-y-3">
-            <p className="font-['Noto_Serif_JP',serif] text-sm text-[var(--tinta)] font-medium leading-relaxed">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-center space-y-3">
+            <p className="[font-family:var(--font-serif)] text-sm text-[var(--tinta)] font-medium leading-relaxed">
               「{sampleText}」
             </p>
             <p className="text-[11px] text-[var(--tinta-2)] italic">
@@ -79,8 +79,8 @@ export default function AudioCheckModal({ isOpen, onClose }: AudioCheckModalProp
               onClick={handlePlay}
               className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all ${
                 isPlaying
-                  ? "bg-[#d95b43] text-white shadow-sm"
-                  : "bg-[var(--kon)] hover:bg-[#1d302a] text-white shadow-sm"
+                  ? "bg-[var(--shu)] text-white shadow-sm"
+                  : "bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white shadow-sm"
               }`}
             >
               <Icon name={isPlaying ? "bell" : "play"} size={16} />
@@ -88,8 +88,8 @@ export default function AudioCheckModal({ isOpen, onClose }: AudioCheckModalProp
             </button>
           </div>
 
-          <div className="text-[11px] text-[var(--tinta-2)] space-y-1 bg-[#fbf6ee] p-3.5 rounded-xl border border-[#e8dfd0]">
-            <div className="font-bold text-[#a06658]">💡 Tips Mendengarkan:</div>
+          <div className="text-[11px] text-[var(--tinta-2)] space-y-1 bg-[var(--mizu-soft)] p-3.5 rounded-xl border border-[var(--garis)]">
+            <div className="font-bold text-[var(--ai)]">💡 Tips Mendengarkan:</div>
             <div>
               Gunakan headphone untuk kejernihan suara maksimal. Pastikan volume sistem Anda tidak dalam mode senyap.
             </div>
@@ -101,7 +101,7 @@ export default function AudioCheckModal({ isOpen, onClose }: AudioCheckModalProp
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[var(--tinta)] transition-colors"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--mizu-soft)] hover:bg-[var(--garis)] text-[var(--tinta)] transition-colors"
           >
             Selesai
           </button>

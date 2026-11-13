@@ -76,11 +76,11 @@ export default function ExtraMaterialsModal({
         {/* Header Modal */}
         <div className="flex items-center justify-between p-5 border-b border-[var(--garis)] bg-[var(--tsuki)] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#f1e6df] text-[#bf5b46] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--mizu-soft)] text-[var(--ai)] flex items-center justify-center">
               <Icon name="book" size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+              <h3 className="font-bold text-base text-[var(--tinta)] [font-family:var(--font-serif)]">
                 Materi Tambahan
               </h3>
               <p className="text-[11px] text-[var(--tinta-2)]">
@@ -91,7 +91,7 @@ export default function ExtraMaterialsModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[#eee8dd] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[var(--mizu-soft)] transition-colors"
             title="Tutup dialog"
           >
             <Icon name="close" size={16} />
@@ -105,7 +105,7 @@ export default function ExtraMaterialsModal({
             onClick={() => setActiveTab("guide")}
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "guide"
-                ? "border-[#d95b43] text-[#bf5b46]"
+                ? "border-[var(--ai)] text-[var(--ai)]"
                 : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
@@ -116,7 +116,7 @@ export default function ExtraMaterialsModal({
             onClick={() => setActiveTab("packs")}
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "packs"
-                ? "border-[#d95b43] text-[#bf5b46]"
+                ? "border-[var(--ai)] text-[var(--ai)]"
                 : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
@@ -127,7 +127,7 @@ export default function ExtraMaterialsModal({
             onClick={() => setActiveTab("license")}
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "license"
-                ? "border-[#d95b43] text-[#bf5b46]"
+                ? "border-[var(--ai)] text-[var(--ai)]"
                 : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
@@ -139,8 +139,8 @@ export default function ExtraMaterialsModal({
         <div className="p-6 overflow-y-auto space-y-5 text-xs text-[var(--tinta-2)]">
           {activeTab === "guide" && (
             <div className="space-y-4 leading-relaxed">
-              <div className="p-4 rounded-xl bg-[#fbf8f2] border border-[#ece7de] text-[var(--tinta)]">
-                <h4 className="font-bold text-sm mb-1 font-['Noto_Serif_JP',serif] text-[#a06658]">
+              <div className="p-4 rounded-xl bg-[var(--mizu-soft)] border border-[var(--garis)] text-[var(--tinta)]">
+                <h4 className="font-bold text-sm mb-1 [font-family:var(--font-serif)] text-[var(--ai)]">
                   Standar Format Ujian JLPT N5
                 </h4>
                 <p className="text-[var(--tinta-2)]">
@@ -150,29 +150,29 @@ export default function ExtraMaterialsModal({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">1. Kosakata</div>
+                <div className="p-3.5 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)]">
+                  <div className="font-bold text-[var(--tinta)] mb-1 [font-family:var(--font-serif)]">1. Kosakata</div>
                   <div className="text-[11px] text-[var(--tinta-2)]">文字・語彙</div>
-                  <div className="mt-2 text-[#bf5b46] font-semibold">20 Menit</div>
+                  <div className="mt-2 text-[var(--ai)] font-semibold">20 Menit</div>
                   <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Membaca & Menulis Kanji N5</div>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">2. Tata Bahasa & Baca</div>
+                <div className="p-3.5 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)]">
+                  <div className="font-bold text-[var(--tinta)] mb-1 [font-family:var(--font-serif)]">2. Tata Bahasa & Baca</div>
                   <div className="text-[11px] text-[var(--tinta-2)]">文法・読解</div>
-                  <div className="mt-2 text-[#bf5b46] font-semibold">40 Menit</div>
+                  <div className="mt-2 text-[var(--ai)] font-semibold">40 Menit</div>
                   <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Partikel, Pola Kalimat & Bacaan</div>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">3. Mendengarkan</div>
+                <div className="p-3.5 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)]">
+                  <div className="font-bold text-[var(--tinta)] mb-1 [font-family:var(--font-serif)]">3. Mendengarkan</div>
                   <div className="text-[11px] text-[var(--tinta-2)]">聴解</div>
-                  <div className="mt-2 text-[#bf5b46] font-semibold">30 Menit</div>
+                  <div className="mt-2 text-[var(--ai)] font-semibold">30 Menit</div>
                   <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Audio Percakapan Sehari-hari</div>
                 </div>
               </div>
 
-              <div className="space-y-2 border-t border-[#ece7de] pt-3">
+              <div className="space-y-2 border-t border-[var(--garis)] pt-3">
                 <h5 className="font-bold text-[var(--tinta)]">Kriteria Kelulusan Resmi:</h5>
                 <ul className="list-disc list-inside space-y-1 text-[var(--tinta-2)]">
                   <li><strong>Skor Total:</strong> Minimal 80 dari 180 poin (≥ 44.4%).</li>
@@ -195,7 +195,7 @@ export default function ExtraMaterialsModal({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 py-2 px-3 rounded-xl border border-[#dcd7cc] bg-white text-[#3b3730] font-medium hover:border-[#d95b43] hover:text-[#d95b43] flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 py-2 px-3 rounded-xl border border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta)] font-medium hover:border-[var(--ai)] hover:text-[var(--ai)] flex items-center justify-center gap-2 transition-colors"
                 >
                   <Icon name="upload" size={16} />
                   <span>Unggah Berkas .json</span>
@@ -211,21 +211,21 @@ export default function ExtraMaterialsModal({
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
                   placeholder='{ "id": "custom-pack", "level": "N5", ... }'
-                  className="w-full p-2.5 font-mono text-[11px] rounded-xl border border-[#dcd7cc] bg-[#f9f7f2] text-[var(--tinta)] focus:outline-none focus:border-[#d95b43]"
+                  className="w-full p-2.5 font-mono text-[11px] rounded-xl border border-[var(--garis)] bg-[var(--tsuki)] text-[var(--tinta)] focus:outline-none focus:border-[var(--ai)]"
                 />
                 <div className="flex justify-end">
                   <button
                     type="button"
                     disabled={!jsonText.trim()}
                     onClick={handlePasteSubmit}
-                    className="py-1.5 px-4 rounded-xl bg-[var(--kon)] hover:bg-[#1d302a] text-white font-semibold disabled:opacity-40 transition-colors"
+                    className="py-1.5 px-4 rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white font-semibold disabled:opacity-40 transition-colors"
                   >
                     Pasang Paket
                   </button>
                 </div>
               </div>
 
-              <div className="border-t border-[#ece7de] pt-3 space-y-2">
+              <div className="border-t border-[var(--garis)] pt-3 space-y-2">
                 <h5 className="font-bold text-[var(--tinta)]">
                   Paket Soal Terpasang:
                 </h5>
@@ -233,7 +233,7 @@ export default function ExtraMaterialsModal({
                   {packs.map((p) => (
                     <div
                       key={p.id}
-                      className="p-3 rounded-xl border border-[#ece7de] bg-[#f9f7f2] flex items-center justify-between"
+                      className="p-3 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)] flex items-center justify-between"
                     >
                       <div>
                         <div className="font-bold text-[var(--tinta)]">
@@ -260,8 +260,8 @@ export default function ExtraMaterialsModal({
 
           {activeTab === "license" && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-[#fbf6ee] border border-[#e8dfd0] text-[var(--tinta)] space-y-1">
-                <div className="font-bold text-sm text-[#a06658]">Pemberitahuan & Penafian Resmi JLPT</div>
+              <div className="p-4 rounded-xl bg-[var(--mizu-soft)] border border-[var(--garis)] text-[var(--tinta)] space-y-1">
+                <div className="font-bold text-sm text-[var(--ai)]">Pemberitahuan & Penafian Resmi JLPT</div>
                 <p className="text-[11px] text-[var(--tinta-2)] leading-relaxed">
                   Soal-soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5</strong>,
                   <strong> BUKAN</strong> soal resmi dari <em>The Japan Foundation</em> maupun <em>JEES</em>.
@@ -271,10 +271,10 @@ export default function ExtraMaterialsModal({
               <div className="space-y-2">
                 <h5 className="font-bold text-[var(--tinta)]">Sumber Korpus Terbuka:</h5>
                 <ul className="space-y-2">
-                  <li className="p-2.5 rounded-lg border border-[#ece7de] bg-[#f9f7f2]">
+                  <li className="p-2.5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)]">
                     <strong>JMdict & KANJIDIC2 (EDRDG):</strong> Lisensi Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
                   </li>
-                  <li className="p-2.5 rounded-lg border border-[#ece7de] bg-[#f9f7f2]">
+                  <li className="p-2.5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)]">
                     <strong>Tatoeba Project:</strong> Lisensi Creative Commons Attribution 2.0 France (CC BY 2.0 FR).
                   </li>
                 </ul>
@@ -284,7 +284,7 @@ export default function ExtraMaterialsModal({
                 <Link
                   to="/license"
                   onClick={onClose}
-                  className="inline-flex items-center gap-1.5 font-semibold text-[#d95b43] hover:text-[#b0432e] hover:underline"
+                  className="inline-flex items-center gap-1.5 font-semibold text-[var(--ai)] hover:text-[var(--kon)] hover:underline"
                 >
                   <span>Lihat Dokumentasi Lengkap Lisensi & Atribusi →</span>
                 </Link>
@@ -298,7 +298,7 @@ export default function ExtraMaterialsModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[var(--tinta)] transition-colors"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--mizu-soft)] hover:bg-[var(--garis)] text-[var(--tinta)] transition-colors"
           >
             Tutup
           </button>

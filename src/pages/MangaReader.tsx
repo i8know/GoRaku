@@ -1028,7 +1028,7 @@ export default function MangaReaderPage({
   if (loading) {
     return (
       <div className="p-10 text-center">
-        <p className="text-[14px]" style={{ color: "var(--ink-3)" }}>
+        <p className="text-[14px]" style={{ color: "var(--tinta-2)" }}>
           Membuka arsip manga &amp; menyiapkan jendela preload (±2 halaman)...
         </p>
       </div>

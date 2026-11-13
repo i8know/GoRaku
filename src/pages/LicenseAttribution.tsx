@@ -16,33 +16,33 @@ export default function LicenseAttributionPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Header Halaman */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6">
+      <div className="border-b border-[var(--garis)] pb-6">
         <div className="flex items-center gap-2 mb-2">
           <Link
             to="/exam"
-            className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+            className="text-xs font-medium text-[var(--ai)] hover:underline flex items-center gap-1"
           >
             ← Kembali ke Ujian JLPT
           </Link>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--tinta)]" style={{ fontFamily: "var(--font-serif)" }}>
           Lisensi dan Atribusi Sumber Data
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+        <p className="text-sm text-[var(--tinta-2)] mt-1">
           Dokumentasi transparansi hak cipta, lisensi terbuka, dan sumber korpus data yang digunakan
           dalam aplikasi dan pembuat soal JLPT N5 Orisinal.
         </p>
       </div>
 
       {/* Penafian Resmi JLPT */}
-      <div className="p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60">
+      <div className="p-5 rounded-2xl bg-[var(--mizu-soft)] border border-[var(--garis)]">
         <div className="flex items-start gap-3">
-          <span className="text-amber-600 dark:text-amber-400 text-lg mt-0.5">⚠️</span>
+          <span className="text-[var(--ai)] text-lg mt-0.5">⚠️</span>
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+            <h3 className="text-sm font-bold text-[var(--tinta)]">
               Pemberitahuan & Penafian Resmi (Official JLPT Disclaimer)
             </h3>
-            <p className="text-xs text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
+            <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
               Seluruh soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5</strong>,{" "}
               <strong>BUKAN</strong> soal resmi dari <em>The Japan Foundation</em> maupun{" "}
               <em>Japan Educational Exchanges and Services (JEES)</em>. Penyelenggara resmi JLPT tidak
@@ -57,22 +57,22 @@ export default function LicenseAttributionPage() {
       {/* Kartu Sumber Data Terbuka */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 1. JMdict & KANJIDIC2 */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-sm">
+        <div className="p-6 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--mizu-soft)] text-[var(--ai)]">
               CC BY-SA 4.0
             </span>
-            <span className="text-xs text-zinc-400">Kamus & Kanji</span>
+            <span className="text-xs text-[var(--tinta-2)]">Kamus & Kanji</span>
           </div>
-          <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-bold text-[var(--tinta)]">
             JMdict & KANJIDIC2
           </h2>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
             Basis data kamus elektronik bahasa Jepang-Inggris dan karakter kanji yang dikelola oleh{" "}
             <strong>Electronic Dictionary Research and Development Group (EDRDG)</strong> di bawah pimpinan
             Jim Breen.
           </p>
-          <div className="text-xs space-y-1 text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="text-xs space-y-1 text-[var(--tinta-2)] pt-2 border-t border-[var(--garis)]">
             <div>
               <strong>Penggunaan:</strong> Referensi leksikal kosakata N5, definisi arti bahasa Inggris,
               kelas kata (POS), bacaan On/Kun, dan nomor urut entri (<code>ent_seq</code>).
@@ -83,7 +83,7 @@ export default function LicenseAttributionPage() {
                 href="https://www.edrdg.org/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-amber-600 dark:text-amber-400 hover:underline"
+                className="text-[var(--ai)] hover:underline"
               >
                 https://www.edrdg.org/
               </a>
@@ -96,21 +96,21 @@ export default function LicenseAttributionPage() {
         </div>
 
         {/* 2. Tatoeba Project */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-sm">
+        <div className="p-6 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-[var(--ok)]">
               CC BY 2.0 FR
             </span>
-            <span className="text-xs text-zinc-400">Korpus Kalimat</span>
+            <span className="text-xs text-[var(--tinta-2)]">Korpus Kalimat</span>
           </div>
-          <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-bold text-[var(--tinta)]">
             Tatoeba Project
           </h2>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
             Basis data kalimat contoh multibahasa terbuka yang dikembangkan secara kolaboratif oleh komunitas{" "}
             <strong>Tatoeba.org</strong>.
           </p>
-          <div className="text-xs space-y-1 text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="text-xs space-y-1 text-[var(--tinta-2)] pt-2 border-t border-[var(--garis)]">
             <div>
               <strong>Penggunaan:</strong> Kalimat contoh alami bahasa Jepang untuk kalimat soal dan
               terjemahan bahasa Indonesia yang terverifikasi.
@@ -121,7 +121,7 @@ export default function LicenseAttributionPage() {
                 href="https://tatoeba.org/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-amber-600 dark:text-amber-400 hover:underline"
+                className="text-[var(--ai)] hover:underline"
               >
                 https://tatoeba.org/
               </a>
@@ -134,16 +134,16 @@ export default function LicenseAttributionPage() {
       </div>
 
       {/* Lisensi Paket Turunan */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
+      <div className="p-6 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-bold text-[var(--tinta)]">
             Lisensi Paket Soal Turunan (QuestionPack)
           </h2>
-          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--mizu-soft)] text-[var(--ai)]">
             CC BY-SA 4.0
           </span>
         </div>
-        <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
           Sesuai dengan klausul <em>ShareAlike</em> pada lisensi data sumber JMdict dan KANJIDIC2
           (CC BY-SA 4.0), setiap dataset dan paket soal turunan yang dihasilkan oleh alat pembuat soal ini
           dilisensikan di bawah ketentuan{" "}
@@ -152,7 +152,7 @@ export default function LicenseAttributionPage() {
         </p>
 
         {pack && (
-          <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-xs space-y-1 font-mono">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-xs space-y-1 font-mono text-[var(--tinta)]">
             <div><strong>ID Paket:</strong> {pack.id}</div>
             <div><strong>Versi Paket:</strong> {pack.version}</div>
             <div><strong>Total Soal:</strong> {pack.stats.totalQuestions} soal</div>
@@ -164,10 +164,10 @@ export default function LicenseAttributionPage() {
       </div>
 
       {/* Navigasi Footer */}
-      <div className="flex justify-between items-center pt-4 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
+      <div className="flex justify-between items-center pt-4 border-t border-[var(--garis)] text-xs text-[var(--tinta-2)]">
         <span>Aplikasi Belajar Bahasa Jepang • Modul Ujian JLPT Orisinal</span>
-        <Link to="/exam" className="text-amber-600 dark:text-amber-400 font-medium hover:underline">
-          Mulai Latihan Sekarang →
+        <Link to="/exam" className="text-[var(--ai)] font-semibold hover:underline">
+          Mulai Latihan Sekarang
         </Link>
       </div>
     </div>

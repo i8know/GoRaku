@@ -1030,9 +1030,9 @@ export default function ExamPage({ notify }: ExamPageProps) {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fade-in text-[var(--tinta)]">
       {/* 1. Header Utama Ujian JLPT Format Baru */}
-      <header className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 sm:p-7 shadow-[0_4px_24px_rgba(62,52,41,0.04)] relative overflow-hidden">
+      <header className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 sm:p-7 shadow-[0_4px_24px_rgba(16,33,58,0.04)] relative overflow-hidden">
         <span
-          className="absolute right-6 -bottom-6 font-['Noto_Serif_JP',serif] text-[120px] font-bold text-[#f2eee6] pointer-events-none select-none leading-none opacity-60"
+          className="absolute right-6 -bottom-6 [font-family:var(--font-serif)] text-[120px] font-bold text-[var(--mizu-soft)] pointer-events-none select-none leading-none opacity-65"
           aria-hidden="true"
         >
           験
@@ -1048,14 +1048,14 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     : `${currentExamTest.officialYear || "2018"}年`
                 } 日本語能力試験 ${currentExamTest.levelLabel}`}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#f1e6df] text-[#bf5b46]">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--ai)]">
                 {`全${currentExamTest.totalQuestions}問 • ${currentExamTest.totalDurationMinutes}分 • 180点満点`}
               </span>
-              <span className="text-xs text-[#686359]">
+              <span className="text-xs text-[var(--tinta-2)]">
                 Format Ujian Asli (文字・語彙 / 文法・読解 / 聴解)
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tinta)] [font-family:var(--font-serif)]">
               Ujian Kemampuan Bahasa Jepang (JLPT)
             </h1>
             <p className="text-xs sm:text-sm text-[var(--tinta-2)]">
@@ -1068,7 +1068,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <button
               type="button"
               onClick={() => setAudioModalOpen(true)}
-              className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-[#dcd7cc] bg-[var(--panel)] hover:border-[#d95b43] hover:text-[#d95b43] text-[#3b3730] transition-colors flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-[var(--garis)] bg-[var(--panel)] hover:border-[var(--ai)] hover:text-[var(--ai)] text-[var(--tinta)] transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Icon name="volume" size={16} />
               <span>Cek Audio</span>
@@ -1077,7 +1077,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <button
               type="button"
               onClick={() => setSelectedTest(currentExamTest)}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[#1d302a] text-white transition-colors flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Icon name="book" size={16} />
               <span>Lembar Skor & Detail</span>
@@ -1128,8 +1128,8 @@ export default function ExamPage({ notify }: ExamPageProps) {
               onClick={() => setActiveExamLevel(lvl)}
               className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center justify-between gap-4 ${
                 isSelected
-                  ? "bg-[var(--kon)] text-white border-[var(--kon)] shadow-[0_8px_24px_rgba(38,61,54,0.2)]"
-                  : "bg-[var(--panel)] text-[var(--tinta)] border-[var(--garis)] hover:border-[#d95b43]"
+                  ? "bg-[var(--kon)] text-white border-[var(--kon)] shadow-[0_8px_24px_rgba(16,33,58,0.2)]"
+                  : "bg-[var(--panel)] text-[var(--tinta)] border-[var(--garis)] hover:border-[var(--ai)]"
               }`}
             >
               <div className="space-y-1">
@@ -1145,18 +1145,18 @@ export default function ExamPage({ notify }: ExamPageProps) {
                   </span>
                   <span
                     className={`text-xs font-semibold ${
-                      isSelected ? "text-[#d8e8e1]" : "text-[#bf5b46]"
+                      isSelected ? "text-[var(--mizu)]" : "text-[var(--ai)]"
                     }`}
                   >
                     {`${yearLabel} • 全${test.totalQuestions}問 (${test.totalDurationMinutes}分)`}
                   </span>
                 </div>
-                <div className="font-bold text-base font-['Noto_Serif_JP',serif]">
+                <div className="font-bold text-base [font-family:var(--font-serif)]">
                   {test.title}
                 </div>
                 <p
                   className={`text-xs ${
-                    isSelected ? "text-[#e5eee9]/90" : "text-[#686359]"
+                    isSelected ? "text-[#DCE6F2]/90" : "text-[var(--tinta-2)]"
                   }`}
                 >
                   {desc}
@@ -1165,7 +1165,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
               <div
                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  isSelected ? "border-white bg-white/20" : "border-[#dcd7cc]"
+                  isSelected ? "border-white bg-white/20" : "border-[var(--garis)]"
                 }`}
               >
                 {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
@@ -1176,13 +1176,13 @@ export default function ExamPage({ notify }: ExamPageProps) {
       </div>
 
       {/* 3. Papan Skor Skala Resmi 0–180 & Standar Kelulusan */}
-      <section className="rounded-2xl border border-[#dcd7cc] bg-[var(--panel)] p-6 shadow-[0_4px_20px_rgba(62,52,41,0.03)] space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ece7de] pb-4">
+      <section className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 shadow-[0_4px_20px_rgba(16,33,58,0.03)] space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--garis)] pb-4">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#a06658]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ai)]">
               得点範囲・合格点（Standar Penilaian Resmi JLPT {currentExamTest.levelLabel}）
             </span>
-            <h2 className="text-lg font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif] mt-0.5">
+            <h2 className="text-lg font-bold text-[var(--tinta)] [font-family:var(--font-serif)] mt-0.5">
               Simulasi Nilai Skala 0〜180 &amp; Ambang Batas Seksi (基準点)
             </h2>
           </div>
@@ -1192,7 +1192,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               <button
                 type="button"
                 onClick={handleResetCurrentTestSessions}
-                className="px-3 py-1.5 rounded-lg border border-[#dcd7cc] bg-white text-xs font-medium text-[var(--tinta-2)] hover:border-[#dc6048] hover:text-[#dc6048] transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--shu)] hover:text-[var(--shu)] transition-colors"
               >
                 Reset Skor
               </button>
@@ -1200,10 +1200,10 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <span
               className={`px-3.5 py-1 rounded-full text-xs font-bold ${
                 !currentExamSummary.hasTakenAny
-                  ? "bg-[#f2eee6] text-[var(--tinta-2)]"
+                  ? "bg-[var(--tsuki)] text-[var(--tinta-2)] border border-[var(--garis)]"
                   : currentExamSummary.scaled.overallPassed
-                  ? "bg-[#e8efec] text-[var(--kon)]"
-                  : "bg-[#fcedea] text-[#943828]"
+                  ? "bg-emerald-50 text-[var(--ok)]"
+                  : "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
               }`}
             >
               {!currentExamSummary.hasTakenAny
@@ -1217,16 +1217,16 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Kategori 1: Bahasa & Membaca (0-120) */}
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] space-y-1.5">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+              <span className="font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
                 言語知識（文字・語彙・文法）・読解
               </span>
-              <span className="px-2 py-0.5 rounded bg-[#e8efec] text-[var(--kon)] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-[10px] font-bold">
                 基準点: 38点
               </span>
             </div>
-            <div className="text-2xl font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <div className="text-2xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)]">
               {currentExamSummary.hasTakenAny
                 ? `${currentExamSummary.scaled.langReadingScaled} / 120点`
                 : "ー / 120点"}
@@ -1242,16 +1242,16 @@ export default function ExamPage({ notify }: ExamPageProps) {
           </div>
 
           {/* Kategori 2: Mendengarkan (0-60) */}
-          <div className="p-4 rounded-xl bg-[#f9f7f2] border border-[#ece7de] space-y-1.5">
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+              <span className="font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
                 聴解（リスニング）
               </span>
-              <span className="px-2 py-0.5 rounded bg-[#e8efec] text-[var(--kon)] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-[10px] font-bold">
                 基準点: 19点
               </span>
             </div>
-            <div className="text-2xl font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <div className="text-2xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)]">
               {currentExamSummary.hasTakenAny
                 ? `${currentExamSummary.scaled.listeningScaled} / 60点`
                 : "ー / 60点"}
@@ -1268,14 +1268,14 @@ export default function ExamPage({ notify }: ExamPageProps) {
           {/* Kategori 3: Skor Total (0-180) */}
           <div className="p-4 rounded-xl bg-[var(--panel)] border-2 border-[var(--kon)] space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[var(--kon)] font-['Noto_Serif_JP',serif]">
+              <span className="font-bold text-[var(--kon)] [font-family:var(--font-serif)]">
                 総合得点（Total Nilai Skala）
               </span>
-              <span className="px-2 py-0.5 rounded bg-[#f8ede9] text-[#bf5b46] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--ai)] text-[10px] font-bold">
                 {`合格点: ${currentExamSummary.scaled.passThresholdTotal}点`}
               </span>
             </div>
-            <div className="text-2xl font-extrabold text-[var(--kon)] font-['Noto_Serif_JP',serif]">
+            <div className="text-2xl font-extrabold text-[var(--kon)] [font-family:var(--font-serif)]">
               {currentExamSummary.hasTakenAny
                 ? `${currentExamSummary.scaled.totalScaled} / 180点`
                 : "ー / 180点"}
@@ -1295,10 +1295,10 @@ export default function ExamPage({ notify }: ExamPageProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+            <h2 className="text-lg sm:text-xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)]">
               Bagian Ujian &amp; Rincian Mondai {currentExamTest.levelLabel} (全3部 • {currentExamTest.totalQuestions}問)
             </h2>
-            <p className="text-xs text-[#686359]">
+            <p className="text-xs text-[var(--tinta-2)]">
               Pilih <strong>Mulai Bagian</strong> untuk simulasi penuh per seksi, atau klik salah satu baris <strong>もんだい</strong> untuk langsung berlatih pada nomor soal tersebut.
             </p>
           </div>
@@ -1314,7 +1314,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             return (
               <div
                 key={sec.id}
-                className="rounded-2xl border border-[#dcd7cc] bg-[var(--panel)] overflow-hidden shadow-[0_6px_22px_rgba(62,52,41,0.04)] flex flex-col justify-between"
+                className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] overflow-hidden shadow-[0_6px_22px_rgba(16,33,58,0.04)] flex flex-col justify-between"
               >
                 {/* Header Bagian */}
                 <div className="p-5 bg-[var(--tsuki)] border-b border-[var(--garis)] space-y-2">
@@ -1322,11 +1322,11 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--kon)] text-white">
                       第{idx + 1}部 • {sec.duration_minutes}分
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#f1e6df] text-[#bf5b46]">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--mizu-soft)] text-[var(--ai)]">
                       {sec.mock_questions_count} Pertanyaan
                     </span>
                   </div>
-                  <h3 className="text-lg font-extrabold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
+                  <h3 className="text-lg font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)]">
                     {sec.titleJa}
                   </h3>
                   <p className="text-xs font-medium text-[var(--tinta-2)]">{sec.titleId}</p>
@@ -1334,7 +1334,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
                 {/* Daftar Mondai di dalam Bagian */}
                 <div className="p-5 space-y-2.5">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#a06658]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)]">
                     Daftar Mondai ({mondaiList.length} Kategori)
                   </div>
 
@@ -1346,11 +1346,11 @@ export default function ExamPage({ notify }: ExamPageProps) {
                           onClick={() =>
                             handleStartSection(currentExamTest, sec, m.startIndex)
                           }
-                          className="w-full p-3 rounded-xl bg-[#f9f7f2] hover:bg-[#f4ece6] border border-[#ece7de] hover:border-[#d95b43] text-left transition-all group"
+                          className="w-full p-3 rounded-xl bg-[var(--tsuki)] hover:bg-[var(--mizu-soft)] border border-[var(--garis)] hover:border-[var(--ai)] text-left transition-all group"
                           title={`Mulai dari ${m.titleJa} (${m.rangeLabel})`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-xs text-[var(--tinta)] font-['Noto_Serif_JP',serif] group-hover:text-[#bf5b46]">
+                            <span className="font-bold text-xs text-[var(--tinta)] [font-family:var(--font-serif)] group-hover:text-[var(--ai)]">
                               {m.titleJa}
                             </span>
                             <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] shrink-0">
@@ -1362,7 +1362,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                               {m.titleId}
                             </span>
                             {m.badge && (
-                              <span className="text-[10px] font-bold text-[#bf5b46]">
+                              <span className="text-[10px] font-bold text-[var(--ai)]">
                                 {m.badge}
                               </span>
                             )}
@@ -1374,7 +1374,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 </div>
 
                 {/* Status Skor & Tombol Aksi */}
-                <div className="p-5 pt-3 border-t border-[#ece7de] bg-[#fcfaf5] space-y-3">
+                <div className="p-5 pt-3 border-t border-[var(--garis)] bg-[var(--tsuki)] space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[var(--tinta-2)]">Status Pengerjaan:</span>
                     <span className="font-bold text-[var(--tinta)]">
@@ -1389,7 +1389,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                       <button
                         type="button"
                         onClick={() => handleReviewSection(currentExamTest, sec)}
-                        className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-[var(--kon)] hover:bg-[#1d302a] text-white transition-colors text-center"
+                        className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors text-center"
                       >
                         Lihat Pembahasan
                       </button>
@@ -1397,7 +1397,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     <button
                       type="button"
                       onClick={() => handleStartSection(currentExamTest, sec, 0)}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[#d95b43] hover:bg-[#c4543f] text-white shadow-[0_2px_8px_rgba(217,91,67,0.22)] transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.22)] transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Icon name="play" size={14} />
                       <span>
