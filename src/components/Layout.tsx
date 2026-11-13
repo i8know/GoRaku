@@ -1,17 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import PageTransition, { FrozenOutlet } from "./PageTransition";
-import CommandPaletteModal from "./CommandPaletteModal";
-import DictionaryManagerModal from "./DictionaryManagerModal";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { reviewedToday, useReviewStore } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
-import { isMangaBook } from "../pages/Library";
+import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+
+const CommandPaletteModal = lazy(() => import("./CommandPaletteModal"));
+const DictionaryManagerModal = lazy(() => import("./DictionaryManagerModal"));
 
 const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
 
@@ -1280,12 +1281,20 @@ export default function ProtectedLayout() {
         ))}
       </nav>
 
-      <CommandPaletteModal open={paletteOpen} onClose={() => setPaletteOpen(false)} />
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPaletteModal open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+        </Suspense>
+      )}
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

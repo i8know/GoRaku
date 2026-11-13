@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
-import ProtectedLayout from './components/Layout'
 import PageTransition from './components/PageTransition'
 import ToastContainer from './components/ToastContainer'
 import LandingPage from './pages/Landing'
@@ -12,6 +11,7 @@ import './pages.css'
 import './decks.css'
 import { useToastStore } from './store/useToastStore'
 
+const ProtectedLayout = lazy(() => import('./components/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const App = lazy(() => import('./App'))
 const DecksPage = lazy(() => import('./pages/Decks'))

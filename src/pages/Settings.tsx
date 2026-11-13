@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
-import DictionaryManagerModal from "../components/DictionaryManagerModal";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
+
+const DictionaryManagerModal = lazy(() => import("../components/DictionaryManagerModal"));
 
 export default function SettingsPage({ notify }: { notify: (m: string) => void }) {
   const navigate = useNavigate();
@@ -138,11 +139,15 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
         </section>
       </div>
 
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

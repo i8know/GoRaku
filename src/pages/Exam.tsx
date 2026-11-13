@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { lazy, Suspense, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   MockTest,
@@ -10,24 +10,23 @@ import {
   generateOfficial2018N4MockTest,
   generateOfficial2022N3MockTest,
   generateOfficial2016N2MockTest,
-  generateOfficial2023N1MockTest,
-  getQuestionsForTestAndSection
-} from "../components/jlpt/mockTestData";
-import { calculateOfficialJLPTScore } from "../components/jlpt/jlpt2018N5Data";
-import AudioCheckModal from "../components/jlpt/AudioCheckModal";
-import TestDetailsModal from "../components/jlpt/TestDetailsModal";
-import TestSessionRunner from "../components/jlpt/TestSessionRunner";
-import TestReviewView from "../components/jlpt/TestReviewView";
-import { QuestionPack } from "../lib/questionPack";
-import seedPackJson from "../data/seedQuestionPack.json";
+  generateOfficial2023N1MockTest
+} from "../components/jlpt/mockTestCatalog";
+import { calculateOfficialJLPTScore } from "../components/jlpt/jlptScoring";
+import { loadQuestionsForTestAndSection } from "../components/jlpt/mockTestLoader";
+import type { QuestionItem } from "../lib/questionPack";
 import { Icon } from "../ui";
+
+const AudioCheckModal = lazy(() => import("../components/jlpt/AudioCheckModal"));
+const TestDetailsModal = lazy(() => import("../components/jlpt/TestDetailsModal"));
+const TestSessionRunner = lazy(() => import("../components/jlpt/TestSessionRunner"));
+const TestReviewView = lazy(() => import("../components/jlpt/TestReviewView"));
 
 export interface ExamPageProps {
   notify?: (type: "success" | "error" | "info", msg: string) => void;
 }
 
 const STORAGE_KEY_SESSIONS = "jlpt_mock_sessions_v1";
-const FALLBACK_SEED_PACK = seedPackJson as unknown as QuestionPack;
 
 interface MondaiBreakdownItem {
   mondai: number;
@@ -815,11 +814,13 @@ export default function ExamPage({ notify }: ExamPageProps) {
   // Status Modal
   const [audioModalOpen, setAudioModalOpen] = useState<boolean>(false);
   const [selectedTest, setSelectedTest] = useState<MockTest | null>(null);
+  const [loadingSection, setLoadingSection] = useState<boolean>(false);
 
   // Status Sesi Ujian Aktif & Review
   const [activeSession, setActiveSession] = useState<{
     test: MockTest;
     section: MockSection;
+    questions: QuestionItem[];
     initialQuestionIndex?: number;
   } | null>(null);
 
@@ -867,29 +868,34 @@ export default function ExamPage({ notify }: ExamPageProps) {
       : official2018N5Test;
 
   // Handler Memulai Seksi (atau langsung melompat ke Mondai tertentu)
-  const handleStartSection = (
+  const handleStartSection = async (
     test: MockTest,
     section: MockSection,
     initialQuestionIndex: number = 0
   ) => {
-    const questions = getQuestionsForTestAndSection(
-      test,
-      section,
-      FALLBACK_SEED_PACK
-    );
+    if (loadingSection) return;
+    setLoadingSection(true);
+    try {
+      const questions = await loadQuestionsForTestAndSection(test, section);
 
-    if (questions.length === 0) {
-      notify?.("error", "Tidak ada soal yang tersedia untuk bagian ini.");
-      return;
+      if (questions.length === 0) {
+        notify?.("error", "Tidak ada soal yang tersedia untuk bagian ini.");
+        return;
+      }
+
+      setSelectedTest(null);
+      setActiveReview(null);
+      setActiveSession({
+        test,
+        section,
+        questions,
+        initialQuestionIndex
+      });
+    } catch {
+      notify?.("error", "Gagal memuat bank soal. Periksa koneksi Anda lalu coba lagi.");
+    } finally {
+      setLoadingSection(false);
     }
-
-    setSelectedTest(null);
-    setActiveReview(null);
-    setActiveSession({
-      test,
-      section,
-      initialQuestionIndex
-    });
   };
 
   // Handler Tinjau Seksi yang Selesai
@@ -916,7 +922,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
       return next;
     });
 
-    handleStartSection(test, section, 0);
+    void handleStartSection(test, section, 0);
   };
 
   // Handler Reset Skor untuk Level Aktif
@@ -997,34 +1003,44 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
   // Jika sedang berada di sesi ujian aktif
   if (activeSession) {
-    const questions = getQuestionsForTestAndSection(
-      activeSession.test,
-      activeSession.section,
-      FALLBACK_SEED_PACK
-    );
-
     return (
-      <TestSessionRunner
-        test={activeSession.test}
-        section={activeSession.section}
-        questions={questions}
-        initialQuestionIndex={activeSession.initialQuestionIndex}
-        onExit={() => setActiveSession(null)}
-        onSubmit={handleSubmitSession}
-      />
+      <Suspense
+        fallback={
+          <div className="py-16 text-center text-sm text-[var(--tinta-2)]" role="status">
+            Memuat sesi ujian…
+          </div>
+        }
+      >
+        <TestSessionRunner
+          test={activeSession.test}
+          section={activeSession.section}
+          questions={activeSession.questions}
+          initialQuestionIndex={activeSession.initialQuestionIndex}
+          onExit={() => setActiveSession(null)}
+          onSubmit={handleSubmitSession}
+        />
+      </Suspense>
     );
   }
 
   // Jika sedang berada di mode review jawaban
   if (activeReview) {
     return (
-      <TestReviewView
-        test={activeReview.test}
-        section={activeReview.section}
-        result={activeReview.result}
-        onBackToOverview={() => setActiveReview(null)}
-        onRetake={() => handleRetakeSection(activeReview.test, activeReview.section)}
-      />
+      <Suspense
+        fallback={
+          <div className="py-16 text-center text-sm text-[var(--tinta-2)]" role="status">
+            Memuat pembahasan…
+          </div>
+        }
+      >
+        <TestReviewView
+          test={activeReview.test}
+          section={activeReview.section}
+          result={activeReview.result}
+          onBackToOverview={() => setActiveReview(null)}
+          onRetake={() => handleRetakeSection(activeReview.test, activeReview.section)}
+        />
+      </Suspense>
     );
   }
 
@@ -1404,12 +1420,17 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleStartSection(currentExamTest, sec, 0)}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.22)] transition-colors flex items-center justify-center gap-1.5"
+                      disabled={loadingSection}
+                      onClick={() => void handleStartSection(currentExamTest, sec, 0)}
+                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.22)] transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       <Icon name="play" size={14} />
                       <span>
-                        {sess ? `Ulangi Bagian ${idx + 1}` : `Mulai Bagian ${idx + 1}`}
+                        {loadingSection
+                          ? "Memuat soal…"
+                          : sess
+                          ? `Ulangi Bagian ${idx + 1}`
+                          : `Mulai Bagian ${idx + 1}`}
                       </span>
                     </button>
                   </div>
@@ -1421,21 +1442,29 @@ export default function ExamPage({ notify }: ExamPageProps) {
       </section>
 
       {/* Modal Dialog Detail & Lembar Skor */}
-      <TestDetailsModal
-        isOpen={!!selectedTest}
-        test={selectedTest}
-        onClose={() => setSelectedTest(null)}
-        onStartSection={(t, s) => handleStartSection(t, s, 0)}
-        onReviewSection={handleReviewSection}
-        onRetakeSection={handleRetakeSection}
-        sessions={sessions}
-      />
+      {selectedTest && (
+        <Suspense fallback={null}>
+          <TestDetailsModal
+            isOpen={!!selectedTest}
+            test={selectedTest}
+            onClose={() => setSelectedTest(null)}
+            onStartSection={(t, s) => void handleStartSection(t, s, 0)}
+            onReviewSection={handleReviewSection}
+            onRetakeSection={handleRetakeSection}
+            sessions={sessions}
+          />
+        </Suspense>
+      )}
 
       {/* Modal Cek Audio */}
-      <AudioCheckModal
-        isOpen={audioModalOpen}
-        onClose={() => setAudioModalOpen(false)}
-      />
+      {audioModalOpen && (
+        <Suspense fallback={null}>
+          <AudioCheckModal
+            isOpen={audioModalOpen}
+            onClose={() => setAudioModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { QuestionItem, QuestionDialogueTurn } from "../../lib/questionPack";
-import { MockTest } from "./types";
-import { CATEGORY_LABELS } from "./mockTestData";
+export { generateOfficial2016N2MockTest } from "./mockTestCatalog";
 
 /**
  * Bank Soal Resmi 2016年12月 日本語能力試験 N2（2016-2 N2 • 全106問 • 155分）
@@ -2421,64 +2420,4 @@ export function get2016N2ListeningQuestions(): QuestionItem[] {
       review: { status: "approved" }
     };
   });
-}
-
-/**
- * Membangun objek MockTest untuk 2016年12月 日本語能力試験 N2（公式過去問・全106問・155分）
- * - 第1部：言語知識（文字・語彙） (30分 • 32問: 問題1〜6)
- * - 第2部：言語知識（文法）・読解 (75分 • 43問: 問題7〜14)
- * - 第3部：聴解 (50分 • 31問: 問題1〜5)
- * - 合格点：90 / 180点（基準点：言語知識・読解 38/120点、聴解 19/60点）
- */
-export function generateOfficial2016N2MockTest(): MockTest {
-  return {
-    id: 20162,
-    title: "日本語能力試験 N2 模擬テスト (Simulasi 2016)",
-    subtitle:
-      "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・個性・話し言葉と書き言葉・公立図書館A/B・ミハマホテルビュッフェ） • 31 聴解（統合理解付）",
-    badgeLabel: "Simulasi N2 • 106問",
-    isOfficialPastPaper: true,
-    officialYear: "2016年12月",
-    level: 2,
-    levelLabel: "N2",
-    difficulty: "standard",
-    difficultyLabel: "Standar",
-    totalDurationMinutes: 155,
-    totalQuestions: 106,
-    passingScoreTotal: 90,
-    passingScoreLangReading: 38,
-    passingScoreListening: 19,
-    mock_sections: [
-      {
-        id: 2016201,
-        mock_test_id: 20162,
-        position: 1,
-        category: "vocab",
-        duration_minutes: 30,
-        mock_questions_count: 32,
-        titleJa: CATEGORY_LABELS.vocab.ja,
-        titleId: CATEGORY_LABELS.vocab.id
-      },
-      {
-        id: 2016202,
-        mock_test_id: 20162,
-        position: 2,
-        category: "grammar_reading",
-        duration_minutes: 75,
-        mock_questions_count: 43,
-        titleJa: CATEGORY_LABELS.grammar_reading.ja,
-        titleId: CATEGORY_LABELS.grammar_reading.id
-      },
-      {
-        id: 2016203,
-        mock_test_id: 20162,
-        position: 3,
-        category: "listening",
-        duration_minutes: 50,
-        mock_questions_count: 31,
-        titleJa: CATEGORY_LABELS.listening.ja,
-        titleId: CATEGORY_LABELS.listening.id
-      }
-    ]
-  };
 }

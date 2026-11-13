@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button } from "./ui";
 import { useAppStore, type DeckItem } from "./store/useAppStore";
@@ -6,12 +6,12 @@ import { useReviewStore } from "./store/useReviewStore";
 import { liveDeckStats, type LiveDeckStats } from "./lib/deckStats";
 import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
 import { ensureSeeded } from "./lib/deckCards";
-import { ensureSeedPackLoaded } from "./lib/questionPackStorage";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
 import type { BookRecord } from "./lib/lexiconDb";
 import { speakJapanese } from "./lib/tts";
-import ImportDeckModal from "./components/ImportDeckModal";
-import DeckFormModal from "./components/DeckFormModal";
+
+const ImportDeckModal = lazy(() => import("./components/ImportDeckModal"));
+const DeckFormModal = lazy(() => import("./components/DeckFormModal"));
 
 const defaultSources = [
   {
@@ -111,7 +111,6 @@ export default function App() {
 
   useEffect(() => {
     void ensureSeeded();
-    void ensureSeedPackLoaded().catch(() => { });
     void listNovels().then(setBooks).catch(() => { });
   }, []);
 
@@ -545,22 +544,26 @@ export default function App() {
       </section>
 
       {modal === "import" && (
-        <ImportDeckModal
-          onClose={() => setModal(null)}
-          onImported={(_id, title) => saveAction(`Deck "${title}" berhasil diimpor`)}
-          onStudy={(id) => { setModal(null); navigate(`/deck/${id}/review`); }}
-        />
+        <Suspense fallback={null}>
+          <ImportDeckModal
+            onClose={() => setModal(null)}
+            onImported={(_id, title) => saveAction(`Deck "${title}" berhasil diimpor`)}
+            onStudy={(id) => { setModal(null); navigate(`/deck/${id}/review`); }}
+          />
+        </Suspense>
       )}
 
       {modal === "deck" && (
-        <DeckFormModal
-          onClose={() => setModal(null)}
-          onCreated={(id, title) => {
-            saveAction(`Deck "${title}" berhasil dibuat`);
-            navigate(`/deck/${id}?add=1`);
-          }}
-          onImport={() => setModal("import")}
-        />
+        <Suspense fallback={null}>
+          <DeckFormModal
+            onClose={() => setModal(null)}
+            onCreated={(id, title) => {
+              saveAction(`Deck "${title}" berhasil dibuat`);
+              navigate(`/deck/${id}?add=1`);
+            }}
+            onImport={() => setModal("import")}
+          />
+        </Suspense>
       )}
 
       {modal === "mining" && (

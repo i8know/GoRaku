@@ -11,7 +11,9 @@ import {
   QuestionPack,
   validateQuestionPack
 } from "./questionPack";
-import seedPackData from "../data/seedQuestionPack.json";
+
+const SEED_PACK_ID = "jlpt-n5-seed-pack-v1";
+const SEED_PACK_VERSION = "1.0.0";
 
 class QuestionPackDatabase extends Dexie {
   packs!: Table<QuestionPack, string>;
@@ -94,14 +96,14 @@ export async function importQuestionPackFromJson(
  * paket buatan pengguna.
  */
 export async function ensureSeedPackLoaded(): Promise<QuestionPack> {
-  const seed = seedPackData as unknown as QuestionPack;
-  const existing = await questionPackDb.packs.get(seed.id);
-
-  if (!existing || existing.version !== seed.version) {
-    await saveQuestionPack(seed);
-    return seed;
+  const existing = await questionPackDb.packs.get(SEED_PACK_ID);
+  if (existing && existing.version === SEED_PACK_VERSION) {
+    return existing;
   }
 
-  return existing;
+  const { default: seedPackData } = await import("../data/seedQuestionPack.json");
+  const seed = seedPackData as unknown as QuestionPack;
+  await saveQuestionPack(seed);
+  return seed;
 }
 

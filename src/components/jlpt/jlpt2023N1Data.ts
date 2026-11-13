@@ -1,6 +1,5 @@
 import { QuestionItem, QuestionDialogueTurn } from "../../lib/questionPack";
-import { MockTest } from "./types";
-import { CATEGORY_LABELS } from "./mockTestData";
+export { generateOfficial2023N1MockTest } from "./mockTestCatalog";
 
 /**
  * Bank Soal Resmi 2023年7月 日本語能力試験 N1（2023-1 N1 • 全96問 • 165分）
@@ -2280,64 +2279,4 @@ export function get2023N1ListeningQuestions(): QuestionItem[] {
       review: { status: "approved" }
     };
   });
-}
-
-/**
- * Membangun objek MockTest untuk 2023年7月 日本語能力試験 N1（公式過去問・全96問・165分）
- * - 第1部：言語知識（文字・語彙） (30分 • 25問: 問題1〜4)
- * - 第2部：言語知識（文法）・読解 (80分 • 41問: 問題5〜13)
- * - 第3部：聴解 (55分 • 30問: 問題1〜5)
- * - 合格点：100 / 180点（基準点：言語知識・読解 38/120点、聴解 19/60点）
- */
-export function generateOfficial2023N1MockTest(): MockTest {
-  return {
-    id: 20231,
-    title: "日本語能力試験 N1 模擬テスト (Simulasi 2023)",
-    subtitle:
-      "25 文字・語彙（用法付） • 41 文法・読解（一生の仕事・カタクリとアリ・ロボピーと心・メモA/B・教育論・木原市運動教室） • 30 聴解（統合理解付）",
-    badgeLabel: "Simulasi N1 • 96問",
-    isOfficialPastPaper: true,
-    officialYear: "2023年7月",
-    level: 1,
-    levelLabel: "N1",
-    difficulty: "standard",
-    difficultyLabel: "Standar",
-    totalDurationMinutes: 165,
-    totalQuestions: 96,
-    passingScoreTotal: 100,
-    passingScoreLangReading: 38,
-    passingScoreListening: 19,
-    mock_sections: [
-      {
-        id: 2023101,
-        mock_test_id: 20231,
-        position: 1,
-        category: "vocab",
-        duration_minutes: 30,
-        mock_questions_count: 25,
-        titleJa: CATEGORY_LABELS.vocab.ja,
-        titleId: CATEGORY_LABELS.vocab.id
-      },
-      {
-        id: 2023102,
-        mock_test_id: 20231,
-        position: 2,
-        category: "grammar_reading",
-        duration_minutes: 80,
-        mock_questions_count: 41,
-        titleJa: CATEGORY_LABELS.grammar_reading.ja,
-        titleId: CATEGORY_LABELS.grammar_reading.id
-      },
-      {
-        id: 2023103,
-        mock_test_id: 20231,
-        position: 3,
-        category: "listening",
-        duration_minutes: 55,
-        mock_questions_count: 30,
-        titleJa: CATEGORY_LABELS.listening.ja,
-        titleId: CATEGORY_LABELS.listening.id
-      }
-    ]
-  };
 }

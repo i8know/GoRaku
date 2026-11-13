@@ -101,7 +101,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .lb-cover.kitchen { background: linear-gradient(150deg, var(--shu), #7A2413); } .lb-cover.family { background: linear-gradient(150deg, #5A6B82, #2A384D); } .lb-cover.pod { background: #2D4059; } .lb-cover.ghibli { background: linear-gradient(150deg, var(--ok), #184236); }
 .lb-hero .lb-cover { box-shadow: 0 12px 30px rgba(0,0,0,.35), inset 5px 0 rgba(0,0,0,.14); }
 .lb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 18px; }
-.lb-card { display: flex; flex-direction: column; min-width: 0; transition: transform .2s ease; }
+.lb-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: transform .2s ease;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
 @media (hover: hover) and (pointer: fine) {
   .lb-card:hover { transform: translateY(-3px); }
 }

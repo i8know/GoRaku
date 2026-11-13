@@ -1,5 +1,5 @@
 import { QuestionItem, QuestionDialogueTurn } from "../../lib/questionPack";
-import { MockTest } from "./types";
+export { generateOfficial2022N3MockTest } from "./mockTestCatalog";
 
 interface Raw2022N3VocabItem {
   num: number;
@@ -2123,61 +2123,5 @@ export function get2022N3ListeningQuestions(): QuestionItem[] {
       }
     };
   });
-}
-
-/**
- * Membangun objek ujian lengkap 2022年12月 日本語能力試験 N3（公式過去問・全101問）
- * sesuai dokumen PDF 2022-2 N3 (35 文字・語彙 [30分] + 38 文法・読解 [70分] + 28 聴解 [40分] = 101 Soal, 140 Menit).
- */
-export function generateOfficial2022N3MockTest(): MockTest {
-  return {
-    id: 20223,
-    title: "日本語能力試験 N3 模擬テスト (Simulasi 2022)",
-    subtitle: "35 文字・語彙（30分） • 38 文法・読解（70分：京都旅行・短文4題・中文2題・長文・日帰りバス旅行案内） • 28 聴解（40分）",
-    badgeLabel: "Simulasi N3 • 101問",
-    isOfficialPastPaper: true,
-    officialYear: "2022-12",
-    level: 3,
-    levelLabel: "N3",
-    difficulty: "standard",
-    difficultyLabel: "Standar",
-    totalDurationMinutes: 140,
-    totalQuestions: 101,
-    passingScoreTotal: 95,
-    passingScoreLangReading: 38,
-    passingScoreListening: 19,
-    mock_sections: [
-      {
-        id: 2022301,
-        mock_test_id: 20223,
-        position: 1,
-        category: "vocab",
-        duration_minutes: 30,
-        mock_questions_count: 35,
-        titleJa: "言語知識（文字・語彙）",
-        titleId: "Kosakata"
-      },
-      {
-        id: 2022302,
-        mock_test_id: 20223,
-        position: 2,
-        category: "grammar_reading",
-        duration_minutes: 70,
-        mock_questions_count: 38,
-        titleJa: "言語知識（文法）・読解",
-        titleId: "Tata Bahasa & Membaca"
-      },
-      {
-        id: 2022303,
-        mock_test_id: 20223,
-        position: 3,
-        category: "listening",
-        duration_minutes: 40,
-        mock_questions_count: 28,
-        titleJa: "聴解",
-        titleId: "Mendengarkan"
-      }
-    ]
-  };
 }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
-import { calculateOfficialJLPTScore } from "./jlpt2018N5Data";
+import { calculateOfficialJLPTScore } from "./jlptScoring";
 import { Icon } from "../../ui";
 
 interface TestDetailsModalProps {

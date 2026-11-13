@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Tabs } from "../ui";
 import { useAppStore, type DeckItem } from "../store/useAppStore";
@@ -6,8 +6,9 @@ import { useReviewStore } from "../store/useReviewStore";
 import { deckUpdatedLabel, liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
 import { ensureSeeded } from "../lib/deckCards";
-import ImportDeckModal from "../components/ImportDeckModal";
-import DeckFormModal from "../components/DeckFormModal";
+
+const ImportDeckModal = lazy(() => import("../components/ImportDeckModal"));
+const DeckFormModal = lazy(() => import("../components/DeckFormModal"));
 
 const kinds = ["Semua", "Core", "Anime", "Novel", "Manga", "YouTube", "Dari Anki"] as const;
 const statusFilters = ["Semua", "Perlu diulas", "Selesai hari ini"] as const;
@@ -737,20 +738,24 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
       )}
 
       {importOpen && (
-        <ImportDeckModal
-          initialFile={importFile}
-          onClose={() => { setImportOpen(false); setImportFile(null); }}
-          onImported={(_id, title) => notify(`Deck "${title}" berhasil diimpor`)}
-          onStudy={(id) => { setImportOpen(false); navigate(`/deck/${id}/review`); }}
-        />
+        <Suspense fallback={null}>
+          <ImportDeckModal
+            initialFile={importFile}
+            onClose={() => { setImportOpen(false); setImportFile(null); }}
+            onImported={(_id, title) => notify(`Deck "${title}" berhasil diimpor`)}
+            onStudy={(id) => { setImportOpen(false); navigate(`/deck/${id}/review`); }}
+          />
+        </Suspense>
       )}
 
       {createOpen && (
-        <DeckFormModal
-          onClose={() => setCreateOpen(false)}
-          onCreated={handleCreated}
-          onImport={() => { setCreateOpen(false); openImport(); }}
-        />
+        <Suspense fallback={null}>
+          <DeckFormModal
+            onClose={() => setCreateOpen(false)}
+            onCreated={handleCreated}
+            onImport={() => { setCreateOpen(false); openImport(); }}
+          />
+        </Suspense>
       )}
     </>
   );

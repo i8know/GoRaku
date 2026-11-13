@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DictionaryManagerModal from "../components/DictionaryManagerModal";
-import MangaManageModal from "../components/MangaManageModal";
+
+const DictionaryManagerModal = lazy(() => import("../components/DictionaryManagerModal"));
+const MangaManageModal = lazy(() => import("../components/MangaManageModal"));
 import {
   addNovelFile,
   deleteNovel,
@@ -34,14 +35,9 @@ type BookSort = (typeof BOOK_SORTS)[number];
 
 const TONE_CLASSES = ["novel", "kitchen", "anime", "manga", "family", "ghibli"];
 
-export function isMangaBook(book: BookRecord): boolean {
-  return (
-    book.type === "manga" ||
-    book.format === "cbz" ||
-    book.format === "zip" ||
-    book.format === "images"
-  );
-}
+import { isMangaBook } from "../lib/bookUtils";
+
+export { isMangaBook };
 
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) {
@@ -482,21 +478,29 @@ export default function LibraryPage({
         }}
       />
 
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
 
-      <MangaManageModal
-        book={managingBook}
-        onClose={() => setManagingBook(null)}
-        onSaved={(newTitle) => {
-          setManagingBook(null);
-          notify(`Perubahan pada "${newTitle}" disimpan`);
-          void refreshBooks();
-        }}
-      />
+      {managingBook && (
+        <Suspense fallback={null}>
+          <MangaManageModal
+            book={managingBook}
+            onClose={() => setManagingBook(null)}
+            onSaved={(newTitle) => {
+              setManagingBook(null);
+              notify(`Perubahan pada "${newTitle}" disimpan`);
+              void refreshBooks();
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Pesan Error */}
       {errorMsg && (
