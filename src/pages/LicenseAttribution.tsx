@@ -20,9 +20,9 @@ export default function LicenseAttributionPage() {
         <div className="flex items-center gap-2 mb-2">
           <Link
             to="/exam"
-            className="text-xs font-medium text-[var(--ai)] hover:underline inline-flex items-center gap-1 min-h-[28px] py-0.5"
+            className="text-xs font-medium text-[var(--ai)] hover:underline inline-flex items-center gap-1.5 min-h-[28px] py-0.5"
           >
-            ← Kembali ke Simulasi Ujian JLPT
+            <Icon name="arrow-left" size={14} /> Kembali ke Simulasi Ujian JLPT
           </Link>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-[var(--tinta)]" style={{ fontFamily: "var(--font-serif)" }}>
@@ -30,7 +30,7 @@ export default function LicenseAttributionPage() {
         </h1>
         <p className="text-sm text-[var(--tinta-2)] mt-1">
           Dokumentasi transparansi hak cipta, lisensi terbuka, dan sumber korpus data yang digunakan
-          dalam aplikasi dan pembuat soal JLPT N5 Orisinal.
+          dalam aplikasi dan pembuat soal simulasi JLPT (N5–N1).
         </p>
       </div>
 
@@ -45,11 +45,11 @@ export default function LicenseAttributionPage() {
               Pemberitahuan &amp; Penafian Resmi (Official JLPT Disclaimer)
             </h2>
             <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
-              Seluruh soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5</strong>,{" "}
+              Seluruh soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5–N1</strong>,{" "}
               <strong>BUKAN</strong> soal resmi dari <em>The Japan Foundation</em> maupun{" "}
               <em>Japan Educational Exchanges and Services (JEES)</em>. Penyelenggara resmi JLPT tidak
               menerbitkan daftar kosakata, kanji, atau tata bahasa resmi sejak revisi format tahun 2010.
-              Tingkat N5 dalam aplikasi ini merupakan <strong>perkiraan leksikal</strong> berdasarkan data
+              Klasifikasi tingkat N5–N1 dalam aplikasi ini merupakan <strong>perkiraan leksikal</strong> berdasarkan data
               terbuka yang dapat diverifikasi.
             </p>
           </div>
@@ -153,14 +153,18 @@ export default function LicenseAttributionPage() {
           Lisensi ini sepenuhnya kompatibel dengan ketentuan atribusi CC BY 2.0 FR dari korpus kalimat Tatoeba.
         </p>
 
-        {pack && (
-          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-xs space-y-1 font-mono text-[var(--tinta)]">
+        {pack ? (
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-xs space-y-1 font-mono tabular-nums text-[var(--tinta)]">
             <div><strong>ID Paket:</strong> {pack.id}</div>
             <div><strong>Versi Paket:</strong> {pack.version}</div>
             <div><strong>Total Soal:</strong> {pack.stats.totalQuestions} soal</div>
             <div><strong>Distribusi:</strong> G1: {pack.stats.byType.G1_KANJI_READING} | G2: {pack.stats.byType.G2_KANJI_WRITING} | G3: {pack.stats.byType.G3_PARTICLES} | G4: {pack.stats.byType.G4_CONTEXT_VOCAB}</div>
             <div><strong>Lisensi:</strong> {pack.license}</div>
             <div><strong>Tanggal Rilis:</strong> {new Date(pack.createdAt).toLocaleString("id-ID")}</div>
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] text-xs text-[var(--tinta-2)]">
+            Memuat metadata paket soal bawaan...
           </div>
         )}
       </div>

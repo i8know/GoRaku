@@ -510,7 +510,7 @@ export default function ProtectedLayout() {
                   {badge && <em className={badge.cls ?? ""}>{badge.text}</em>}
                 </Link>
 
-                {/* Micro-Action Quick Add (+) saat Sidebar Diperluas (tanpa menumpuk tautan) */}
+                {/* Micro-Action Quick Add (+) saat Drawer Seluler Terbuka */}
                 {!effectiveCollapsed &&
                   (item.label === "Deck Saya" ||
                     item.label === "Perpustakaan" ||
@@ -538,14 +538,14 @@ export default function ProtectedLayout() {
                           ? "Tambah Novel / Manga"
                           : "Buka Studio Teks"
                       }
-                      className="w-7 h-7 min-w-[28px] min-h-[28px] max-md:w-9 max-md:h-9 shrink-0 rounded-md bg-white/10 hover:bg-[var(--ai)] hover:text-white text-white/80 opacity-85 lg:opacity-0 lg:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                      className="sb-quick-add w-7 h-7 min-w-[28px] min-h-[28px] max-md:w-9 max-md:h-9 shrink-0 rounded-md bg-white/10 hover:bg-[var(--ai)] hover:text-white text-white/80 opacity-85 lg:opacity-0 lg:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-xs"
                     >
                       <Icon name="plus" size={13} />
                     </button>
                   )}
 
-                {/* Floating Interactive Flyout Card saat Sidebar Dilipat (Hover Bridge pl-2.5 agar kursor bisa masuk ke dalam flyout) */}
-                {effectiveCollapsed && hoveredNav === item.label && (
+                {/* Floating Interactive Flyout Card saat Sidebar Rail Desktop Di-hover */}
+                {!mobileDrawerOpen && hoveredNav === item.label && (
                   <div className="absolute left-full top-1/2 -translate-y-1/2 pl-2.5 z-50 pointer-events-auto">
                     <div className="w-[238px] rounded-xl border border-white/15 bg-[#0D1B30] p-3 text-xs text-white shadow-2xl animate-[modal-in_0.14s_ease]">
                       <div className="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-white/10">
@@ -949,13 +949,13 @@ export default function ProtectedLayout() {
             </div>
           </div>
 
-          {/* Mini Target Harian saat Sidebar Dilipat */}
-          {effectiveCollapsed && (
+          {/* Mini Target Harian pada Rail Desktop */}
+          {!mobileDrawerOpen && (
             <button
               type="button"
               onClick={handleQuickStartReview}
               title={`Target Harian: ${todayReviewedCount}/${dailyGoalTarget} kartu (${dailyGoalPct}%) — Klik untuk Review`}
-              className="mb-2 w-full rounded-xl border border-white/15 bg-white/5 py-2 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-[var(--mizu)] hover:border-[var(--mizu)]"
+              className="sb-goal-mini mb-2 w-full rounded-xl border border-white/15 bg-white/5 py-2 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-[var(--mizu)] hover:border-[var(--mizu)]"
             >
               <Icon name="flame" size={15} />
               <span>{dailyGoalPct}%</span>

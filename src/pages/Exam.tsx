@@ -1377,16 +1377,16 @@ export default function ExamPage({ notify }: ExamPageProps) {
                             <span className="font-bold text-xs text-[var(--tinta)] [font-family:var(--font-serif)] group-hover:text-[var(--ai)]">
                               {m.titleJa}
                             </span>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] shrink-0">
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] whitespace-nowrap tabular-nums shrink-0">
                               {m.count}問 ({m.rangeLabel})
                             </span>
                           </div>
-                          <div className="flex items-center justify-between mt-1">
+                          <div className="flex items-center justify-between gap-2 mt-1">
                             <span className="text-[11px] text-[var(--tinta-2)]">
                               {m.titleId}
                             </span>
                             {m.badge && (
-                              <span className="text-[10px] font-bold text-[var(--ai)]">
+                              <span className="text-[10px] font-bold text-[var(--ai)] whitespace-nowrap shrink-0">
                                 {m.badge}
                               </span>
                             )}

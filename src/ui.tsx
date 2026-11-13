@@ -7,7 +7,7 @@ export type IconName =
   | "edit" | "bolt" | "lock" | "key" | "download" | "refresh" | "alert" | "deck" | "arrow-left" | "eye"
   | "chevron-down" | "chevron-up";
 
-export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
+export function Icon({ name, size = 20, className }: { name: IconName; size?: number; className?: string }) {
   const paths: Record<IconName, ReactNode> = {
     home: <><path d="m3 10 9-7 9 7" /><path d="M5 9v11h14V9" /><path d="M9 20v-6h6v6" /></>,
     cards: <><rect x="4" y="5" width="15" height="16" rx="2" /><path d="M8 5V3h11a2 2 0 0 1 2 2v12h-2" /><path d="M8 10h7M8 14h5" /></>,
@@ -50,7 +50,7 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     "chevron-up": <path d="m18 15-6-6-6 6" />,
   };
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       {paths[name]}
     </svg>
   );

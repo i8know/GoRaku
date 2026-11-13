@@ -42,3 +42,52 @@ textarea:focus-visible,
   outline: 2px solid var(--ai);
   outline-offset: 2px;
 }
+
+html,
+body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 64, 106, 0.28) transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--ai);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 64, 106, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 64, 106, 0.38);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.beranda-hero-stats strong,
+.pr-kpis strong,
+.prof-stat strong,
+.st-range b,
+.kpi strong,
+.sb-goal-mini span {
+  font-variant-numeric: tabular-nums;
+}

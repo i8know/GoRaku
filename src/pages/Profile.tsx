@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
+import { liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
+import { aggregateParentStats, getLeafDescendantDecks } from "../lib/deckSubdecks";
+import { listNovels } from "../lib/bookStorage";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
+  const settings = useAppStore((s) => s.settings);
   const libraryItems = useAppStore((s) => s.libraryItems);
   const updateUser = useAppStore((s) => s.updateUser);
-  const getDeckStats = useReviewStore((s) => s.getDeckStats);
+  const srsCards = useReviewStore((s) => s.srsCards);
+  const newIntroduced = useReviewStore((s) => s.newIntroduced);
+  const [booksCount, setBooksCount] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    void listNovels()
+      .then((items) => {
+        if (alive) setBooksCount(items.length);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [editMode, setEditMode] = useState(false);
   const [displayName, setDisplayName] = useState(user?.name || "Akira");
   const [nameError, setNameError] = useState("");
@@ -20,10 +38,35 @@ export default function ProfilePage() {
   if (!user) return <div className="prof-empty"><p>Silakan login terlebih dahulu.</p></div>;
 
   // Calculate total stats
-  const totalCards = decks.reduce((s, d) => s + d.total, 0);
-  const totalDue = decks.reduce((s, d) => s + d.due, 0);
-  const totalDecks = decks.length;
-  const totalLibrary = libraryItems.length;
+  const stats = useMemo(() => {
+    const m = new Map<string, LiveDeckStats>();
+    for (const d of decks) {
+      const children = decks.filter((c) => c.parentId === d.id);
+      if (children.length > 0) {
+        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks));
+      } else {
+        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+      }
+    }
+    return m;
+  }, [decks, srsCards, newIntroduced, settings]);
+
+  const rootDecks = useMemo(() => decks.filter((d) => !d.parentId), [decks]);
+  const leafDecks = useMemo(
+    () => decks.filter((d) => decks.every((c) => c.parentId !== d.id)),
+    [decks],
+  );
+  const deckTotalCount = (d: (typeof decks)[number]) => {
+    const leaves = getLeafDescendantDecks(d.id, decks);
+    return leaves.length > 0 ? leaves.reduce((s, l) => s + l.total, 0) : d.total;
+  };
+  const totalCards = useMemo(() => leafDecks.reduce((s, d) => s + d.total, 0), [leafDecks]);
+  const totalDue = useMemo(
+    () => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.due ?? 0), 0),
+    [rootDecks, stats],
+  );
+  const totalDecks = rootDecks.length;
+  const totalLibrary = booksCount > 0 ? booksCount : libraryItems.length;
 
   // Calculate streak (mock: days since join)
   const joinDate = new Date("2026-01-15");
@@ -157,17 +200,22 @@ export default function ProfilePage() {
               </Button>
             </div>
             <div className="prof-progress-list">
-              {decks.slice(0, 3).map((deck) => (
-                <div key={deck.id} className="prof-progress-item">
-                  <div>
-                    <p className="prof-progress-title">{deck.title}</p>
-                    <small>{deck.total} kartu • {deck.progress}%</small>
+              {rootDecks.slice(0, 3).map((deck) => {
+                const st = stats.get(deck.id);
+                const deckTotal = deckTotalCount(deck);
+                const deckProgress = st?.progress ?? deck.progress;
+                return (
+                  <div key={deck.id} className="prof-progress-item">
+                    <div>
+                      <p className="prof-progress-title">{deck.title}</p>
+                      <small>{deckTotal} kartu • {deckProgress}%</small>
+                    </div>
+                    <div className="prof-progress-bar">
+                      <div style={{ width: `${deckProgress}%` }} />
+                    </div>
                   </div>
-                  <div className="prof-progress-bar">
-                    <div style={{ width: `${deck.progress}%` }} />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -191,7 +239,7 @@ export default function ProfilePage() {
           </section>
 
           {/* Account Settings */}
-          <section className="prof-card prof-card-danger">
+          <section className="prof-card">
             <h2><Icon name="lock" size={18} /> Keamanan Akun</h2>
             <div className="prof-settings-list">
               <div className="prof-setting-item">
@@ -206,7 +254,7 @@ export default function ProfilePage() {
               <div className="prof-setting-item">
                 <div>
                   <p><strong>Email Verifikasi</strong></p>
-                  <small>{user.email} • Terverifikasi</small>
+                  <small>{user.email ? `${user.email} • Terverifikasi` : "Akun lokal • Terverifikasi"}</small>
                 </div>
                 <Button className="outline-button" disabled>
                   <Icon name="check" size={14} /> Terverifikasi
