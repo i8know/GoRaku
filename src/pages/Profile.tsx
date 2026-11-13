@@ -13,6 +13,9 @@ export default function ProfilePage() {
   const getDeckStats = useReviewStore((s) => s.getDeckStats);
   const [editMode, setEditMode] = useState(false);
   const [displayName, setDisplayName] = useState(user?.name || "Akira");
+  const [nameError, setNameError] = useState("");
+  const [statusNotice, setStatusNotice] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!user) return <div className="prof-empty"><p>Silakan login terlebih dahulu.</p></div>;
 
@@ -27,9 +30,18 @@ export default function ProfilePage() {
   const today = new Date();
   const daysJoined = Math.floor((today.getTime() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  const handleSaveProfile = () => {
-    updateUser(displayName, user.level);
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = displayName.trim();
+    if (!clean) {
+      setNameError("Nama tampilan tidak boleh kosong.");
+      return;
+    }
+    setNameError("");
+    setDisplayName(clean);
+    updateUser(clean, user.level);
     setEditMode(false);
+    setStatusNotice("Nama tampilan diperbarui.");
   };
 
   const handleExportProgress = () => {
@@ -45,18 +57,12 @@ export default function ProfilePage() {
     a.download = `goraku-progress-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const handleChangePassword = () => {
-    alert("Fitur ubah password akan tersedia segera.");
+    setStatusNotice("Progres berhasil diekspor.");
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm("Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.")) {
-      alert("Akun akan dihapus. Anda akan diarahkan ke halaman login.");
-      useAppStore.getState().logout();
-      navigate("/login");
-    }
+    useAppStore.getState().logout();
+    navigate("/login");
   };
 
   return (
@@ -66,6 +72,14 @@ export default function ProfilePage() {
       </PageHead>
 
       <div className="prof-container">
+        {statusNotice && (
+          <p
+            role="status"
+            className="mb-4 rounded-xl border border-[var(--garis)] bg-[var(--mizu-soft)] px-4 py-2.5 text-xs font-semibold text-[var(--kon)]"
+          >
+            {statusNotice}
+          </p>
+        )}
         {/* Hero Section */}
         <section className="prof-hero">
           <div className="prof-header">
@@ -73,27 +87,36 @@ export default function ProfilePage() {
             <div className="prof-header-info">
               {!editMode ? (
                 <>
-                  <h1>{displayName}</h1>
+                  <h2>{displayName}</h2>
                   <p className="prof-level">{user.level} • Bergabung Januari 2026</p>
                   <p className="prof-email">{user.email}</p>
-                  <Button className="prof-edit-btn" onClick={() => setEditMode(true)}>
+                  <Button className="prof-edit-btn" onClick={() => { setEditMode(true); setNameError(""); }}>
                     <Icon name="edit" size={14} /> Edit profil
                   </Button>
                 </>
               ) : (
-                <div className="prof-edit-form">
+                <form className="prof-edit-form" onSubmit={handleSaveProfile} noValidate>
                   <input
                     type="text"
                     value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
+                    onChange={(e) => { setDisplayName(e.target.value); if (nameError) setNameError(""); }}
                     placeholder="Nama Anda"
+                    aria-label="Nama tampilan"
+                    aria-invalid={Boolean(nameError)}
+                    maxLength={40}
+                    required
                     className="prof-input"
                   />
+                  {nameError && (
+                    <span role="alert" className="text-xs font-medium text-[var(--shu)]">
+                      {nameError}
+                    </span>
+                  )}
                   <div className="prof-edit-actions">
-                    <Button className="primary-light" onClick={handleSaveProfile}>Simpan</Button>
-                    <Button className="outline-button" onClick={() => setEditMode(false)}>Batal</Button>
+                    <Button className="primary-light" type="submit">Simpan</Button>
+                    <Button className="outline-button" onClick={() => { setDisplayName(user.name); setNameError(""); setEditMode(false); }}>Batal</Button>
                   </div>
-                </div>
+                </form>
               )}
             </div>
           </div>
@@ -128,7 +151,7 @@ export default function ProfilePage() {
           {/* Learning Progress */}
           <section className="prof-card">
             <div className="prof-card-head">
-              <h3><Icon name="chart" size={18} /> Progres Belajar</h3>
+              <h2><Icon name="chart" size={18} /> Progres Belajar</h2>
               <Button className="prof-link" onClick={() => navigate("/progress")}>
                 Lihat detail <Icon name="arrow" size={14} />
               </Button>
@@ -150,7 +173,7 @@ export default function ProfilePage() {
 
           {/* Quick Actions */}
           <section className="prof-card">
-            <h3><Icon name="bolt" size={18} /> Aksi Cepat</h3>
+            <h2><Icon name="bolt" size={18} /> Aksi Cepat</h2>
             <div className="prof-actions">
               <Button className="prof-action-btn primary-light" onClick={() => navigate("/beranda")}>
                 <Icon name="play" size={18} />
@@ -169,14 +192,14 @@ export default function ProfilePage() {
 
           {/* Account Settings */}
           <section className="prof-card prof-card-danger">
-            <h3><Icon name="lock" size={18} /> Keamanan Akun</h3>
+            <h2><Icon name="lock" size={18} /> Keamanan Akun</h2>
             <div className="prof-settings-list">
               <div className="prof-setting-item">
                 <div>
                   <p><strong>Kata Sandi</strong></p>
                   <small>Ubah kata sandi login Anda</small>
                 </div>
-                <Button className="outline-button" onClick={handleChangePassword}>
+                <Button className="outline-button" onClick={() => setStatusNotice("Pengelolaan kata sandi offline dikelola lewat perangkat.")}>
                   <Icon name="key" size={14} /> Ubah
                 </Button>
               </div>
@@ -194,7 +217,7 @@ export default function ProfilePage() {
                   <p><strong>Sesi Aktif</strong></p>
                   <small>Saat ini masuk di 1 perangkat</small>
                 </div>
-                <Button className="outline-button">
+                <Button className="outline-button" onClick={() => setStatusNotice("Hanya 1 sesi lokal aktif pada peramban ini.")}>
                   Kelola Sesi
                 </Button>
               </div>
@@ -203,27 +226,38 @@ export default function ProfilePage() {
 
           {/* Data Management */}
           <section className="prof-card">
-            <h3><Icon name="upload" size={18} /> Manajemen Data</h3>
+            <h2><Icon name="upload" size={18} /> Manajemen Data</h2>
             <div className="prof-data-actions">
               <Button className="outline-button" onClick={handleExportProgress}>
                 <Icon name="download" size={16} /> Ekspor Progres
               </Button>
-              <Button className="outline-button">
+              <Button className="outline-button" onClick={() => navigate("/deck")}>
                 <Icon name="upload" size={16} /> Impor Data
               </Button>
-              <Button className="outline-button warn" onClick={() => alert("Fitur reset progress akan segera tersedia")}>
-                <Icon name="refresh" size={16} /> Reset Progres
+              <Button className="outline-button warn" onClick={() => navigate("/settings")}>
+                <Icon name="refresh" size={16} /> Kelola &amp; Reset Progres
               </Button>
             </div>
           </section>
 
           {/* Danger Zone */}
           <section className="prof-card prof-card-danger">
-            <h3><Icon name="alert" size={18} /> Zona Berbahaya</h3>
-            <p className="prof-danger-text">Tindakan di bawah ini tidak dapat dibatalkan. Lakukan dengan hati-hati.</p>
-            <Button className="outline-button warn" onClick={handleDeleteAccount}>
-              <Icon name="trash" size={16} /> Hapus Akun Selamanya
-            </Button>
+            <h2><Icon name="alert" size={18} /> Zona Berbahaya</h2>
+            <p className="prof-danger-text">Tindakan di bawah ini akan mengeluarkan akun dan menghapus sesi lokal. Lakukan dengan hati-hati.</p>
+            {!confirmDelete ? (
+              <Button className="outline-button warn" onClick={() => setConfirmDelete(true)}>
+                <Icon name="trash" size={16} /> Hapus Akun Selamanya
+              </Button>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <Button className="outline-button warn" onClick={handleDeleteAccount}>
+                  <Icon name="trash" size={16} /> Konfirmasi Hapus Akun
+                </Button>
+                <Button className="outline-button" onClick={() => setConfirmDelete(false)}>
+                  Batal
+                </Button>
+              </div>
+            )}
           </section>
         </div>
       </div>

@@ -8,7 +8,6 @@ import { loadDeckCards } from "../lib/deckCards";
 import { initCard, isDue, reviewCard, type SRSCard } from "../lib/srs";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
-import "../decks.css";
 
 type ReviewCard = {
   id: string;

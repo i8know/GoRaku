@@ -12,8 +12,6 @@ import type { BookRecord } from "./lib/lexiconDb";
 import { speakJapanese } from "./lib/tts";
 import ImportDeckModal from "./components/ImportDeckModal";
 import DeckFormModal from "./components/DeckFormModal";
-import "./pages.css";
-import "./decks.css";
 
 const defaultSources = [
   {
@@ -156,6 +154,15 @@ export default function App() {
     [rootDecks, stats],
   );
 
+  useEffect(() => {
+    if (modal !== "mining") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModal(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [modal]);
+
   const saveAction = (message: string) => {
     setModal(null);
     setNotice(message);
@@ -278,16 +285,19 @@ export default function App() {
             return (
               <div key={deck.id} className="border-b border-[var(--garis)] last:border-b-0">
                 <article className="beranda-deck-row">
-                  <div
-                    className={`beranda-deck-kanji ${kanjiTone} cursor-pointer`}
+                  <button
+                    type="button"
+                    className={`beranda-deck-kanji ${kanjiTone}`}
                     lang="ja"
+                    aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
+                    aria-label={displaySubdecks.length > 0 ? `${isExpanded ? "Tutup" : "Buka"} sub-deck ${deck.title}` : `Buka deck ${deck.title}`}
                     onClick={() => {
                       if (displaySubdecks.length > 0) toggleDeckExpand();
                       else navigate(`/deck/${deck.id}`);
                     }}
                   >
                     {deck.kanji}
-                  </div>
+                  </button>
 
                   <div className="beranda-deck-info">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -298,13 +308,18 @@ export default function App() {
                         </span>
                       )}
                     </div>
-                    <h3
-                      onClick={() => {
-                        if (displaySubdecks.length > 0) toggleDeckExpand();
-                        else navigate(`/deck/${deck.id}`);
-                      }}
-                    >
-                      {deck.title}
+                    <h3>
+                      <button
+                        type="button"
+                        className="text-left bg-transparent border-0 p-0 cursor-pointer"
+                        aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
+                        onClick={() => {
+                          if (displaySubdecks.length > 0) toggleDeckExpand();
+                          else navigate(`/deck/${deck.id}`);
+                        }}
+                      >
+                        {deck.title}
+                      </button>
                     </h3>
                     <div className="beranda-deck-counts">
                       {s.due > 0 ? (
@@ -328,7 +343,7 @@ export default function App() {
 
                   <div className="flex items-center gap-2">
                     {displaySubdecks.length > 0 ? (
-                      <Button className="outline-button" onClick={toggleDeckExpand}>
+                      <Button className="outline-button" ariaExpanded={isExpanded} onClick={toggleDeckExpand}>
                         {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
                         <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
                       </Button>
@@ -376,23 +391,23 @@ export default function App() {
                             <div
                               key={c.id}
                               className="dk-card-subdeck-item"
-                              onClick={() => navigate(`/deck/${c.id}`)}
                             >
-                              <div className="dk-card-subdeck-item-left">
+                              <button
+                                type="button"
+                                className="dk-card-subdeck-item-left"
+                                onClick={() => navigate(`/deck/${c.id}`)}
+                              >
                                 <span className={`deck-art ${c.color} dk-subdeck-kanji`}>{c.kanji}</span>
-                                <div>
+                                <span>
                                   <strong>{c.subdeckName || c.title}</strong>
                                   <small>{c.total.toLocaleString("id-ID")} kartu</small>
-                                </div>
-                              </div>
+                                </span>
+                              </button>
                               <div className="dk-card-subdeck-item-right">
                                 <button
                                   type="button"
                                   className="dk-subdeck-study-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`);
-                                  }}
+                                  onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
                                 >
                                   Belajar
                                 </button>
@@ -413,7 +428,7 @@ export default function App() {
       <article className="week-card">
         <div className="section-heading compact">
           <div>
-            <h3>Ritme minggu ini</h3>
+            <h2>Ritme minggu ini</h2>
           </div>
           <span className="goal">
             {activeDayStat.full}: {activeDayStat.cards} kartu
@@ -424,22 +439,26 @@ export default function App() {
             const isToday = i === todayWeekIdx;
             const isSelected = (hoveredDay ?? todayWeekIdx) === i;
             return (
-              <div
+              <button
+                type="button"
                 className={`day cursor-pointer${isToday ? " is-today" : ""}`}
                 key={i}
+                aria-pressed={isSelected}
+                aria-label={`${d.full}: ${d.mins} menit, ${d.cards} kartu`}
                 onMouseEnter={() => setHoveredDay(i)}
                 onMouseLeave={() => setHoveredDay(null)}
+                onFocus={() => setHoveredDay(i)}
                 onClick={() => setHoveredDay(i)}
                 title={`${d.full}: ${d.mins} menit • ${d.cards} kartu`}
               >
-                <div className="bar">
+                <span className="bar">
                   <i
                     style={{
                       height: `${d.pct}%`,
                       background: isToday ? "var(--shu)" : isSelected ? "var(--kon)" : undefined,
                     }}
                   />
-                </div>
+                </span>
                 <span
                   lang="ja"
                   style={{
@@ -449,7 +468,7 @@ export default function App() {
                 >
                   {d.label}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -476,20 +495,25 @@ export default function App() {
         <div className="source-list">
           {displaySources.map((source) => (
             <article className="source-row" key={source.id}>
-              <div
-                className={`source-art ${source.art} cursor-pointer`}
+              <button
+                type="button"
+                className={`source-art ${source.art}`}
+                aria-label={`Buka ${source.title}`}
                 onClick={() => navigate(source.targetPath)}
               >
                 {source.art === "video" && <Icon name="play" size={22} />}
                 {source.art !== "video" && <span>{source.kanji}</span>}
-              </div>
+              </button>
               <div className="source-copy">
                 <span>{source.type}</span>
-                <h3
-                  className="cursor-pointer hover:text-[var(--ai)] transition-colors"
-                  onClick={() => navigate(source.targetPath)}
-                >
-                  {source.title}
+                <h3>
+                  <button
+                    type="button"
+                    className="text-left bg-transparent border-0 p-0 cursor-pointer hover:text-[var(--ai)] transition-colors"
+                    onClick={() => navigate(source.targetPath)}
+                  >
+                    {source.title}
+                  </button>
                 </h3>
                 <p>{source.detail}</p>
               </div>
@@ -541,11 +565,17 @@ export default function App() {
 
       {modal === "mining" && (
         <div className="modal-backdrop" onMouseDown={() => setModal(null)}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mining-modal-title"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <Button className="modal-close" ariaLabel="Tutup" onClick={() => setModal(null)}><Icon name="close" /></Button>
             <span className="modal-kanji">採</span>
             <p className="eyebrow">MULAI MENAMBANG</p>
-            <h2>Pilih sumber immersion</h2>
+            <h2 id="mining-modal-title">Pilih sumber immersion</h2>
             <p className="modal-copy">Ubah konten Jepang favoritmu menjadi materi belajar kontekstual.</p>
             <div className="source-options">
               {[

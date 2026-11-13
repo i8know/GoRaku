@@ -1477,7 +1477,7 @@ export default function MangaReaderPage({
               ? isDraggingPan
                 ? "grabbing"
                 : "grab"
-              : "pointer",
+              : "default",
           touchAction: selectBubbleMode || zoom > 1 ? "none" : "pan-y",
         }}
       >

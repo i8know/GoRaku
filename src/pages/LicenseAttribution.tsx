@@ -37,11 +37,13 @@ export default function LicenseAttributionPage() {
       {/* Penafian Resmi JLPT */}
       <div className="p-5 rounded-2xl bg-[var(--mizu-soft)] border border-[var(--garis)]">
         <div className="flex items-start gap-3">
-          <span className="text-[var(--ai)] text-lg mt-0.5">⚠️</span>
+          <span className="text-[var(--ai)] mt-0.5 shrink-0" aria-hidden="true">
+            <Icon name="alert" size={18} />
+          </span>
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-[var(--tinta)]">
-              Pemberitahuan & Penafian Resmi (Official JLPT Disclaimer)
-            </h3>
+            <h2 className="text-sm font-bold text-[var(--tinta)]">
+              Pemberitahuan &amp; Penafian Resmi (Official JLPT Disclaimer)
+            </h2>
             <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
               Seluruh soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5</strong>,{" "}
               <strong>BUKAN</strong> soal resmi dari <em>The Japan Foundation</em> maupun{" "}

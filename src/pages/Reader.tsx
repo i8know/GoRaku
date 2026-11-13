@@ -672,10 +672,10 @@ export default function ReaderPage({
             <Icon name="list" size={15} /> Daftar Isi ({tocItems.length})
           </button>
 
-          <div className="min-w-0 hidden md:block pl-1">
-            <div className="text-[13.5px] font-semibold truncate max-w-xs lg:max-w-md">
+          <div className="min-w-0 sr-only md:not-sr-only md:pl-1">
+            <h1 className="m-0 text-[13.5px] font-semibold truncate max-w-xs lg:max-w-md">
               {book?.title ?? "Memuat..."}
-            </div>
+            </h1>
             <div
               className="text-[11px] truncate max-w-xs lg:max-w-md"
               style={{ color: palette.muted }}
@@ -750,10 +750,11 @@ export default function ReaderPage({
             }}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[13.5px] font-semibold">Daftar Isi</h3>
+              <h2 className="text-[13.5px] font-semibold">Daftar Isi</h2>
               <button
                 type="button"
                 onClick={() => setTocOpen(false)}
+                aria-label="Tutup daftar isi"
                 className="p-1 rounded"
               >
                 <Icon name="close" size={15} />

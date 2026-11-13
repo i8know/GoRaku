@@ -8,6 +8,8 @@ import ToastContainer from './components/ToastContainer'
 import LandingPage from './pages/Landing'
 import './aizome.css'
 import './index.css'
+import './pages.css'
+import './decks.css'
 import { useToastStore } from './store/useToastStore'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))

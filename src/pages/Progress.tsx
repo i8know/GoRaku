@@ -188,7 +188,7 @@ export default function ProgressPage() {
           <div className="section-heading compact">
             <div>
               <p className="eyebrow">PERTUMBUHAN (ARAHKAN KURSOR KE TITIK)</p>
-              <h3>Kosakata yang kamu kuasai</h3>
+              <h2>Kosakata yang kamu kuasai</h2>
             </div>
             <span className="goal">
               Titik #{selectedPtIndex + 1}: {selectedPtValue.toLocaleString("id-ID")} kata
@@ -199,7 +199,7 @@ export default function ProgressPage() {
         </section>
 
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">TARGET JLPT</p><h3>Kemajuan level</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">TARGET JLPT</p><h2>Kemajuan level</h2></div></div>
           <ul className="pr-jlpt">
             {jlpt.map((j) => (
               <li key={j.lv}><b>{j.lv}</b><div className="progress"><i style={{ width: `${j.p}%` }} /></div><small>{j.n}</small></li>
@@ -212,7 +212,7 @@ export default function ProgressPage() {
         <div className="section-heading compact">
           <div>
             <p className="eyebrow">KONSISTENSI</p>
-            <h3>16 minggu terakhir</h3>
+            <h2>16 minggu terakhir</h2>
           </div>
           <div className="pr-streaks items-center">
             {activeHeatInfo && (
@@ -226,17 +226,27 @@ export default function ProgressPage() {
         </div>
         <div
           className="pr-heat"
-          role="img"
-          aria-label="Peta aktivitas belajar"
+          role="region"
+          aria-label={activeHeatInfo ? `Peta aktivitas belajar (${activeHeatInfo})` : "Peta aktivitas belajar (arahkan kursor atau gunakan tombol panah untuk menelusuri hari)"}
+          tabIndex={0}
           onMouseLeave={() => setHoverHeatIdx(null)}
+          onBlur={() => setHoverHeatIdx(null)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              setHoverHeatIdx((prev) => (prev === null ? 0 : Math.min(heat.length - 1, prev + 1)));
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              setHoverHeatIdx((prev) => (prev === null ? heat.length - 1 : Math.max(0, prev - 1)));
+            }
+          }}
         >
           {heat.map((v, i) => (
             <i
               key={i}
-              className={`l${v} cursor-pointer transition-transform hover:scale-125`}
+              className={`l${v} transition-transform hover:scale-125${hoverHeatIdx === i ? " ring-2 ring-[var(--shu)]" : ""}`}
               onMouseEnter={() => setHoverHeatIdx(i)}
-              onClick={() => setHoverHeatIdx(i)}
-              title={`Level aktivitas ${v}`}
+              title={`Hari ke-${i + 1}: level aktivitas ${v}`}
             />
           ))}
         </div>
@@ -245,7 +255,7 @@ export default function ProgressPage() {
 
       <div className="pr-row pr-row-b">
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">PRAKIRAAN</p><h3>Review 7 hari ke depan</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">PRAKIRAAN</p><h2>Review 7 hari ke depan</h2></div></div>
           <div className="pr-forecast">
             {forecast.map((v, i) => (
               <div key={i} title={`${i === 0 ? "Hari ini" : days[i]}: ${v} kartu`}>
@@ -258,7 +268,7 @@ export default function ProgressPage() {
         </section>
 
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">SUMBER BELAJAR</p><h3>Dari mana kata-katamu</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">SUMBER BELAJAR</p><h2>Dari mana kata-katamu</h2></div></div>
           <div className="pr-stack">{sourcesMix.map((s) => <i key={s.n} style={{ width: `${s.p}%`, background: s.c }} title={`${s.n} ${s.p}%`} />)}</div>
           <ul className="pr-mix">{sourcesMix.map((s) => <li key={s.n}><i style={{ background: s.c }} />{s.n}<b>{s.p}%</b></li>)}</ul>
         </section>

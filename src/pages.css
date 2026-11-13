@@ -159,7 +159,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .st-card { border: 1px solid var(--garis); border-radius: 16px; padding: 24px; background: var(--panel); }
 .st-title { display: flex; gap: 13px; align-items: center; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--garis); }
 .st-title > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: var(--kon); color: #fff; flex: none; }
-.st-title h3 { margin: 0; font: 600 16px var(--font-serif); color: var(--tinta); }
+.st-title h2, .st-title h3 { margin: 0; font: 600 16px var(--font-serif); color: var(--tinta); }
 .st-title p { margin: 3px 0 0; color: var(--tinta-2); font-size: 10px; }
 .st-profile { display: flex; align-items: center; gap: 13px; margin-bottom: 8px; }
 .st-avatar { width: 52px; height: 52px; font-size: 20px; }
