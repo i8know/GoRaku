@@ -98,7 +98,7 @@ export default function LicenseAttributionPage() {
         {/* 2. Tatoeba Project */}
         <div className="p-6 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-[var(--ok)]">
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[rgba(42,111,91,0.12)] text-[var(--ok)]">
               CC BY 2.0 FR
             </span>
             <span className="text-xs text-[var(--tinta-2)]">Korpus Kalimat</span>

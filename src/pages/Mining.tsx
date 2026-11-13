@@ -224,15 +224,33 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
             </div>
 
             <p className="mn-sentence" lang="ja">
-              <span className="mn-quote">「</span>
-              {cur.tokens.map((t, i) =>
-                t.m ? (
-                  <button key={i} className={`mn-tok ${sel === i ? "on" : ""} ${queue.some((m) => m.word === t.t) ? "saved" : ""}`} onClick={() => setSel(i)}>
-                    {furigana && <rt>{t.r}</rt>}{t.t}
-                  </button>
-                ) : <span key={i} className="mn-plain">{t.t}</span>,
-              )}
-              <span className="mn-quote">」</span>
+              {(() => {
+                const len = cur.tokens.length;
+                const tailCount = len >= 2 && !cur.tokens[len - 1]?.m ? 2 : len >= 1 ? 1 : 0;
+                const head = cur.tokens.slice(0, len - tailCount);
+                const tail = cur.tokens.slice(len - tailCount);
+                const renderTok = (t: Tok, idx: number) =>
+                  t.m ? (
+                    <button key={idx} className={`mn-tok ${sel === idx ? "on" : ""} ${queue.some((m) => m.word === t.t) ? "saved" : ""}`} onClick={() => setSel(idx)}>
+                      {furigana && <rt>{t.r}</rt>}{t.t}
+                    </button>
+                  ) : (
+                    <span key={idx} className="mn-plain">{t.t}</span>
+                  );
+                return (
+                  <>
+                    <span className="inline-flex items-end whitespace-nowrap">
+                      <span className="mn-quote">「</span>
+                      {head[0] && renderTok(head[0], 0)}
+                    </span>
+                    {head.slice(1).map((t, i) => renderTok(t, i + 1))}
+                    <span className="inline-flex items-end whitespace-nowrap">
+                      {tail.map((t, i) => renderTok(t, len - tailCount + i))}
+                      <span className="mn-quote">」</span>
+                    </span>
+                  </>
+                );
+              })()}
             </p>
             <p className="mn-trans">{cur.tr}</p>
 

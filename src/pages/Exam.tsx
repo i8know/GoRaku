@@ -1032,7 +1032,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
       {/* 1. Header Utama Ujian JLPT Format Baru */}
       <header className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 sm:p-7 shadow-[0_4px_24px_rgba(16,33,58,0.04)] relative overflow-hidden">
         <span
-          className="absolute right-6 -bottom-6 [font-family:var(--font-serif)] text-[120px] font-bold text-[var(--mizu-soft)] pointer-events-none select-none leading-none opacity-65"
+          className="absolute right-5 -bottom-3 [font-family:var(--font-serif)] text-[116px] font-bold text-[var(--ai)] pointer-events-none select-none leading-none opacity-[0.07]"
           aria-hidden="true"
         >
           験
@@ -1202,7 +1202,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 !currentExamSummary.hasTakenAny
                   ? "bg-[var(--tsuki)] text-[var(--tinta-2)] border border-[var(--garis)]"
                   : currentExamSummary.scaled.overallPassed
-                  ? "bg-emerald-50 text-[var(--ok)]"
+                  ? "bg-[rgba(42,111,91,0.12)] text-[var(--ok)]"
                   : "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
               }`}
             >
@@ -1266,7 +1266,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
           </div>
 
           {/* Kategori 3: Skor Total (0-180) */}
-          <div className="p-4 rounded-xl bg-[var(--panel)] border-2 border-[var(--kon)] space-y-1.5">
+          <div className="p-4 rounded-xl bg-[var(--panel)] border border-[var(--ai)] shadow-[0_2px_10px_rgba(18,40,74,0.06)] space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-[var(--kon)] [font-family:var(--font-serif)]">
                 総合得点（Total Nilai Skala）

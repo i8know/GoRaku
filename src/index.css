@@ -426,7 +426,8 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   .top-actions { gap: 4px; }
   .icon-button { border: 0; padding: 7px; min-width: 44px; min-height: 44px; }
   .avatar { width: 32px; height: 32px; }
-  .content { padding: 24px 16px calc(88px + env(safe-area-inset-bottom)); }
+  .content { padding: 24px 16px calc(96px + env(safe-area-inset-bottom)); }
+  .app-shell { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
   .welcome { align-items: flex-start; }
   .welcome h1 { font-size: 25px; }
   .welcome-copy { line-height: 1.5; }
@@ -476,10 +477,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   background-color: var(--tsuki);
   background-image:
     radial-gradient(circle at 12% 8%, rgba(31, 92, 133, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 88% 24%, rgba(18, 40, 74, 0.06) 0%, transparent 42%),
-    linear-gradient(to right, rgba(197, 211, 219, 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(197, 211, 219, 0.2) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 72px 72px, 72px 72px;
+    radial-gradient(circle at 88% 24%, rgba(18, 40, 74, 0.06) 0%, transparent 42%);
   color: var(--tinta);
   position: relative;
   overflow-x: hidden;
@@ -1010,12 +1008,48 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 .user-profile {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
-  padding: 12px;
-  border: 1px solid #303531;
-  border-radius: 10px;
+  padding: 8px;
+  border: 1px solid rgba(188, 214, 226, 0.18);
+  border-radius: 12px;
   margin-top: 12px;
-  background: #222724;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.user-profile:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(188, 214, 226, 0.3);
+}
+
+.app-shell:not(.mobile-drawer-open) .user-profile > a {
+  justify-content: center;
+  gap: 0 !important;
+}
+
+.user-profile .icon-button {
+  display: none;
+  border-left: 0;
+  padding: 6px;
+  min-width: 32px;
+  min-height: 32px;
+  color: var(--mizu);
+  border-radius: 8px;
+}
+
+.user-profile .icon-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.app-shell.mobile-drawer-open .user-profile {
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.app-shell.mobile-drawer-open .user-profile .icon-button {
+  display: inline-flex;
 }
 
 /* Nav link styling (for Link components) */

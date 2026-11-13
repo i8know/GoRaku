@@ -3,6 +3,7 @@
   --ai-tua: #17406A;
   --ai: #1F5C85;
   --mizu: #BCD6E2;
+  --mizu-soft: #DCE8F0;
   --tsuki: #EDF2F5;
   --panel: #F8FAFB;
   --garis: #C5D3DB;
@@ -18,4 +19,26 @@
   color: var(--tinta);
   background: var(--tsuki);
   font-synthesis: none;
+  accent-color: var(--ai);
+}
+
+::selection {
+  background: rgba(31, 92, 133, 0.18);
+  color: var(--kon);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--ai);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ai);
+  outline-offset: 2px;
 }

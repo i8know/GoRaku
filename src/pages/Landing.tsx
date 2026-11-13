@@ -612,10 +612,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("oishikatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-all cursor-pointer ${
                       selectedTokenId === "oishikatta"
-                        ? "bg-[var(--ai)] text-white border-[var(--ai)] font-bold"
-                        : "border-dashed border-[var(--ai)]/70 hover:bg-[var(--ai)]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -630,10 +630,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("tabesaserarenakatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-all cursor-pointer ${
                       selectedTokenId === "tabesaserarenakatta"
-                        ? "bg-[var(--ai)] text-white border-[var(--ai)] font-bold"
-                        : "border-dashed border-[var(--ai)]/70 hover:bg-[var(--ai)]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -648,10 +648,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("benkyoushiteiru")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-all cursor-pointer ${
                       selectedTokenId === "benkyoushiteiru"
-                        ? "bg-[var(--ai)] text-white border-[var(--ai)] font-bold"
-                        : "border-dashed border-[var(--ai)]/70 hover:bg-[var(--ai)]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -666,10 +666,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("ikanakatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-all cursor-pointer ${
                       selectedTokenId === "ikanakatta"
-                        ? "bg-[var(--ai)] text-white border-[var(--ai)] font-bold"
-                        : "border-dashed border-[var(--ai)]/70 hover:bg-[var(--ai)]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (

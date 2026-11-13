@@ -451,9 +451,9 @@
 
 /* Tree in List View */
 .dk-list-subdeck-row {
-  background: var(--panel) !important;
-  border-left: 3px solid var(--kon);
-  padding-left: 12px;
+  background: var(--tsuki) !important;
+  box-shadow: inset 0 1px 0 rgba(197, 211, 219, 0.35);
+  padding-left: 14px;
 }
 
 .dk-subdeck-indent {
