@@ -417,7 +417,7 @@ export default function LandingPage() {
       ? { bg: "#171a18", fg: "#ebe7df", border: "#2c322e", sub: "#98a09b", badgeBg: "#24302b" }
       : heroTheme === "sepia"
         ? { bg: "#f3ead6", fg: "#2b231a", border: "#d9c8ad", sub: "#6e5d4a", badgeBg: "#e7dac1" }
-        : { bg: "#fffdf9", fg: "#1f1e1b", border: "#dfd9cc", sub: "#7a756c", badgeBg: "#f4efe4" };
+        : { bg: "var(--panel)", fg: "var(--tinta)", border: "var(--garis)", sub: "#7a756c", badgeBg: "var(--tsuki)" };
 
   return (
     <div className="landing">
@@ -432,7 +432,7 @@ export default function LandingPage() {
             <span lang="ja" className="jp-hanko text-[10.5px]">
               語楽之印
             </span>
-            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#6e695f]">
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[var(--tinta-2)]">
               IMMERSION • REVOLUSI ANKI • SIMULASI JLPT N5–N1
             </span>
           </div>
@@ -467,11 +467,11 @@ export default function LandingPage() {
             ].map((item) => (
               <div
                 key={item.jp}
-                className="flex items-center gap-2 rounded-lg border border-[#dcd5c7] bg-[#fffdf9] px-2.5 py-2"
+                className="flex items-center gap-2 rounded-lg border border-[#dcd5c7] bg-[var(--panel)] px-2.5 py-2"
               >
                 <span
                   lang="ja"
-                  className="w-6 h-6 rounded bg-[#233c35] text-[#f6f3ec] font-serif text-[11px] font-bold grid place-items-center shrink-0"
+                  className="w-6 h-6 rounded bg-[var(--kon)] text-[#f6f3ec] font-serif text-[11px] font-bold grid place-items-center shrink-0"
                 >
                   {item.jp}
                 </span>
@@ -698,7 +698,7 @@ export default function LandingPage() {
                     <span lang="ja" className="text-xs font-bold text-[#c4543f]">
                       {activeToken.reading}
                     </span>
-                    <span className="rounded bg-[#233c35]/10 px-2 py-0.5 text-[10px] font-bold text-[#233c35]">
+                    <span className="rounded bg-[var(--kon)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--kon)]">
                       {activeToken.pos} • {activeToken.jlpt}
                     </span>
                     <span
@@ -710,7 +710,7 @@ export default function LandingPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <strong lang="ja" className="text-2xl font-serif font-bold text-[#1c1f1d]">
+                    <strong lang="ja" className="text-2xl font-serif font-bold text-[var(--tinta)]">
                       {activeToken.dictionaryForm}
                     </strong>
                     <button
@@ -739,7 +739,7 @@ export default function LandingPage() {
               </p>
 
               {/* Extracted Context Sentence Box */}
-              <div className="rounded-xl border border-[#e2ded5] bg-white p-2.5 mb-3">
+              <div className="rounded-xl border border-[var(--garis)] bg-white p-2.5 mb-3">
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#868178] mb-1">
                   <span>Kalimat Konteks Otomatis (Tag &lt;b&gt; Utuh)</span>
                   <button
@@ -752,7 +752,7 @@ export default function LandingPage() {
                 </div>
                 <p
                   lang="ja"
-                  className="text-xs leading-relaxed text-[#25231f] m-0 font-serif"
+                  className="text-xs leading-relaxed text-[var(--tinta)] m-0 font-serif"
                   dangerouslySetInnerHTML={{ __html: activeToken.sentenceHtml }}
                 />
               </div>
@@ -760,7 +760,7 @@ export default function LandingPage() {
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-[10.5px] text-[#68635a] flex items-center gap-1.5">
                   <Icon name="cards" size={13} /> Sub-deck Tujuan:{" "}
-                  <strong className="text-[#233c35]">{activeToken.targetSubdeck}</strong>
+                  <strong className="text-[var(--kon)]">{activeToken.targetSubdeck}</strong>
                 </span>
                 <button
                   type="button"
@@ -773,7 +773,7 @@ export default function LandingPage() {
                   className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition-all cursor-pointer ${
                     minedMap[activeToken.id]
                       ? "bg-[#2f6b4f]"
-                      : "bg-[#233c35] hover:bg-[#192c27]"
+                      : "bg-[var(--kon)] hover:bg-[#192c27]"
                   }`}
                 >
                   <Icon name={minedMap[activeToken.id] ? "check" : "plus"} size={14} />
@@ -797,7 +797,7 @@ export default function LandingPage() {
             </div>
             <h2>Revolusi Sub-Deck Anki &amp; Simulasi Ujian JLPT N5–N1</h2>
           </div>
-          <p className="text-xs text-[#6f6a61] max-w-md">
+          <p className="text-xs text-[var(--tinta-2)] max-w-md">
             Tidak perlu bingung mengurutkan ribuan kartu. Buka deck untuk memunculkan sub-deck per level JLPT, lalu uji kesiapanmu lewat simulasi 3 bagian resmi.
           </p>
         </div>
@@ -810,7 +810,7 @@ export default function LandingPage() {
                 <span className="text-[10px] font-bold tracking-widest uppercase text-[#c4543f]">
                   階層デッキ • MULTI-LEVEL ANKI TREE
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[#1e201d] m-0 mt-0.5">
+                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
                   Tekan Deck Induk → Muncul Sub-Deck (N5–N1)
                 </h3>
               </div>
@@ -826,7 +826,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => setDemoParentOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left bg-[#233c35] text-white cursor-pointer transition-colors hover:bg-[#1b302a]"
+                className="w-full flex items-center justify-between px-4 py-3 text-left bg-[var(--kon)] text-white cursor-pointer transition-colors hover:bg-[#1b302a]"
               >
                 <div className="flex items-center gap-2.5">
                   <Icon name={demoParentOpen ? "chevron-up" : "chevron-down"} size={15} />
@@ -850,7 +850,7 @@ export default function LandingPage() {
               </button>
 
               {demoParentOpen ? (
-                <div className="divide-y divide-[#ebe5d8] bg-[#fffdf9]">
+                <div className="divide-y divide-[#ebe5d8] bg-[var(--panel)]">
                   {SUBDECK_DEMO_TREE.map((sub, i) => {
                     const isSelected = sub.id === selectedSubdeckId;
                     return (
@@ -895,7 +895,7 @@ export default function LandingPage() {
                   })}
                 </div>
               ) : (
-                <div className="px-4 py-3 text-xs text-[#6f6a61] bg-[#fffdf9] flex items-center justify-between">
+                <div className="px-4 py-3 text-xs text-[var(--tinta-2)] bg-[var(--panel)] flex items-center justify-between">
                   <span>Sub-deck disembunyikan — ukuran kartu tetap ringkas dan tidak menarik deck lain.</span>
                   <button
                     type="button"
@@ -909,12 +909,12 @@ export default function LandingPage() {
             </div>
 
             {/* Selected Subdeck Quick Detail */}
-            <div className="mt-3.5 rounded-xl border border-[#e5dfd3] bg-[#f7f3ea] p-3.5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="mt-3.5 rounded-xl border border-[#e5dfd3] bg-[var(--tsuki)] p-3.5 flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#7a7469] block">
                   Sub-Deck Terpilih: {activeSubdeck.title} ({activeSubdeck.total} kartu)
                 </span>
-                <p lang="ja" className="text-xs font-serif text-[#25231f] m-0 mt-0.5">
+                <p lang="ja" className="text-xs font-serif text-[var(--tinta)] m-0 mt-0.5">
                   Contoh kosakata: <strong>{activeSubdeck.sample}</strong>
                 </p>
               </div>
@@ -932,10 +932,10 @@ export default function LandingPage() {
           <div className="lg:col-span-5 jp-koushi-frame p-6">
             <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[#ebe5d8]">
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[#233c35]">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--kon)]">
                   模擬試験 • SIMULASI UJIAN JLPT
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[#1e201d] m-0 mt-0.5">
+                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
                   Struktur 3 Bagian &amp; Mondai Interaktif
                 </h3>
               </div>
@@ -953,12 +953,12 @@ export default function LandingPage() {
               ].map((part) => (
                 <div
                   key={part.sec}
-                  className="rounded-lg border border-[#dfd9cc] bg-[#faf7f0] p-2"
+                  className="rounded-lg border border-[var(--garis)] bg-[#faf7f0] p-2"
                 >
                   <small className="block text-[9px] font-bold uppercase text-[#888277]">
                     {part.sec}
                   </small>
-                  <strong lang="ja" className="font-serif text-xs text-[#233c35] block">
+                  <strong lang="ja" className="font-serif text-xs text-[var(--kon)] block">
                     {part.jp}
                   </strong>
                   <span className="text-[9.5px] text-[#6d685f]">{part.sub}</span>
@@ -967,12 +967,12 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Mini Mondai Question */}
-            <div className="rounded-xl border border-[#dcd5c7] bg-[#fffdf9] p-4">
+            <div className="rounded-xl border border-[#dcd5c7] bg-[var(--panel)] p-4">
               <div className="flex items-center justify-between text-[10px] font-bold text-[#7c766b] mb-2">
                 <span>CONTOH SOAL • JLPT N5 (G3 PARTIKEL)</span>
                 <span lang="ja" className="text-[#c4543f]">問題 1</span>
               </div>
-              <p lang="ja" className="text-base font-serif font-semibold text-[#1e201d] mb-3">
+              <p lang="ja" className="text-base font-serif font-semibold text-[var(--tinta)] mb-3">
                 毎朝、新鮮な水（　★　）飲みます。
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -989,7 +989,7 @@ export default function LandingPage() {
                           ? isRight
                             ? "border-[#2f6b4f] bg-[#e6f3ec] text-[#1f5139]"
                             : "border-[#c4543f] bg-[#fbeae6] text-[#9e3422]"
-                          : "border-[#dcd5c7] bg-[#faf7f0] text-[#25231f] hover:border-[#233c35]"
+                          : "border-[#dcd5c7] bg-[#faf7f0] text-[var(--tinta)] hover:border-[var(--kon)]"
                       }`}
                     >
                       {idx + 1}. {opt}
@@ -1014,7 +1014,7 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-[11px] text-[#6f6a61]">
+              <span className="text-[11px] text-[var(--tinta-2)]">
                 15 paket ujian lengkap (N5–N1) dengan timer per bagian.
               </span>
               <Button
@@ -1055,8 +1055,8 @@ export default function LandingPage() {
                 onClick={() => setActiveTabId(tab.id)}
                 className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                   isOn
-                    ? "border-[#233c35] bg-[#233c35] text-white shadow-md"
-                    : "border-[#dfd9cc] bg-[#fffdf9] text-[#25231f] hover:border-[#c4543f]"
+                    ? "border-[var(--kon)] bg-[var(--kon)] text-white shadow-md"
+                    : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta)] hover:border-[#c4543f]"
                 }`}
               >
                 <span
@@ -1072,7 +1072,7 @@ export default function LandingPage() {
                   <small
                     lang="ja"
                     className={`block text-[10px] truncate mt-0.5 ${
-                      isOn ? "text-white/75" : "text-[#8e8a82]"
+                      isOn ? "text-white/75" : "text-[var(--tinta-2)]"
                     }`}
                   >
                     {tab.jpSub} • {tab.badge}
@@ -1102,7 +1102,7 @@ export default function LandingPage() {
                   〔 {activeTab.jpSub} 〕
                 </span>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-[#25231f] leading-snug">
+              <h3 className="text-2xl font-serif font-bold text-[var(--tinta)] leading-snug">
                 {activeTab.title}
               </h3>
               <p className="text-xs sm:text-sm text-[#5c5851] leading-relaxed">
@@ -1111,7 +1111,7 @@ export default function LandingPage() {
               <ul className="space-y-2.5 pt-1">
                 {activeTab.bullets.map((b, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-[#3b3832]">
-                    <span className="w-5 h-5 rounded-full bg-[#233c35] text-white grid place-items-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-[var(--kon)] text-white grid place-items-center shrink-0 mt-0.5">
                       <Icon name="check" size={12} />
                     </span>
                     <span className="leading-relaxed">{b}</span>
@@ -1129,11 +1129,11 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Visual Preview per Tab */}
-            <div className="lg:col-span-5 rounded-2xl border border-[#e6e1d6] bg-[#f7f4ec] p-5">
+            <div className="lg:col-span-5 rounded-2xl border border-[#e6e1d6] bg-[var(--tsuki)] p-5">
               {activeTab.id === "reader" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#233c35]">
+                    <span className="text-[11px] font-bold text-[var(--kon)]">
                       Pratinjau Mode Teks Pembaca
                     </span>
                     <div className="flex gap-1.5">
@@ -1142,7 +1142,7 @@ export default function LandingPage() {
                         onClick={() => setPreviewWritingMode("horizontal-tb")}
                         className={`rounded px-2 py-1 text-[10px] font-bold cursor-pointer ${
                           previewWritingMode === "horizontal-tb"
-                            ? "bg-[#233c35] text-white"
+                            ? "bg-[var(--kon)] text-white"
                             : "bg-white text-[#5c5851]"
                         }`}
                       >
@@ -1153,7 +1153,7 @@ export default function LandingPage() {
                         onClick={() => setPreviewWritingMode("vertical-rl")}
                         className={`rounded px-2 py-1 text-[10px] font-bold cursor-pointer ${
                           previewWritingMode === "vertical-rl"
-                            ? "bg-[#233c35] text-white"
+                            ? "bg-[var(--kon)] text-white"
                             : "bg-white text-[#5c5851]"
                         }`}
                       >
@@ -1163,7 +1163,7 @@ export default function LandingPage() {
                   </div>
                   <div
                     lang="ja"
-                    className="rounded-xl border border-[#dfd9ce] bg-[#fffdfa] p-4 font-serif text-base leading-loose min-h-[160px] flex items-center justify-center"
+                    className="rounded-xl border border-[#dfd9ce] bg-[var(--panel)] p-4 font-serif text-base leading-loose min-h-[160px] flex items-center justify-center"
                     style={{
                       writingMode: previewWritingMode,
                       maxHeight: "200px",
@@ -1196,7 +1196,7 @@ export default function LandingPage() {
                       がつかぬ。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[#6f6b63]">
+                  <p className="text-[11px] text-[var(--tinta-2)]">
                     Tag <code>&lt;rt&gt;</code> furigana otomatis diabaikan saat pemindaian kamus agar kata dasar kanji tetap ditemukan secara presisi.
                   </p>
                 </div>
@@ -1204,7 +1204,7 @@ export default function LandingPage() {
 
               {activeTab.id === "dictionary" && (
                 <div className="space-y-3">
-                  <div className="text-[11px] font-bold text-[#233c35]">
+                  <div className="text-[11px] font-bold text-[var(--kon)]">
                     Alur Deinflection &amp; Lookup Tunggal
                   </div>
                   <div className="space-y-2 text-xs">
@@ -1216,11 +1216,11 @@ export default function LandingPage() {
                     ].map((row, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded-xl border border-[#e1ddd4] bg-white px-3 py-2"
+                        className="flex items-center justify-between rounded-xl border border-[var(--garis)] bg-white px-3 py-2"
                       >
                         <div>
-                          <span className="text-[10px] text-[#8e8a82] block">{row.step}</span>
-                          <strong lang="ja" className="font-serif text-sm text-[#25231f]">
+                          <span className="text-[10px] text-[var(--tinta-2)] block">{row.step}</span>
+                          <strong lang="ja" className="font-serif text-sm text-[var(--tinta)]">
                             {row.val}
                           </strong>
                         </div>
@@ -1235,7 +1235,7 @@ export default function LandingPage() {
 
               {activeTab.id === "mining" && (
                 <div className="space-y-3 text-xs">
-                  <div className="text-[11px] font-bold text-[#233c35]">
+                  <div className="text-[11px] font-bold text-[var(--kon)]">
                     Perbandingan Ekstraksi Kalimat Dialog
                   </div>
                   <div className="rounded-xl border border-red-200 bg-red-50/70 p-3">
@@ -1254,7 +1254,7 @@ export default function LandingPage() {
                       「本当に<b>信じられない</b>！」と彼女は驚いた声で言った。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[#6f6b63]">
+                  <p className="text-[11px] text-[var(--tinta-2)]">
                     Pelacak kedalaman tanda kutip <code>「」</code> dan <code>『』</code> memastikan kalimat dialog beserta klausa penutupnya tidak terpotong di tengah.
                   </p>
                 </div>
@@ -1263,13 +1263,13 @@ export default function LandingPage() {
               {activeTab.id === "srs" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#233c35]">
+                    <span className="text-[11px] font-bold text-[var(--kon)]">
                       Simulasi Kartu Review SRS
                     </span>
                     <button
                       type="button"
                       onClick={() => setDemoCardFlipped((v) => !v)}
-                      className="rounded-lg bg-[#233c35] px-2.5 py-1 text-[10px] font-bold text-white cursor-pointer"
+                      className="rounded-lg bg-[var(--kon)] px-2.5 py-1 text-[10px] font-bold text-white cursor-pointer"
                     >
                       {demoCardFlipped ? "Lihat Depan" : "Balik Kartu (Spasi)"}
                     </button>
@@ -1281,12 +1281,12 @@ export default function LandingPage() {
                     <small lang="ja" className="text-xs text-[#c4543f] font-bold">
                       {demoCardFlipped ? "じゅみょう • Sub-deck N3" : "Klik untuk membuka jawaban"}
                     </small>
-                    <strong lang="ja" className="text-3xl font-serif my-1 text-[#25231f]">
+                    <strong lang="ja" className="text-3xl font-serif my-1 text-[var(--tinta)]">
                       寿命
                     </strong>
                     {demoCardFlipped && (
-                      <div className="mt-2 pt-2 border-t border-[#ebe6dc] text-xs space-y-1">
-                        <p className="font-bold text-[#233c35]">umur; masa hidup (lifespan)</p>
+                      <div className="mt-2 pt-2 border-t border-[var(--garis)] text-xs space-y-1">
+                        <p className="font-bold text-[var(--kon)]">umur; masa hidup (lifespan)</p>
                         <p lang="ja" className="text-[#5c5851]">
                           人間の<b>寿命</b>は短いんだね。
                         </p>
@@ -1324,7 +1324,7 @@ export default function LandingPage() {
               <span
                 lang="ja"
                 aria-hidden="true"
-                className="pointer-events-none select-none absolute -right-2 -top-3 font-serif text-[72px] font-bold leading-none text-[#233c35]/[0.045]"
+                className="pointer-events-none select-none absolute -right-2 -top-3 font-serif text-[72px] font-bold leading-none text-[var(--kon)]/[0.045]"
               >
                 {card.kanjiWatermark}
               </span>
@@ -1345,11 +1345,11 @@ export default function LandingPage() {
                 <h3 className="text-base font-serif font-bold mb-2">{card.title}</h3>
                 <p className="text-xs text-[#69655d] leading-relaxed mb-4">{card.desc}</p>
               </div>
-              <div className="relative z-10 flex flex-wrap gap-1.5 pt-3 border-t border-[#ebe6dc]">
+              <div className="relative z-10 flex flex-wrap gap-1.5 pt-3 border-t border-[var(--garis)]">
                 {card.highlights.map((h) => (
                   <span
                     key={h}
-                    className="rounded-md bg-[#f5f1e8] px-2 py-0.5 text-[10px] font-semibold text-[#494740]"
+                    className="rounded-md bg-[#f5f1e8] px-2 py-0.5 text-[10px] font-semibold text-[var(--tinta-2)]"
                   >
                     ✓ {h}
                   </span>
@@ -1420,12 +1420,12 @@ export default function LandingPage() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-[#dfd9cc] bg-[#fffdf9] overflow-hidden"
+                className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] overflow-hidden"
               >
                 <button
                   type="button"
                   onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-serif font-bold text-sm text-[#25231f] hover:bg-[#f7f3ea] transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-serif font-bold text-sm text-[var(--tinta)] hover:bg-[var(--tsuki)] transition-colors cursor-pointer"
                 >
                   <span>{item.q}</span>
                   <span className="text-[#c4543f] text-base font-sans">
@@ -1498,7 +1498,7 @@ export default function LandingPage() {
             <Link to="/license" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Atribusi &amp; Lisensi</Link>
           </div>
 
-          <p className="m-0 text-[11px] text-[#787268]">
+          <p className="m-0 text-[11px] text-[var(--tinta-2)]">
             © 2026 語楽 (GORAKU) —千里の道も一歩から。
           </p>
         </div>

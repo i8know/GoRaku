@@ -72,18 +72,18 @@ export default function ExtraMaterialsModal({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
-      <div className="w-full max-w-2xl bg-[#fffdf8] rounded-2xl border border-[#e2ded5] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[#25231f]">
+      <div className="w-full max-w-2xl bg-[var(--panel)] rounded-2xl border border-[var(--garis)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[var(--tinta)]">
         {/* Header Modal */}
-        <div className="flex items-center justify-between p-5 border-b border-[#e2ded5] bg-[#f8f5ef] shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--garis)] bg-[var(--tsuki)] shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#f1e6df] text-[#bf5b46] flex items-center justify-center">
               <Icon name="book" size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-[#25231f] font-['Noto_Serif_JP',serif]">
+              <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
                 Materi Tambahan
               </h3>
-              <p className="text-[11px] text-[#77736b]">
+              <p className="text-[11px] text-[var(--tinta-2)]">
                 Panduan resmi ujian, manajemen bank soal, dan referensi
               </p>
             </div>
@@ -91,7 +91,7 @@ export default function ExtraMaterialsModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#77736b] hover:text-[#25231f] hover:bg-[#eee8dd] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--tinta-2)] hover:text-[var(--tinta)] hover:bg-[#eee8dd] transition-colors"
             title="Tutup dialog"
           >
             <Icon name="close" size={16} />
@@ -99,14 +99,14 @@ export default function ExtraMaterialsModal({
         </div>
 
         {/* Tab Bar */}
-        <div className="flex border-b border-[#e2ded5] px-5 pt-3 gap-3 bg-[#f8f5ef]/50 shrink-0">
+        <div className="flex border-b border-[var(--garis)] px-5 pt-3 gap-3 bg-[var(--tsuki)]/50 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("guide")}
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "guide"
                 ? "border-[#d95b43] text-[#bf5b46]"
-                : "border-transparent text-[#77736b] hover:text-[#25231f]"
+                : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
             Panduan Ujian JLPT
@@ -117,7 +117,7 @@ export default function ExtraMaterialsModal({
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "packs"
                 ? "border-[#d95b43] text-[#bf5b46]"
-                : "border-transparent text-[#77736b] hover:text-[#25231f]"
+                : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
             {`Kelola Paket Soal (${packs.length})`}
@@ -128,7 +128,7 @@ export default function ExtraMaterialsModal({
             className={`pb-3 text-xs font-semibold border-b-2 transition-all ${
               activeTab === "license"
                 ? "border-[#d95b43] text-[#bf5b46]"
-                : "border-transparent text-[#77736b] hover:text-[#25231f]"
+                : "border-transparent text-[var(--tinta-2)] hover:text-[var(--tinta)]"
             }`}
           >
             Lisensi & Atribusi
@@ -136,14 +136,14 @@ export default function ExtraMaterialsModal({
         </div>
 
         {/* Tab Content */}
-        <div className="p-6 overflow-y-auto space-y-5 text-xs text-[#494740]">
+        <div className="p-6 overflow-y-auto space-y-5 text-xs text-[var(--tinta-2)]">
           {activeTab === "guide" && (
             <div className="space-y-4 leading-relaxed">
-              <div className="p-4 rounded-xl bg-[#fbf8f2] border border-[#ece7de] text-[#25231f]">
+              <div className="p-4 rounded-xl bg-[#fbf8f2] border border-[#ece7de] text-[var(--tinta)]">
                 <h4 className="font-bold text-sm mb-1 font-['Noto_Serif_JP',serif] text-[#a06658]">
                   Standar Format Ujian JLPT N5
                 </h4>
-                <p className="text-[#595750]">
+                <p className="text-[var(--tinta-2)]">
                   Ujian Kemampuan Bahasa Jepang (JLPT) level N5 dirancang untuk mengukur pemahaman dasar
                   bahasa Jepang yang dipelajari di kelas maupun lingkungan sehari-hari.
                 </p>
@@ -151,30 +151,30 @@ export default function ExtraMaterialsModal({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[#25231f] mb-1 font-['Noto_Serif_JP',serif]">1. Kosakata</div>
-                  <div className="text-[11px] text-[#77736b]">文字・語彙</div>
+                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">1. Kosakata</div>
+                  <div className="text-[11px] text-[var(--tinta-2)]">文字・語彙</div>
                   <div className="mt-2 text-[#bf5b46] font-semibold">20 Menit</div>
-                  <div className="text-[11px] text-[#88847b] mt-0.5">Membaca & Menulis Kanji N5</div>
+                  <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Membaca & Menulis Kanji N5</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[#25231f] mb-1 font-['Noto_Serif_JP',serif]">2. Tata Bahasa & Baca</div>
-                  <div className="text-[11px] text-[#77736b]">文法・読解</div>
+                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">2. Tata Bahasa & Baca</div>
+                  <div className="text-[11px] text-[var(--tinta-2)]">文法・読解</div>
                   <div className="mt-2 text-[#bf5b46] font-semibold">40 Menit</div>
-                  <div className="text-[11px] text-[#88847b] mt-0.5">Partikel, Pola Kalimat & Bacaan</div>
+                  <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Partikel, Pola Kalimat & Bacaan</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-[#ece7de] bg-[#f9f7f2]">
-                  <div className="font-bold text-[#25231f] mb-1 font-['Noto_Serif_JP',serif]">3. Mendengarkan</div>
-                  <div className="text-[11px] text-[#77736b]">聴解</div>
+                  <div className="font-bold text-[var(--tinta)] mb-1 font-['Noto_Serif_JP',serif]">3. Mendengarkan</div>
+                  <div className="text-[11px] text-[var(--tinta-2)]">聴解</div>
                   <div className="mt-2 text-[#bf5b46] font-semibold">30 Menit</div>
-                  <div className="text-[11px] text-[#88847b] mt-0.5">Audio Percakapan Sehari-hari</div>
+                  <div className="text-[11px] text-[var(--tinta-2)] mt-0.5">Audio Percakapan Sehari-hari</div>
                 </div>
               </div>
 
               <div className="space-y-2 border-t border-[#ece7de] pt-3">
-                <h5 className="font-bold text-[#25231f]">Kriteria Kelulusan Resmi:</h5>
-                <ul className="list-disc list-inside space-y-1 text-[#595750]">
+                <h5 className="font-bold text-[var(--tinta)]">Kriteria Kelulusan Resmi:</h5>
+                <ul className="list-disc list-inside space-y-1 text-[var(--tinta-2)]">
                   <li><strong>Skor Total:</strong> Minimal 80 dari 180 poin (≥ 44.4%).</li>
                   <li><strong>Nilai Minimal per Seksi:</strong> Minimal 19 poin untuk Bagian Pengetahuan Bahasa dan minimal 19 poin untuk Bagian Mendengarkan.</li>
                 </ul>
@@ -203,7 +203,7 @@ export default function ExtraMaterialsModal({
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[11px] font-semibold text-[#595750]">
+                <label className="block text-[11px] font-semibold text-[var(--tinta-2)]">
                   Atau Tempel JSON QuestionPack:
                 </label>
                 <textarea
@@ -211,14 +211,14 @@ export default function ExtraMaterialsModal({
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
                   placeholder='{ "id": "custom-pack", "level": "N5", ... }'
-                  className="w-full p-2.5 font-mono text-[11px] rounded-xl border border-[#dcd7cc] bg-[#f9f7f2] text-[#25231f] focus:outline-none focus:border-[#d95b43]"
+                  className="w-full p-2.5 font-mono text-[11px] rounded-xl border border-[#dcd7cc] bg-[#f9f7f2] text-[var(--tinta)] focus:outline-none focus:border-[#d95b43]"
                 />
                 <div className="flex justify-end">
                   <button
                     type="button"
                     disabled={!jsonText.trim()}
                     onClick={handlePasteSubmit}
-                    className="py-1.5 px-4 rounded-xl bg-[#263d36] hover:bg-[#1d302a] text-white font-semibold disabled:opacity-40 transition-colors"
+                    className="py-1.5 px-4 rounded-xl bg-[var(--kon)] hover:bg-[#1d302a] text-white font-semibold disabled:opacity-40 transition-colors"
                   >
                     Pasang Paket
                   </button>
@@ -226,7 +226,7 @@ export default function ExtraMaterialsModal({
               </div>
 
               <div className="border-t border-[#ece7de] pt-3 space-y-2">
-                <h5 className="font-bold text-[#25231f]">
+                <h5 className="font-bold text-[var(--tinta)]">
                   Paket Soal Terpasang:
                 </h5>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -236,10 +236,10 @@ export default function ExtraMaterialsModal({
                       className="p-3 rounded-xl border border-[#ece7de] bg-[#f9f7f2] flex items-center justify-between"
                     >
                       <div>
-                        <div className="font-bold text-[#25231f]">
+                        <div className="font-bold text-[var(--tinta)]">
                           {p.title}
                         </div>
-                        <div className="text-[10px] text-[#77736b]">
+                        <div className="text-[10px] text-[var(--tinta-2)]">
                           ID: <code>{p.id}</code> • Level: {p.level} • {p.stats.totalQuestions} soal
                         </div>
                       </div>
@@ -260,16 +260,16 @@ export default function ExtraMaterialsModal({
 
           {activeTab === "license" && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-[#fbf6ee] border border-[#e8dfd0] text-[#25231f] space-y-1">
+              <div className="p-4 rounded-xl bg-[#fbf6ee] border border-[#e8dfd0] text-[var(--tinta)] space-y-1">
                 <div className="font-bold text-sm text-[#a06658]">Pemberitahuan & Penafian Resmi JLPT</div>
-                <p className="text-[11px] text-[#595750] leading-relaxed">
+                <p className="text-[11px] text-[var(--tinta-2)] leading-relaxed">
                   Soal-soal latihan di dalam aplikasi ini adalah <strong>soal orisinal bergaya JLPT N5</strong>,
                   <strong> BUKAN</strong> soal resmi dari <em>The Japan Foundation</em> maupun <em>JEES</em>.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h5 className="font-bold text-[#25231f]">Sumber Korpus Terbuka:</h5>
+                <h5 className="font-bold text-[var(--tinta)]">Sumber Korpus Terbuka:</h5>
                 <ul className="space-y-2">
                   <li className="p-2.5 rounded-lg border border-[#ece7de] bg-[#f9f7f2]">
                     <strong>JMdict & KANJIDIC2 (EDRDG):</strong> Lisensi Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
@@ -294,11 +294,11 @@ export default function ExtraMaterialsModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#e2ded5] flex justify-end bg-[#f8f5ef] shrink-0">
+        <div className="p-4 border-t border-[var(--garis)] flex justify-end bg-[var(--tsuki)] shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[#33312c] transition-colors"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#eee8dd] hover:bg-[#e4ded0] text-[var(--tinta)] transition-colors"
           >
             Tutup
           </button>

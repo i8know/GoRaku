@@ -29,7 +29,7 @@ const jlpt = [
   { lv: "N2", p: 9, n: "140 / 1.600" }, { lv: "N1", p: 0, n: "0 / 2.600" },
 ];
 const sourcesMix = [
-  { n: "Novel", p: 58, c: "#233c35" }, { n: "Manga", p: 42, c: "#52667b" },
+  { n: "Novel", p: 58, c: "var(--kon)" }, { n: "Manga", p: 42, c: "#52667b" },
 ];
 const forecast = [44, 31, 52, 27, 38, 60, 22];
 const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
@@ -161,21 +161,21 @@ export default function ProgressPage() {
         ))}
       </section>
 
-      <section className="mb-5 rounded-2xl border border-[#e1ddd4] bg-[#fffdfa] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
+      <section className="mb-5 rounded-2xl border border-[var(--garis)] bg-[var(--panel)] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
         <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-lg bg-[#233c35] text-white grid place-items-center">
+          <span className="w-7 h-7 rounded-lg bg-[var(--kon)] text-white grid place-items-center">
             <Icon name="check" size={15} />
           </span>
           <div>
-            <strong className="text-[#25231f]">Status Koleksi &amp; SRS Aktif:</strong>{" "}
-            <span className="text-[#6f6b63]">
+            <strong className="text-[var(--tinta)]">Status Koleksi &amp; SRS Aktif:</strong>{" "}
+            <span className="text-[var(--tinta-2)]">
               {realStats.totalDecks} deck • {realStats.totalCardsInDecks.toLocaleString("id-ID")} total kartu
             </span>
           </div>
         </div>
         <div className="flex items-center gap-4 text-[11px]">
           <span>
-            Sudah dipelajari: <strong className="text-[#233c35]">{realStats.totalStudiedCards} kartu</strong>
+            Sudah dipelajari: <strong className="text-[var(--kon)]">{realStats.totalStudiedCards} kartu</strong>
           </span>
           <span>
             Dikuasai (≥3x): <strong className="text-[#c4543f]">{realStats.totalMasteredCards} kartu</strong>

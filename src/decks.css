@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fffdfa;
+  background: var(--panel);
   border: 1px solid #dcd7cc;
   color: #3b3730;
   font-weight: 600;
@@ -33,7 +33,7 @@
   grid-template-columns: 1.8fr 1.2fr;
   gap: 24px;
   align-items: stretch;
-  background: linear-gradient(135deg, #263d36 0%, #1a2a25 100%);
+  background: linear-gradient(135deg, var(--kon) 0%, #1a2a25 100%);
   border-radius: 18px;
   padding: 28px 32px;
   color: #fff;
@@ -141,7 +141,7 @@
 }
 
 .dk-card.is-expanded {
-  border-color: #263d36;
+  border-color: var(--kon);
   box-shadow: 0 16px 36px rgba(38, 61, 54, 0.14);
   z-index: 3;
 }
@@ -164,27 +164,30 @@
 
 .dk-card-tools {
   position: absolute;
-  bottom: 12px;
-  right: 14px;
+  bottom: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   z-index: 2;
 }
 
 .dk-card-tools button {
   border: 0;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  color: #2e2c28;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--tinta);
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(18, 40, 74, 0.18);
   transition: all 0.15s ease;
 }
 
 .dk-card-tools button:hover {
   background: #ffffff;
-  color: #d95b43;
+  color: var(--shu);
   transform: scale(1.08);
 }
 
@@ -194,11 +197,11 @@
 
 .dk-newimport span {
   background: #e5ece8;
-  color: #263d36;
+  color: var(--kon);
 }
 
 .dk-newimport:hover {
-  border-color: #263d36;
+  border-color: var(--kon);
   background: #f3f7f5;
 }
 
@@ -216,11 +219,11 @@
 }
 
 .dk-drag-overlay > div {
-  background: #fffdfa;
+  background: var(--panel);
   border-radius: 20px;
   padding: 40px 60px;
   text-align: center;
-  color: #263d36;
+  color: var(--kon);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
@@ -274,7 +277,7 @@
   border-radius: 5px;
   border: 1px solid #d4ded9;
   background: #edf3f0;
-  color: #263d36;
+  color: var(--kon);
   font-size: 9px;
   font-weight: 700;
   line-height: 1.2;
@@ -284,8 +287,8 @@
 
 .dk-subdeck-inline-toggle:hover,
 .dk-subdeck-inline-toggle.active {
-  background: #263d36;
-  border-color: #263d36;
+  background: var(--kon);
+  border-color: var(--kon);
   color: #fff;
 }
 
@@ -311,7 +314,7 @@
 
 .dk-card-subdecks-summary:hover {
   background: #f4efe6;
-  color: #263d36;
+  color: var(--kon);
 }
 
 .dk-card-subdecks-pills {
@@ -327,7 +330,7 @@
   padding: 2px 5px;
   border-radius: 4px;
   background: #e8efec;
-  color: #263d36;
+  color: var(--kon);
   border: 1px solid #d4ded9;
 }
 
@@ -360,7 +363,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 6px 8px;
-  background: #fffdfa;
+  background: var(--panel);
   border: 1px solid #e7e2d7;
   border-radius: 6px;
   cursor: pointer;
@@ -368,7 +371,7 @@
 }
 
 .dk-card-subdeck-item:hover {
-  border-color: #263d36;
+  border-color: var(--kon);
   background: #f4f8f6;
   transform: translateX(2px);
 }
@@ -395,7 +398,7 @@
 .dk-card-subdeck-item-left strong {
   display: block;
   font-size: 11px;
-  color: #25231f;
+  color: var(--tinta);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -424,14 +427,14 @@
 
 .dk-done-pill-mini {
   background: #e8efec;
-  color: #263d36;
+  color: var(--kon);
   font-size: 9px;
   padding: 2px 4px;
   border-radius: 4px;
 }
 
 .dk-subdeck-study-btn {
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
   border: 0;
   padding: 3px 8px;
@@ -449,7 +452,7 @@
 /* Tree in List View */
 .dk-list-subdeck-row {
   background: #fcfbf8 !important;
-  border-left: 3px solid #263d36;
+  border-left: 3px solid var(--kon);
   padding-left: 12px;
 }
 
@@ -483,8 +486,8 @@
 
 /* Detail page subdecks panel */
 .dd-subdecks {
-  background: #fffdfa;
-  border: 1px solid #ded8cb;
+  background: var(--panel);
+  border: 1px solid var(--garis);
   border-radius: 14px;
   padding: 20px 24px;
   margin-bottom: 24px;
@@ -511,7 +514,7 @@
 
 .dd-subdeck-row:hover {
   background: #fff;
-  border-color: #263d36;
+  border-color: var(--kon);
   box-shadow: 0 4px 12px rgba(38, 61, 54, 0.08);
 }
 
@@ -522,7 +525,7 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: #e8efec;
-  color: #263d36;
+  color: var(--kon);
   font-size: 11px;
   font-weight: 700;
   margin-bottom: 8px;
@@ -534,7 +537,7 @@
   max-height: 90vh;
   position: relative;
   border-radius: 18px;
-  background: #fffdfa;
+  background: var(--panel);
   box-shadow: 0 24px 80px rgba(18, 26, 23, 0.32);
   display: flex;
   flex-direction: column;
@@ -560,7 +563,7 @@
 .imp-head h2 {
   margin: 2px 0 0;
   font: 600 22px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .imp-head h2 span {
@@ -581,7 +584,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #9c978e;
+  color: var(--tinta-2);
   font-weight: 600;
 }
 
@@ -591,18 +594,18 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #ece8df;
+  background: var(--garis);
   color: #7d7970;
   font-size: 10px;
   font-style: normal;
 }
 
 .imp-steps li.on {
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .imp-steps li.on i {
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
 }
 
@@ -680,7 +683,7 @@
 .imp-drop h3 {
   margin: 0 0 6px;
   font: 600 17px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .imp-drop p {
@@ -730,7 +733,7 @@
   border: 1px solid #e2ddd3;
   border-radius: 12px;
   padding: 10px 12px;
-  background: #fffdfa;
+  background: var(--panel);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -768,7 +771,7 @@
 
 .imp-preset-info strong {
   font: 600 12px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -812,13 +815,13 @@
 }
 
 .imp-dest-choice.on {
-  border-color: #263d36;
+  border-color: var(--kon);
   background: #f1f6f3;
 }
 
 .imp-dest-choice input {
   margin-top: 2px;
-  accent-color: #263d36;
+  accent-color: var(--kon);
 }
 
 .imp-dest-choice div {
@@ -866,7 +869,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
   display: grid;
   place-items: center;
@@ -880,7 +883,7 @@
 }
 
 .imp-howto strong {
-  color: #25231f;
+  color: var(--tinta);
 }
 
 /* Status / Loading / Saving / Error */
@@ -910,7 +913,7 @@
 
 .imp-enso span {
   font: 700 28px "Noto Serif JP", serif;
-  color: #263d36;
+  color: var(--kon);
   animation: spin-counter 1.2s linear infinite;
 }
 
@@ -938,7 +941,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #9c978e;
+  color: var(--tinta-2);
 }
 
 .imp-checklist li i {
@@ -947,19 +950,19 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #ece8df;
+  background: var(--garis);
   color: #fff;
   font-style: normal;
   font-size: 9px;
 }
 
 .imp-checklist li.on {
-  color: #25231f;
+  color: var(--tinta);
   font-weight: 600;
 }
 
 .imp-checklist li.on i {
-  background: #263d36;
+  background: var(--kon);
 }
 
 .imp-checklist li.done {
@@ -1015,7 +1018,7 @@
 }
 
 .imp-note {
-  color: #9c978e;
+  color: var(--tinta-2);
   font-size: 10px;
 }
 
@@ -1046,7 +1049,7 @@
 
 .imp-result strong {
   font: 600 20px "Noto Serif JP", serif;
-  color: #263d36;
+  color: var(--kon);
 }
 
 .imp-result span {
@@ -1086,7 +1089,7 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
   display: grid;
   place-items: center;
@@ -1180,7 +1183,7 @@
 .imp-sub {
   font-size: 9px;
   font-weight: 700;
-  color: #8e8a82;
+  color: var(--tinta-2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1201,7 +1204,7 @@
 }
 
 .imp-swatches button.on {
-  border-color: #25231f;
+  border-color: var(--tinta);
   transform: scale(1.15);
 }
 
@@ -1232,9 +1235,9 @@
 }
 
 .imp-kanji button.on {
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
-  border-color: #263d36;
+  border-color: var(--kon);
 }
 
 .imp-subdecks {
@@ -1272,7 +1275,7 @@
 }
 
 .imp-subdecks small {
-  color: #9c978e;
+  color: var(--tinta-2);
 }
 
 .imp-opt {
@@ -1358,7 +1361,7 @@
 
 .imp-map-row small {
   font-size: 8px;
-  color: #9c978e;
+  color: var(--tinta-2);
 }
 
 .imp-map-row select {
@@ -1367,7 +1370,7 @@
   padding: 5px 8px;
   font-size: 10px;
   background: #fff;
-  color: #25231f;
+  color: var(--tinta);
   outline: 0;
 }
 
@@ -1407,7 +1410,7 @@
 }
 
 .imp-card {
-  border: 1px solid #e1ddd4;
+  border: 1px solid var(--garis);
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
@@ -1447,7 +1450,7 @@
 
 .imp-card-front strong {
   font: 700 28px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
   display: inline-block;
 }
 
@@ -1458,7 +1461,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #e2ded5;
+  border: 1px solid var(--garis);
   background: #fff;
   color: #d35f48;
   display: grid;
@@ -1490,7 +1493,7 @@
 
 .imp-sent {
   font: 500 13px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
   margin: 0 0 4px;
   line-height: 1.5;
 }
@@ -1535,7 +1538,7 @@
   width: min(720px, 94vw);
   max-height: 90vh;
   border-radius: 18px;
-  background: #fffdfa;
+  background: var(--panel);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: column;
@@ -1583,7 +1586,7 @@
 .dk-detail-title h2 {
   margin: 4px 0 0;
   font: 600 24px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dk-tag {
@@ -1601,7 +1604,7 @@
 .dk-detail-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border: 1px solid #e1ddd4;
+  border: 1px solid var(--garis);
   border-radius: 12px;
   background: #fbf9f4;
   overflow: hidden;
@@ -1621,7 +1624,7 @@
 
 .dk-detail-stats strong {
   font: 600 20px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dk-detail-stats span {
@@ -1682,7 +1685,7 @@
 
 .dk-chips span {
   background: #fff;
-  border: 1px solid #ded8cb;
+  border: 1px solid var(--garis);
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 10px;
@@ -1734,7 +1737,7 @@
 
 .dk-row strong {
   font: 600 14px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dk-read {
@@ -1751,7 +1754,7 @@
 .dk-icons {
   display: flex;
   gap: 5px;
-  color: #9c978e;
+  color: var(--tinta-2);
 }
 
 .dk-state {
@@ -1770,7 +1773,7 @@
 
 .dk-more {
   text-align: center;
-  color: #9c978e;
+  color: var(--tinta-2);
   font-size: 10px;
   margin: 8px 0 0;
 }
@@ -1785,7 +1788,7 @@
 }
 
 .dk-detail-foot small {
-  color: #9c978e;
+  color: var(--tinta-2);
   font-size: 10px;
 }
 
@@ -1952,12 +1955,12 @@
 }
 
 .dk-subfilter-btn:hover {
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dk-subfilter-btn.on {
-  background: #fffdfa;
-  color: #25231f;
+  background: var(--panel);
+  color: var(--tinta);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -1981,11 +1984,11 @@
 }
 
 .dk-view-toggle button:hover {
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dk-view-toggle button.on {
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
 }
 
@@ -1998,9 +2001,9 @@
 .dk-list-view {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e1ddd4;
+  border: 1px solid var(--garis);
   border-radius: 14px;
-  background: #fffdfa;
+  background: var(--panel);
   overflow: hidden;
   margin-bottom: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
@@ -2061,7 +2064,7 @@
 
 .dk-list-title-cell strong {
   font: 600 13px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
   display: block;
 }
 
@@ -2307,7 +2310,7 @@
 
 .dd-today {
   grid-column: 1 / -1;
-  background: linear-gradient(135deg, #263d36 0%, #1a2a25 100%);
+  background: linear-gradient(135deg, var(--kon) 0%, #1a2a25 100%);
   border-radius: 16px;
   padding: 24px 28px;
   color: #fff;
@@ -2342,7 +2345,7 @@
 }
 
 .dd-panel {
-  background: #fffdfa;
+  background: var(--panel);
   border: 1px solid #e2ddd4;
   border-radius: 16px;
   padding: 20px 24px;
@@ -2360,13 +2363,13 @@
 .dd-panel-head h3 {
   margin: 0;
   font: 600 16px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dd-stack {
   height: 12px;
   border-radius: 6px;
-  background: #eeeae2;
+  background: var(--garis);
   overflow: hidden;
   display: flex;
   margin-bottom: 16px;
@@ -2409,7 +2412,7 @@
 }
 
 .dd-legend b {
-  color: #25231f;
+  color: var(--tinta);
 }
 
 /* 7-Day Forecast Bars */
@@ -2420,7 +2423,7 @@
   height: 130px;
   align-items: flex-end;
   padding-bottom: 4px;
-  border-bottom: 1px solid #ece8df;
+  border-bottom: 1px solid var(--garis);
 }
 
 .dd-bar {
@@ -2497,7 +2500,7 @@
 
 .dd-hard strong {
   font: 600 13px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
   min-width: 70px;
 }
 
@@ -2551,13 +2554,13 @@
 }
 
 .dd-chip {
-  border: 1px solid #e1ddd4;
+  border: 1px solid var(--garis);
   border-radius: 20px;
   padding: 6px 12px;
   font-size: 11px;
   font-weight: 600;
   color: #615c54;
-  background: #fffdfa;
+  background: var(--panel);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2566,14 +2569,14 @@
 }
 
 .dd-chip:hover {
-  border-color: #263d36;
-  color: #263d36;
+  border-color: var(--kon);
+  color: var(--kon);
 }
 
 .dd-chip.on {
-  background: #263d36;
+  background: var(--kon);
   color: #fff;
-  border-color: #263d36;
+  border-color: var(--kon);
 }
 
 .dd-chip b {
@@ -2584,8 +2587,8 @@
 .dd-empty {
   padding: 48px 24px;
   text-align: center;
-  background: #fffdfa;
-  border: 1.5px dashed #ded8cb;
+  background: var(--panel);
+  border: 1.5px dashed var(--garis);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -2596,7 +2599,7 @@
 .dd-empty h3 {
   margin: 0;
   font: 600 18px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .dd-empty p {
@@ -2607,9 +2610,9 @@
 }
 
 .dd-table {
-  border: 1px solid #e1ddd4;
+  border: 1px solid var(--garis);
   border-radius: 14px;
-  background: #fffdfa;
+  background: var(--panel);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
@@ -2660,7 +2663,7 @@
 .dd-tags em {
   font-style: normal;
   font-size: 9px;
-  background: #ece8df;
+  background: var(--garis);
   color: #6d6961;
   padding: 1px 5px;
   border-radius: 4px;
@@ -2687,8 +2690,8 @@
 }
 
 .dd-row-actions button:hover:not(:disabled) {
-  border-color: #263d36;
-  color: #263d36;
+  border-color: var(--kon);
+  color: var(--kon);
 }
 
 .dd-row-actions button.danger:hover {
@@ -2759,7 +2762,7 @@
 
 .dd-missing-kanji {
   font: 700 80px "Noto Serif JP", serif;
-  color: #ded8cb;
+  color: var(--garis);
   line-height: 1;
 }
 
@@ -2781,7 +2784,7 @@
   width: min(780px, 96vw);
   max-height: 90vh;
   border-radius: 18px;
-  background: #fffdfa;
+  background: var(--panel);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: column;
@@ -2802,7 +2805,7 @@
 .ce-head h2 {
   margin: 2px 0 0;
   font: 600 20px "Noto Serif JP", serif;
-  color: #25231f;
+  color: var(--tinta);
 }
 
 .ce-added {
@@ -2831,12 +2834,12 @@
 }
 
 .ce-form textarea {
-  border: 1px solid #ddd7cd;
+  border: 1px solid var(--garis);
   outline: 0;
   border-radius: 8px;
   padding: 8px 10px;
-  background: #f8f5ef;
-  color: #34312d;
+  background: var(--tsuki);
+  color: var(--tinta);
   font-size: 11px;
   font-family: inherit;
   resize: vertical;
@@ -2984,9 +2987,9 @@
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid #ddd7cd;
+  border: 1px solid var(--garis);
   background: #fff;
-  color: #34312d;
+  color: var(--tinta);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -3024,7 +3027,7 @@
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid #d5cfc2;
-  background: #fffdfa;
+  background: var(--panel);
   color: #555047;
   font-size: 11px;
   font-weight: 600;
@@ -3067,8 +3070,8 @@
 .dk-card-subdeck-trigger:hover,
 .dk-card-subdeck-trigger.active {
   background: #f3ede2;
-  border-color: #263d36;
-  color: #263d36;
+  border-color: var(--kon);
+  color: var(--kon);
 }
 
 .dk-card-subdeck-trigger.active {
@@ -3124,7 +3127,7 @@
 }
 
 .dd-subdeck-card {
-  background: #fffdfa;
+  background: var(--panel);
   border: 1px solid #e2ddd3;
   border-radius: 12px;
   padding: 16px;
@@ -3139,7 +3142,7 @@
 
 .dd-subdeck-card:hover {
   transform: translateY(-2px);
-  border-color: #263d36;
+  border-color: var(--kon);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
 }
 
@@ -3221,7 +3224,7 @@
 
 .dd-subdeck-view-btn.active {
   background: #fff;
-  color: #263d36;
+  color: var(--kon);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 

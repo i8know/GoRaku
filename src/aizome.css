@@ -1,0 +1,21 @@
+:root {
+  --kon: #12284A;
+  --ai-tua: #17406A;
+  --ai: #1F5C85;
+  --mizu: #BCD6E2;
+  --tsuki: #EDF2F5;
+  --panel: #F8FAFB;
+  --garis: #C5D3DB;
+  --tinta: #14202B;
+  --tinta-2: #44566A;
+  --shu: #B93C22;
+  --ok: #2A6F5B;
+  --bokashi: linear-gradient(180deg, #12284A 0%, #1F5C85 40%, #BCD6E2 85%, #EDF2F5 100%);
+  --font-serif: "Shippori Mincho", "Noto Serif JP", serif;
+  --font-sans: "Zen Kaku Gothic New", system-ui, -apple-system, sans-serif;
+
+  font-family: var(--font-sans);
+  color: var(--tinta);
+  background: var(--tsuki);
+  font-synthesis: none;
+}

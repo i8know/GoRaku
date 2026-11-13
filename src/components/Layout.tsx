@@ -16,12 +16,12 @@ import { speakJapanese } from "../lib/tts";
 const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
 
 const navItems = [
-  { label: "Beranda", shortLabel: "Beranda", jp: "学習・概要", path: "/beranda", icon: "home" as const },
-  { label: "Deck Saya", shortLabel: "Deck", jp: "階層・単語帳", path: "/deck", icon: "cards" as const },
-  { label: "Sentence Mining", shortLabel: "Mining", jp: "文脈・採掘", path: "/mining", icon: "mine" as const },
-  { label: "Perpustakaan", shortLabel: "Pustaka", jp: "小説・漫画", path: "/library", icon: "book" as const },
-  { label: "Ujian JLPT", shortLabel: "JLPT", jp: "模擬試験", path: "/exam", icon: "target" as const },
-  { label: "Progres", shortLabel: "Progres", jp: "統計・分析", path: "/progress", icon: "chart" as const },
+  { label: "Beranda", shortLabel: "Beranda", kanji: "家", jp: "学習・概要", path: "/beranda", icon: "home" as const },
+  { label: "Deck Saya", shortLabel: "Deck", kanji: "札", jp: "階層・単語帳", path: "/deck", icon: "cards" as const },
+  { label: "Sentence Mining", shortLabel: "Mining", kanji: "採", jp: "文脈・採掘", path: "/mining", icon: "mine" as const },
+  { label: "Perpustakaan", shortLabel: "Pustaka", kanji: "本", jp: "小説・漫画", path: "/library", icon: "book" as const },
+  { label: "Ujian JLPT", shortLabel: "JLPT", kanji: "試", jp: "模擬試験", path: "/exam", icon: "target" as const },
+  { label: "Progres", shortLabel: "Progres", kanji: "進", jp: "統計・分析", path: "/progress", icon: "chart" as const },
 ];
 
 const DAILY_QUOTES = [
@@ -300,7 +300,7 @@ export default function ProtectedLayout() {
 
   return (
     <div
-      className={`app-shell ${effectiveCollapsed ? "is-collapsed" : ""} ${
+      className={`app-shell is-rail ${effectiveCollapsed ? "is-collapsed" : ""} ${
         mobileDrawerOpen ? "mobile-drawer-open" : ""
       }`}
     >
@@ -375,46 +375,44 @@ export default function ProtectedLayout() {
           </button>
         </div>
 
-        {/* Status Dock (Collapsed Mode): Mini Streak + Mini Kamus Yomitan */}
-        {effectiveCollapsed && (
-          <div className="relative mb-2.5 pb-2 border-b border-[#252b27] grid grid-cols-2 gap-1">
-            <button
-              type="button"
-              onClick={() => setStreakCalendarOpen((v) => !v)}
-              title={`Streak ${streakDays} Hari — Klik untuk lihat ritme 7 hari`}
-              className="rounded-lg border border-[#2b332e] bg-[#1c221e] hover:border-[#df674d] py-1.5 flex flex-col items-center justify-center gap-0.5 text-[#e87f67] transition-colors"
-            >
-              <Icon name="flame" size={13} />
-              <span className="text-[8.5px] font-bold leading-none">{streakDays}h</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setDictModalOpen(true)}
-              title={
-                activeDictCount > 0
-                  ? `${activeDictCount} Kamus Yomitan Aktif — Klik untuk kelola`
-                  : "Kamus Yomitan Kosong — Klik untuk impor ZIP"
-              }
-              className={`rounded-lg border py-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                activeDictCount > 0
-                  ? "border-[#2c4438] bg-[#16271e] text-[#78cf9f] hover:border-[#3ec47d]"
-                  : "border-[#4a3424] bg-[#291b12] text-[#e89d60] hover:border-[#df8a45]"
+        {/* Status Dock (Rail Mode): Mini Streak + Mini Kamus Yomitan */}
+        <div className="sb-status-rail relative mb-2.5 pb-2 border-b border-white/10 grid grid-cols-2 gap-1">
+          <button
+            type="button"
+            onClick={() => setStreakCalendarOpen((v) => !v)}
+            title={`Streak ${streakDays} Hari — Klik untuk lihat ritme 7 hari`}
+            className="rounded-lg border border-white/15 bg-white/5 hover:border-[var(--mizu)] py-1.5 flex flex-col items-center justify-center gap-0.5 text-[var(--mizu)] transition-colors"
+          >
+            <Icon name="flame" size={13} />
+            <span className="text-[9px] font-bold leading-none">{streakDays}h</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDictModalOpen(true)}
+            title={
+              activeDictCount > 0
+                ? `${activeDictCount} Kamus Yomitan Aktif — Klik untuk kelola`
+                : "Kamus Yomitan Kosong — Klik untuk impor ZIP"
+            }
+            className={`rounded-lg border py-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
+              activeDictCount > 0
+                ? "border-[var(--ok)]/60 bg-[var(--ok)]/25 text-[#b7e4d6] hover:border-[var(--mizu)]"
+                : "border-white/15 bg-white/5 text-[var(--mizu)] hover:border-[var(--mizu)]"
+            }`}
+          >
+            <span
+              className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
+                activeDictCount > 0 ? "bg-[#52d1a2]" : "bg-[var(--shu)]"
               }`}
-            >
-              <span
-                className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
-                  activeDictCount > 0 ? "bg-[#3ec47d] animate-pulse" : "bg-[#df8a45]"
-                }`}
-              />
-              <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
-                辞
-              </span>
-              <span className="text-[8.5px] font-bold leading-none">
-                {activeDictCount > 0 ? `${activeDictCount}` : "0"}
-              </span>
-            </button>
-          </div>
-        )}
+            />
+            <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
+              辞
+            </span>
+            <span className="text-[9px] font-bold leading-none">
+              {activeDictCount > 0 ? `${activeDictCount}` : "0"}
+            </span>
+          </button>
+        </div>
 
         {/* Mini 7-Day Habit Tracker Dropdown (Works in BOTH Expanded & Collapsed Mode) */}
         {streakCalendarOpen && (
@@ -491,7 +489,12 @@ export default function ProtectedLayout() {
                     />
                   )}
                   <div className="nav-item-icon">
-                    <Icon name={item.icon} size={19} />
+                    <span className="nav-rail-kanji" lang="ja" aria-hidden="true">
+                      {item.kanji}
+                    </span>
+                    <span className="nav-drawer-icon">
+                      <Icon name={item.icon} size={19} />
+                    </span>
                     {badge && (
                       <b className={`nav-collapsed-badge ${badge.cls ?? ""}`}>
                         {badge.text}
@@ -721,42 +724,42 @@ export default function ProtectedLayout() {
           </div>
         )}
 
-        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan], [Deck], & [JLPT] (Expanded Mode) */}
-        <div className="sb-quick-section mt-4 pt-3 border-t border-[#262b28]">
-          <div className="flex items-center justify-between px-1 mb-2">
-            <div className="flex items-center gap-1 bg-[#1a201c] p-0.5 rounded-lg border border-[#2b332e]">
+        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan], [Deck], & [JLPT] (Expanded / Drawer Mode) */}
+        <div className="sb-quick-section mt-4 pt-3 border-t border-white/10">
+          <div className="flex items-center justify-between gap-1.5 px-1 mb-2">
+            <div className="sb-quick-tabs flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10 min-w-0">
               <button
                 type="button"
                 onClick={() => setQuickTab("bacaan")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "bacaan"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                📖 Bacaan {booksCount > 0 ? `(${booksCount})` : ""}
+                Bacaan{booksCount > 0 ? ` (${booksCount})` : ""}
               </button>
               <button
                 type="button"
                 onClick={() => setQuickTab("deck")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "deck"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                🗂️ Deck ({rootDecksCount})
+                Deck ({rootDecksCount})
               </button>
               <button
                 type="button"
                 onClick={() => setQuickTab("jlpt")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "jlpt"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                🎯 JLPT
+                JLPT
               </button>
             </div>
 
@@ -954,16 +957,22 @@ export default function ProtectedLayout() {
           <Link
             to="/settings"
             className={`nav-item ${active === "Pengaturan" ? "active" : ""}`}
-            title={effectiveCollapsed ? "Pengaturan & Kamus Yomitan" : undefined}
+            aria-label="Pengaturan"
+            title="Pengaturan & Kamus Yomitan"
           >
             <div className="nav-item-icon">
-              <Icon name="settings" size={19} />
+              <span className="nav-rail-kanji" lang="ja" aria-hidden="true">
+                設
+              </span>
+              <span className="nav-drawer-icon">
+                <Icon name="settings" size={19} />
+              </span>
             </div>
             <div className="nav-item-label">
               <span className="truncate font-semibold">Pengaturan</span>
               <small lang="ja">設定・辞書</small>
             </div>
-            <span className="nav-collapsed-caption">Setelan</span>
+            <span className="nav-collapsed-caption">Atur</span>
           </Link>
 
           {/* Pepatah Jepang Interaktif ("Kotowaza") dengan Furigana, TTS Audio, & Terjemahan Flip */}
@@ -1085,11 +1094,12 @@ export default function ProtectedLayout() {
               type="button"
               onClick={() => setMobileDrawerOpen((v) => !v)}
               aria-label="Buka menu sidebar"
-              className="mr-1 rounded-lg border border-[#d8d3c9] bg-[#fffdfa] px-2 py-1 text-xs font-bold text-[#25231f]"
+              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[40px] min-h-[40px]"
             >
               ☰
             </button>
-            <span>語</span> 語楽
+            <span>語</span>
+            <strong className="whitespace-nowrap">語楽</strong>
           </div>
 
           <button
@@ -1099,7 +1109,7 @@ export default function ProtectedLayout() {
             aria-label="Buka pencarian cepat (Ctrl+K)"
           >
             <Icon name="search" size={18} />
-            <span className="flex-1 text-xs text-[#88877f] truncate">
+            <span className="flex-1 text-xs text-[var(--tinta-2)] truncate">
               Cari kosakata kamus, deck, atau novel...
             </span>
             <kbd>⌘ K</kbd>
@@ -1130,9 +1140,9 @@ export default function ProtectedLayout() {
               </Button>
 
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[#e0dbd1] bg-[#fffdf9] shadow-xl p-4 z-50 animate-[modal-in_0.16s_ease]">
-                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[#ebe6dc]">
-                    <strong className="text-xs font-bold text-[#25231f]">
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[var(--garis)] bg-[var(--panel)] shadow-xl p-4 z-50 animate-[modal-in_0.16s_ease]">
+                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[var(--garis)]">
+                    <strong className="text-xs font-bold text-[var(--tinta)]">
                       Notifikasi Belajar
                     </strong>
                     <button
@@ -1145,16 +1155,16 @@ export default function ProtectedLayout() {
                   </div>
 
                   <div className="space-y-2.5 text-xs">
-                    <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                    <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-[#233c35]">
+                        <span className="font-bold text-[var(--kon)]">
                           Target Review Harian
                         </span>
                         <span className="rounded-full bg-[#f1e6df] px-2 py-0.5 text-[10px] font-bold text-[#bf5b46]">
                           {totalDue} kartu
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#6f6b63] mb-2">
+                      <p className="text-[11px] text-[var(--tinta-2)] mb-2">
                         {totalDue > 0
                           ? `Ada ${totalDue} kartu menunggu untuk diulas hari ini.`
                           : "Semua kartu jatuh tempo hari ini sudah selesai!"}
@@ -1174,16 +1184,16 @@ export default function ProtectedLayout() {
                     </div>
 
                     {recentBook && (
-                      <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                      <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-[#25231f] truncate">
+                          <span className="font-bold text-[var(--tinta)] truncate">
                             Lanjutkan Membaca
                           </span>
-                          <span className="text-[10px] font-semibold text-[#8a867d]">
+                          <span className="text-[10px] font-semibold text-[var(--tinta-2)]">
                             {recentBook.progress}%
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#6f6b63] truncate mb-1.5" lang="ja">
+                        <p className="text-[11px] text-[var(--tinta-2)] truncate mb-1.5" lang="ja">
                           {recentBook.title}
                         </p>
                         <button
@@ -1192,23 +1202,23 @@ export default function ProtectedLayout() {
                             setNotifOpen(false);
                             navigate(`/library/${recentBook.id}`);
                           }}
-                          className="text-[11px] font-bold text-[#233c35] hover:underline"
+                          className="text-[11px] font-bold text-[var(--kon)] hover:underline"
                         >
                           Buka pembaca novel →
                         </button>
                       </div>
                     )}
 
-                    <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                    <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-[#25231f]">
+                        <span className="font-bold text-[var(--tinta)]">
                           Status Kamus Yomitan
                         </span>
                         <span className="text-[10px] font-bold text-[#3f7a5f]">
                           {activeDictCount} aktif
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#6f6b63] mb-1.5">
+                      <p className="text-[11px] text-[var(--tinta-2)] mb-1.5">
                         {activeDictCount > 0
                           ? "Kamus siap digunakan untuk klik kata di novel & Sentence Mining."
                           : "Belum ada kamus Yomitan aktif. Impor ZIP kamus untuk mulai mencari arti kata."}

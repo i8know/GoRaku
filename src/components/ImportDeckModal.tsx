@@ -944,7 +944,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                   <section className="imp-panel" style={{ background: "#fcfaf7", border: "1px solid #d9d2c5" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "8px" }}>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: "13px", color: "#263d36", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <h4 style={{ margin: 0, fontSize: "13px", color: "var(--kon)", display: "flex", alignItems: "center", gap: "6px" }}>
                           <Icon name="cards" size={15} /> Struktur Sub-deck (Revolusi Anki)
                         </h4>
                         <small style={{ color: "#6e685f", fontSize: "11px", display: "block", marginTop: "2px" }}>
@@ -974,7 +974,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                                 alignItems: "center",
                                 justifyContent: "space-between",
                                 padding: "7px 10px",
-                                background: "#fffdfa",
+                                background: "var(--panel)",
                                 border: "1px solid #e5e0d5",
                                 borderRadius: "8px",
                               }}
@@ -995,7 +995,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                                 >
                                   {g.kanji}
                                 </span>
-                                <strong style={{ fontSize: "12px", color: "#25231f" }}>{g.title}</strong>
+                                <strong style={{ fontSize: "12px", color: "var(--tinta)" }}>{g.title}</strong>
                               </div>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span
@@ -1005,7 +1005,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                                     padding: "2px 6px",
                                     borderRadius: "4px",
                                     background: "#e8efec",
-                                    color: "#263d36",
+                                    color: "var(--kon)",
                                   }}
                                 >
                                   {g.levelCode}
@@ -1373,7 +1373,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
               )}
 
               {result.subdecksCreated && result.subdecksCreated.length > 0 && (
-                <div style={{ marginTop: "14px", padding: "10px 14px", background: "#f5f8f6", border: "1px solid #d2ded7", borderRadius: "10px", fontSize: "12px", color: "#263d36", textAlign: "left" }}>
+                <div style={{ marginTop: "14px", padding: "10px 14px", background: "#f5f8f6", border: "1px solid #d2ded7", borderRadius: "10px", fontSize: "12px", color: "var(--kon)", textAlign: "left" }}>
                   <strong>Terbagi ke dalam {result.subdecksCreated.length} sub-deck:</strong>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
                     {result.subdecksCreated.map((s) => (

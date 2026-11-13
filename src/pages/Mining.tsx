@@ -348,7 +348,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       type="button"
                       onClick={() => speakJapanese(tok.r || tok.t)}
                       title="Dengarkan pengucapan kata"
-                      className="rounded-lg border border-[#dfd9ce] bg-[#f8f5ef] p-1.5 text-[#c4543f] hover:bg-[#f1e6df] transition-colors"
+                      className="rounded-lg border border-[#dfd9ce] bg-[var(--tsuki)] p-1.5 text-[#c4543f] hover:bg-[#f1e6df] transition-colors"
                     >
                       <Icon name="volume" size={15} />
                     </button>
@@ -391,7 +391,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       className={`rounded-lg border px-2 py-1 text-xs font-semibold shrink-0 ${
                         customWord === item.expression
                           ? "border-[#d95b43] bg-[#f1e6df] text-[#bf5b46]"
-                          : "border-[#e1ddd4] bg-white text-[#494740]"
+                          : "border-[var(--garis)] bg-white text-[var(--tinta-2)]"
                       }`}
                     >
                       {item.expression}
@@ -403,7 +403,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
               <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#ebe7de]">
                 <div>
                   <small className="text-xs text-[#a06658] block">{customReading || "Bacaan (kana)"}</small>
-                  <strong lang="ja" className="text-2xl font-serif text-[#25231f]">
+                  <strong lang="ja" className="text-2xl font-serif text-[var(--tinta)]">
                     {customWord || "Pilih kata"}
                   </strong>
                 </div>
@@ -417,7 +417,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                     type="button"
                     onClick={() => speakJapanese(customReading || customWord)}
                     title="Dengarkan pengucapan kata"
-                    className="rounded-lg border border-[#dfd9ce] bg-[#f8f5ef] p-1.5 text-[#c4543f] hover:bg-[#f1e6df]"
+                    className="rounded-lg border border-[#dfd9ce] bg-[var(--tsuki)] p-1.5 text-[#c4543f] hover:bg-[#f1e6df]"
                   >
                     <Icon name="volume" size={15} />
                   </button>

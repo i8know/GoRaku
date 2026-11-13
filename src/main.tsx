@@ -20,6 +20,7 @@ import SettingsPage from './pages/Settings'
 import ExamPage from './pages/Exam'
 import LicenseAttributionPage from './pages/LicenseAttribution'
 import App from './App'
+import './aizome.css'
 import './index.css'
 import { useToastStore } from './store/useToastStore'
 

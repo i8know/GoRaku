@@ -253,11 +253,11 @@ export default function App() {
                     <i
                       style={{
                         height: `${d.pct}%`,
-                        background: isSelected ? "#233c35" : undefined,
+                        background: isSelected ? "var(--kon)" : undefined,
                       }}
                     />
                   </div>
-                  <span style={{ fontWeight: isSelected ? 700 : 400, color: isSelected ? "#233c35" : undefined }}>
+                  <span style={{ fontWeight: isSelected ? 700 : 400, color: isSelected ? "var(--kon)" : undefined }}>
                     {d.label}
                   </span>
                 </div>
@@ -485,7 +485,7 @@ export default function App() {
                     type="button"
                     onClick={() => speakJapanese(source.sentence)}
                     title="Dengarkan pengucapan kalimat"
-                    className="rounded-md p-1 text-[#88847b] hover:text-[#c4543f] transition-colors shrink-0"
+                    className="rounded-md p-1 text-[var(--tinta-2)] hover:text-[#c4543f] transition-colors shrink-0"
                   >
                     <Icon name="volume" size={14} />
                   </button>

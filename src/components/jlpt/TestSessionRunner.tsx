@@ -272,15 +272,15 @@ export default function TestSessionRunner({
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f5ef] text-[#25231f] flex flex-col">
+    <div className="min-h-screen bg-[var(--tsuki)] text-[var(--tinta)] flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-[#fffdfa] border-b border-[#e2ded5] px-4 py-3 shadow-[0_2px_12px_rgba(62,52,41,0.03)]">
+      <header className="sticky top-0 z-30 bg-[var(--panel)] border-b border-[var(--garis)] px-4 py-3 shadow-[0_2px_12px_rgba(62,52,41,0.03)]">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           {/* Tombol Keluar */}
           <button
             type="button"
             onClick={handleRequestExit}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#595750] hover:text-[#d95b43] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--tinta-2)] hover:text-[#d95b43] transition-colors"
           >
             <Icon name="arrow-left" size={16} />
             <span className="hidden sm:inline">Keluar ke Ringkasan Tes</span>
@@ -289,10 +289,10 @@ export default function TestSessionRunner({
 
           {/* Judul Seksi */}
           <div className="text-center">
-            <h1 className="text-xs font-bold text-[#25231f] font-['Noto_Serif_JP',serif]">
+            <h1 className="text-xs font-bold text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
               {test.title} • {section.titleJa}
             </h1>
-            <span className="text-[10px] text-[#77736b]">{section.titleId}</span>
+            <span className="text-[10px] text-[var(--tinta-2)]">{section.titleId}</span>
           </div>
 
           {/* Timer & Aksi Cepat */}
@@ -304,7 +304,7 @@ export default function TestSessionRunner({
                   ? "bg-[#fcedea] text-[#943828] border border-[#dc6048]"
                   : isLowTime
                   ? "bg-[#f8ede9] text-[#bf5b46] border border-[#d95b43]/40 animate-pulse"
-                  : "bg-[#f4f0e6] text-[#686359] border border-[#dedad1]"
+                  : "bg-[#f4f0e6] text-[#686359] border border-[var(--garis)]"
               }`}
               title="Sisa waktu ujian"
             >
@@ -319,7 +319,7 @@ export default function TestSessionRunner({
               className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
                 showFurigana
                   ? "bg-[#f1e6df] border-[#d95b43]/40 text-[#bf5b46] font-semibold"
-                  : "bg-[#fffdfa] border-[#dedad1] text-[#77736b]"
+                  : "bg-[var(--panel)] border-[var(--garis)] text-[var(--tinta-2)]"
               }`}
               title="Tampilkan / Sembunyikan Furigana"
             >
@@ -345,14 +345,14 @@ export default function TestSessionRunner({
                       onClick={() => setCurrentIndex(g.firstIndex)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
                         isActiveMondai
-                          ? "bg-[#263d36] text-white shadow-sm"
-                          : "bg-[#fffdfa] border border-[#e2ded5] text-[#595750] hover:border-[#d95b43]"
+                          ? "bg-[var(--kon)] text-white shadow-sm"
+                          : "bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] hover:border-[#d95b43]"
                       }`}
                     >
                       <span>もんだい {g.mondai}</span>
                       <span
                         className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                          isActiveMondai ? "bg-white/20 text-white" : "bg-[#f2eee6] text-[#77736b]"
+                          isActiveMondai ? "bg-white/20 text-white" : "bg-[#f2eee6] text-[var(--tinta-2)]"
                         }`}
                       >
                         {g.count}問
@@ -364,10 +364,10 @@ export default function TestSessionRunner({
             )}
 
             {/* Mondai Instruction Banner */}
-            <div className="p-4 rounded-2xl bg-[#fffdfa] border border-[#e2ded5] shadow-[0_2px_12px_rgba(62,52,41,0.03)] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="p-4 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_2px_12px_rgba(62,52,41,0.03)] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center flex-wrap gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#263d36] text-white">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--kon)] text-white">
                     Soal {currentIndex + 1} dari {questions.length}
                   </span>
                   {currentQ.isStarQuestion && (
@@ -375,15 +375,15 @@ export default function TestSessionRunner({
                       ★ 並べ替え（Menyusun Kalimat Bintang）
                     </span>
                   )}
-                  <span className="text-[11px] text-[#88847b]">
+                  <span className="text-[11px] text-[var(--tinta-2)]">
                     Sisa: {unansweredCount} belum dijawab
                   </span>
                 </div>
-                <p className="text-xs font-semibold text-[#25231f] font-['Noto_Serif_JP',serif] leading-relaxed pt-1">
+                <p className="text-xs font-semibold text-[var(--tinta)] font-['Noto_Serif_JP',serif] leading-relaxed pt-1">
                   {getMondaiHeader(currentQ)}
                 </p>
                 {currentQ.mondaiLabelId && (
-                  <p className="text-[11px] text-[#77736b]">{currentQ.mondaiLabelId}</p>
+                  <p className="text-[11px] text-[var(--tinta-2)]">{currentQ.mondaiLabelId}</p>
                 )}
               </div>
 
@@ -395,7 +395,7 @@ export default function TestSessionRunner({
                   className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-colors ${
                     isCurrentFlagged
                       ? "bg-[#fff4d6] border-[#d49b27] text-[#8a5d07]"
-                      : "bg-white border-[#dcd7cc] text-[#595750] hover:border-[#d49b27]"
+                      : "bg-white border-[#dcd7cc] text-[var(--tinta-2)] hover:border-[#d49b27]"
                   }`}
                   title="Tandai soal untuk diperiksa kembali (Tombol F)"
                 >
@@ -405,7 +405,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={() => setAudioSpeed((s) => (s === 0.9 ? 0.75 : 0.9))}
-                  className="px-2.5 py-1.5 rounded-xl border border-[#dcd7cc] bg-white text-[11px] font-bold text-[#595750] hover:border-[#d95b43]"
+                  className="px-2.5 py-1.5 rounded-xl border border-[#dcd7cc] bg-white text-[11px] font-bold text-[var(--tinta-2)] hover:border-[#d95b43]"
                   title="Ubah kecepatan suara TTS Jepang"
                 >
                   {audioSpeed === 0.9 ? "1.0x" : "0.8x"}
@@ -417,7 +417,7 @@ export default function TestSessionRunner({
                   className={`px-3 py-1.5 rounded-xl border transition-colors flex items-center gap-1.5 text-xs font-bold ${
                     isPlayingAudio
                       ? "bg-[#d95b43] text-white border-[#d95b43]"
-                      : "border-[#dcd7cc] text-[#25231f] hover:text-[#d95b43] hover:border-[#d95b43] bg-white"
+                      : "border-[#dcd7cc] text-[var(--tinta)] hover:text-[#d95b43] hover:border-[#d95b43] bg-white"
                   }`}
                   title="Dengarkan percakapan / kalimat (Audio TTS)"
                 >
@@ -431,11 +431,11 @@ export default function TestSessionRunner({
             {currentQ.passageHtml && (
               <div className="p-5 sm:p-6 rounded-2xl bg-[#f9f6ee] border-2 border-[#dcd6c8] shadow-sm space-y-2">
                 {currentQ.passageTitle && (
-                  <div className="flex items-center justify-between border-b border-[#e2ded5] pb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#263d36]">
+                  <div className="flex items-center justify-between border-b border-[var(--garis)] pb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[var(--kon)]">
                       📖 読解テキスト • {currentQ.passageTitle}
                     </span>
-                    <span className="text-[11px] text-[#77736b]">
+                    <span className="text-[11px] text-[var(--tinta-2)]">
                       Baca wacana di bawah sebelum menjawab
                     </span>
                   </div>
@@ -453,13 +453,13 @@ export default function TestSessionRunner({
 
             {/* Panel Naskah Percakapan Choukai (Opsional untuk Belajar / Simulasi Audio) */}
             {currentQ.dialogueScript && currentQ.dialogueScript.length > 0 && (
-              <div className="rounded-2xl bg-[#fffdfa] border border-[#e2ded5] p-4 space-y-3">
+              <div className="rounded-2xl bg-[var(--panel)] border border-[var(--garis)] p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#263d36]">
+                    <span className="text-xs font-bold text-[var(--kon)]">
                       🎧 聴解オーディオ（Percakapan Multi-Suara Jepang）
                     </span>
-                    <span className="text-[11px] text-[#77736b]">
+                    <span className="text-[11px] text-[var(--tinta-2)]">
                       Klik &ldquo;Putar Audio&rdquo; untuk mendengarkan dialog
                     </span>
                   </div>
@@ -479,15 +479,15 @@ export default function TestSessionRunner({
                         <span
                           className={`px-2 py-0.5 rounded text-[11px] font-bold shrink-0 ${
                             turn.speaker === "男"
-                              ? "bg-[#e8efec] text-[#233c35]"
+                              ? "bg-[#e8efec] text-[var(--kon)]"
                               : turn.speaker === "女"
                               ? "bg-[#f8ede9] text-[#bf5b46]"
-                              : "bg-[#eee8dd] text-[#494740]"
+                              : "bg-[#eee8dd] text-[var(--tinta-2)]"
                           }`}
                         >
                           {turn.speaker}
                         </span>
-                        <span className="text-[#25231f] leading-relaxed">{turn.text}</span>
+                        <span className="text-[var(--tinta)] leading-relaxed">{turn.text}</span>
                       </div>
                     ))}
                   </div>
@@ -496,9 +496,9 @@ export default function TestSessionRunner({
             )}
 
             {/* Prompt Kalimat */}
-            <div className="p-7 sm:p-9 rounded-2xl bg-[#fffdf8] border border-[#e2ded5] shadow-[0_4px_24px_rgba(62,52,41,0.04)] text-center">
+            <div className="p-7 sm:p-9 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-[0_4px_24px_rgba(62,52,41,0.04)] text-center">
               <div
-                className="font-['Noto_Serif_JP',serif] text-xl sm:text-2xl font-medium text-[#25231f] leading-loose"
+                className="font-['Noto_Serif_JP',serif] text-xl sm:text-2xl font-medium text-[var(--tinta)] leading-loose"
                 dangerouslySetInnerHTML={{
                   __html: renderQuestionPrompt(currentQ, showFurigana)
                 }}
@@ -518,8 +518,8 @@ export default function TestSessionRunner({
                     onClick={() => handleSelectOption(optIdx)}
                     className={`group p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
                       isSelected
-                        ? "bg-[#f8ede9] border-[#d95b43] ring-2 ring-[#d95b43]/20 text-[#25231f]"
-                        : "bg-[#fffdfa] border-[#e2ded5] hover:border-[#d95b43] hover:bg-[#fff9f7] text-[#25231f]"
+                        ? "bg-[#f8ede9] border-[#d95b43] ring-2 ring-[#d95b43]/20 text-[var(--tinta)]"
+                        : "bg-[var(--panel)] border-[var(--garis)] hover:border-[#d95b43] hover:bg-[#fff9f7] text-[var(--tinta)]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -527,7 +527,7 @@ export default function TestSessionRunner({
                         className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
                             ? "bg-[#d95b43] text-white"
-                            : "bg-[#f2eee6] text-[#595750] group-hover:bg-[#eae4d8]"
+                            : "bg-[#f2eee6] text-[var(--tinta-2)] group-hover:bg-[#eae4d8]"
                         }`}
                       >
                         {hotkeyLabel}
@@ -542,7 +542,7 @@ export default function TestSessionRunner({
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                         isSelected
                           ? "border-[#d95b43] bg-[#d95b43] text-white"
-                          : "border-[#dedad1]"
+                          : "border-[var(--garis)]"
                       }`}
                     >
                       {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
@@ -553,21 +553,21 @@ export default function TestSessionRunner({
             </div>
 
             <div className="text-center">
-              <span className="text-[11px] text-[#88847b]">
+              <span className="text-[11px] text-[var(--tinta-2)]">
                 💡 Pintasan Keyboard: angka <code>1</code>–<code>{currentQ.options.length}</code> untuk memilih jawaban, <code>←</code> / <code>→</code> untuk berpindah soal, <code>F</code> untuk menandai soal.
               </span>
             </div>
           </div>
         ) : (
-          <div className="text-center py-16 bg-[#fffdfa] rounded-2xl border border-[#e2ded5]">
-            <p className="text-[#88847b]">Tidak ada pertanyaan pada seksi ini.</p>
+          <div className="text-center py-16 bg-[var(--panel)] rounded-2xl border border-[var(--garis)]">
+            <p className="text-[var(--tinta-2)]">Tidak ada pertanyaan pada seksi ini.</p>
           </div>
         )}
 
         {/* Bottom Navigation & Question Palette */}
         <div className="pt-8 space-y-4">
           {/* Question Palette / Pills */}
-          <div className="p-3 rounded-2xl bg-[#fffdfa] border border-[#e2ded5] shadow-sm overflow-x-auto">
+          <div className="p-3 rounded-2xl bg-[var(--panel)] border border-[var(--garis)] shadow-sm overflow-x-auto">
             <div className="flex items-center gap-1.5 min-w-max justify-center">
               {questions.map((_, idx) => {
                 const isCurrent = idx === currentIndex;
@@ -583,7 +583,7 @@ export default function TestSessionRunner({
                       isCurrent
                         ? "bg-[#d95b43] text-white ring-2 ring-[#d95b43]/40"
                         : isAnswered
-                        ? "bg-[#263d36] text-white"
+                        ? "bg-[var(--kon)] text-white"
                         : "bg-[#f2eee6] text-[#686359] hover:bg-[#eae4d8]"
                     }`}
                     title={`Soal ${idx + 1}${isFlagged ? " (Ditandai)" : ""}`}
@@ -604,7 +604,7 @@ export default function TestSessionRunner({
               type="button"
               disabled={currentIndex === 0}
               onClick={handlePrev}
-              className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[#dcd7cc] bg-[#fffdfa] disabled:opacity-30 disabled:cursor-not-allowed text-[#494740] hover:border-[#d95b43] hover:text-[#d95b43] transition-colors"
+              className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-[#dcd7cc] bg-[var(--panel)] disabled:opacity-30 disabled:cursor-not-allowed text-[var(--tinta-2)] hover:border-[#d95b43] hover:text-[#d95b43] transition-colors"
             >
               ← Sebelumnya
             </button>
@@ -633,7 +633,7 @@ export default function TestSessionRunner({
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-[#263d36] hover:bg-[#1d302a] text-white shadow-sm transition-colors"
+                  className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-[var(--kon)] hover:bg-[#1d302a] text-white shadow-sm transition-colors"
                 >
                   Berikutnya →
                 </button>
@@ -650,18 +650,18 @@ export default function TestSessionRunner({
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
-          <div className="w-full max-w-sm bg-[#fffdf8] rounded-2xl border border-[#e2ded5] p-6 space-y-4 shadow-xl text-[#25231f]">
-            <h3 className="font-bold text-base text-[#25231f] font-['Noto_Serif_JP',serif]">
+          <div className="w-full max-w-sm bg-[var(--panel)] rounded-2xl border border-[var(--garis)] p-6 space-y-4 shadow-xl text-[var(--tinta)]">
+            <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
               Akhiri sesi tanpa mengirim jawaban?
             </h3>
-            <p className="text-xs text-[#595750] leading-relaxed">
+            <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
               Masih ada <strong>{unansweredCount}</strong> pertanyaan yang belum dijawab. Jawaban Anda saat ini tidak akan disimpan jika Anda keluar sekarang.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[#494740] hover:bg-[#f8f5ef]"
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
               >
                 Tidak, kembali
               </button>
@@ -687,18 +687,18 @@ export default function TestSessionRunner({
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
-          <div className="w-full max-w-sm bg-[#fffdf8] rounded-2xl border border-[#e2ded5] p-6 space-y-4 shadow-xl text-[#25231f]">
-            <h3 className="font-bold text-base text-[#25231f] font-['Noto_Serif_JP',serif]">
+          <div className="w-full max-w-sm bg-[var(--panel)] rounded-2xl border border-[var(--garis)] p-6 space-y-4 shadow-xl text-[var(--tinta)]">
+            <h3 className="font-bold text-base text-[var(--tinta)] font-['Noto_Serif_JP',serif]">
               Kirim jawabanmu sekarang?
             </h3>
-            <p className="text-xs text-[#595750] leading-relaxed">
+            <p className="text-xs text-[var(--tinta-2)] leading-relaxed">
               Masih ada <strong>{unansweredCount}</strong> pertanyaan yang belum dijawab. Apakah Anda yakin ingin mengakhiri dan melihat nilai?
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowSubmitConfirm(false)}
-                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[#494740] hover:bg-[#f8f5ef]"
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-[#dcd7cc] bg-white text-[var(--tinta-2)] hover:bg-[var(--tsuki)]"
               >
                 Tidak, periksa lagi
               </button>

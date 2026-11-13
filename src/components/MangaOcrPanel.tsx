@@ -580,7 +580,7 @@ export default function MangaOcrPanel({
                           background: isHighlighted
                             ? "#c4543f"
                             : "transparent",
-                          color: isHighlighted ? "#ffffff" : "#f7f4ec",
+                          color: isHighlighted ? "#ffffff" : "var(--tsuki)",
                           borderBottom: isHighlighted
                             ? "2px solid #fbbf24"
                             : "1px dashed rgba(255,255,255,0.18)",
