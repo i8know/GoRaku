@@ -255,11 +255,13 @@ describe("Ujian JLPT Format Baru — 2018年 日本語能力試験 N5 (91問) & 
       expect(html).toContain("JLPT N3");
       expect(html).toContain("JLPT N2");
       expect(html).toContain("JLPT N1");
-      expect(html).toContain("2018年 日本語能力試験 N5【完全再現】");
-      expect(html).toContain("2018年 日本語能力試験 N4【完全再現】");
-      expect(html).toContain("2022年12月 日本語能力試験 N3【完全再現】");
-      expect(html).toContain("2016年12月 日本語能力試験 N2【完全再現】");
-      expect(html).toContain("2023年7月 日本語能力試験 N1【完全再現】");
+      expect(html).toContain("日本語能力試験 N5 模擬テスト (Simulasi 2018)");
+      expect(html).toContain("日本語能力試験 N4 模擬テスト (Simulasi 2018)");
+      expect(html).toContain("日本語能力試験 N3 模擬テスト (Simulasi 2022)");
+      expect(html).toContain("日本語能力試験 N2 模擬テスト (Simulasi 2016)");
+      expect(html).toContain("日本語能力試験 N1 模擬テスト (Simulasi 2023)");
+      expect(html).not.toContain("公式過去問");
+      expect(html).not.toContain("完全再現");
       expect(html).toContain("基準点: 38点");
       expect(html).toContain("基準点: 19点");
       expect(html).toContain("合格点: 90点");
@@ -291,7 +293,8 @@ describe("Ujian JLPT Format Baru — 2018年 日本語能力試験 N5 (91問) & 
         />
       );
 
-      expect(html).toContain("2018年 日本語能力試験 N4【完全再現】");
+      expect(html).toContain("日本語能力試験 N4 模擬テスト (Simulasi 2018)");
+      expect(html).not.toContain("完全再現");
       expect(html).toContain("35 Pertanyaan");
       expect(html).toContain("28 Pertanyaan");
       expect(html).toContain("Mulai");

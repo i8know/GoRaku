@@ -2292,16 +2292,16 @@ export function get2023N1ListeningQuestions(): QuestionItem[] {
 export function generateOfficial2023N1MockTest(): MockTest {
   return {
     id: 20231,
-    title: "2023年7月 日本語能力試験 N1【完全再現】",
+    title: "日本語能力試験 N1 模擬テスト (Simulasi 2023)",
     subtitle:
       "25 文字・語彙（用法付） • 41 文法・読解（一生の仕事・カタクリとアリ・ロボピーと心・メモA/B・教育論・木原市運動教室） • 30 聴解（統合理解付）",
-    badgeLabel: "2023年7月 公式過去問 • 96問",
+    badgeLabel: "Simulasi N1 • 96問",
     isOfficialPastPaper: true,
     officialYear: "2023年7月",
     level: 1,
     levelLabel: "N1",
     difficulty: "standard",
-    difficultyLabel: "Standar Resmi",
+    difficultyLabel: "Standar",
     totalDurationMinutes: 165,
     totalQuestions: 96,
     passingScoreTotal: 100,

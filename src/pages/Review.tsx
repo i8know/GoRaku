@@ -246,7 +246,7 @@ export default function ReviewPage() {
     return (
       <div className="review-empty">
         <p>Deck tidak ditemukan.</p>
-        <Button onClick={() => navigate("/deck")}>Kembali ke Decks</Button>
+        <Button onClick={() => navigate("/deck")}>Kembali ke Deck Saya</Button>
       </div>
     );
   }
@@ -287,7 +287,7 @@ export default function ReviewPage() {
               <Icon name="home" size={16} /> Ke Beranda
             </Button>
             <Button className="outline-button" onClick={() => navigate("/deck")}>
-              <Icon name="deck" size={16} /> Lihat Decks
+              <Icon name="deck" size={16} /> Lihat Deck Saya
             </Button>
           </div>
         </div>

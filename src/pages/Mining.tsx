@@ -366,7 +366,8 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       type="button"
                       onClick={() => speakJapanese(tok.r || tok.t)}
                       title="Dengarkan pengucapan kata"
-                      className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors"
+                      aria-label="Dengarkan pengucapan kata"
+                      className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 min-w-[32px] min-h-[32px] inline-flex items-center justify-center text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors shrink-0"
                     >
                       <Icon name="volume" size={15} />
                     </button>
@@ -406,7 +407,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                         );
                         setCustomReasons(item.deinflectReasons);
                       }}
-                      className={`rounded-lg border px-2 py-1 text-xs font-semibold shrink-0 ${
+                      className={`rounded-lg border px-2.5 py-1 min-h-[28px] inline-flex items-center text-xs font-semibold shrink-0 ${
                         customWord === item.expression
                           ? "border-[var(--ai)] bg-[var(--ai)] text-white"
                           : "border-[var(--garis)] bg-white text-[var(--tinta-2)]"
@@ -435,7 +436,8 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                     type="button"
                     onClick={() => speakJapanese(customReading || customWord)}
                     title="Dengarkan pengucapan kata"
-                    className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors"
+                    aria-label="Dengarkan pengucapan kata"
+                    className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-1.5 min-w-[32px] min-h-[32px] inline-flex items-center justify-center text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition-colors shrink-0"
                   >
                     <Icon name="volume" size={15} />
                   </button>

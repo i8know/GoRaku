@@ -365,9 +365,9 @@ function sliceWithWrap<T>(arr: T[], start: number, count: number): T[] {
 export function generateOfficial2018N5MockTest(): MockTest {
   return {
     id: 2018,
-    title: "2018年 日本語能力試験 N5【完全再現】",
+    title: "日本語能力試験 N5 模擬テスト (Simulasi 2018)",
     subtitle: "35 文字・語彙 • 32 文法・読解（★並べ替え・長文・高木大学ルート表） • 24 聴解（イラスト・会話音声付）",
-    badgeLabel: "2018年 公式過去問 • 91問",
+    badgeLabel: "Simulasi N5 • 91問",
     isOfficialPastPaper: true,
     officialYear: "2018",
     level: 5,

@@ -107,7 +107,7 @@ button { cursor: pointer; }
 .searchbox input::placeholder { color: var(--tinta-2); }
 kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; background: var(--tsuki); color: var(--tinta-2); font-size: 9px; white-space: nowrap; }
 .top-actions { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
-.streak { display: flex; align-items: center; gap: 5px; color: var(--shu); font-size: 12px; }
+.streak { display: flex; align-items: center; gap: 5px; color: var(--shu); font-size: 12px; min-height: 32px; padding: 4px 10px; border-radius: 999px; }
 .streak span { color: var(--tinta-2); }
 .icon-button { position: relative; border: 0; border-left: 1px solid var(--garis); padding: 7px 7px 7px 18px; background: transparent; color: var(--tinta-2); min-width: 38px; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
 .icon-button i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--shu); right: 6px; top: 6px; }
@@ -253,7 +253,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 .beranda-deck-kanji.ai-tua { background: var(--ai-tua); }
 .beranda-deck-info { min-width: 0; }
 .beranda-deck-info h3 { margin: 0 0 4px; font: 700 15px/1.3 var(--font-serif); color: var(--tinta); }
-.beranda-deck-info h3 button, .source-copy h3 button { font: inherit; color: inherit; }
+.beranda-deck-info h3 button, .source-copy h3 button { font: inherit; color: inherit; min-height: 28px; display: inline-flex; align-items: center; text-align: left; }
 .beranda-deck-info h3 button:hover, .source-copy h3 button:hover { color: var(--ai); }
 .beranda-deck-counts { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--tinta-2); }
 .beranda-deck-counts .is-due { color: var(--shu); font-weight: 700; }
@@ -285,13 +285,15 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   border: 0; border-radius: 999px; padding: 10px 18px; display: inline-flex; align-items: center; gap: 8px;
   background: var(--shu); color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap;
 }
-.primary-light:hover { filter: brightness(1.08); transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+  .primary-light:hover { filter: brightness(1.08); transform: translateY(-1px); }
+}
 .week-card { border: 1px solid var(--garis); border-radius: 16px; padding: 22px 24px; background: var(--panel); margin-bottom: 32px; }
 .section-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 17px; }
 .section-heading.compact { align-items: center; margin-bottom: 15px; }
 .section-heading h2, .section-heading h3 { margin: 0; font: 700 20px var(--font-serif); color: var(--kon); }
 .section-heading.compact h2, .section-heading h3 { font-size: 17px; }
-.goal { padding: 5px 10px; border-radius: 999px; background: var(--tsuki); color: var(--ai); font-size: 11px; font-weight: 700; border: 1px solid var(--garis); }
+.goal { display: inline-block; margin-top: 4px; padding: 5px 12px; border-radius: 12px; background: var(--tsuki); color: var(--ai); font-size: 11px; font-weight: 700; border: 1px solid var(--garis); max-width: 100%; line-height: 1.4; white-space: normal; }
 .week-bars { height: 84px; display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--garis); padding-bottom: 8px; }
 .day { flex: 1; height: 100%; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; color: var(--tinta-2); font: inherit; font-size: 12px; }
 .bar { display: block; width: 10px; height: 56px; position: relative; overflow: hidden; border-radius: 999px; background: var(--tsuki); border: 1px solid var(--garis); }
@@ -304,12 +306,14 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 
 .section { margin-bottom: 43px; }
 .text-button, .outline-button {
-  border: 0; display: inline-flex; align-items: center; gap: 7px; background: transparent; color: var(--ai); font-size: 12px; font-weight: 700;
+  border: 0; display: inline-flex; align-items: center; gap: 7px; background: transparent; color: var(--ai); font-size: 12px; font-weight: 700; min-height: 28px;
 }
 .text-button:hover { color: var(--kon); }
-.deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
-.deck-card { align-self: start; height: auto; overflow: hidden; border: 1px solid var(--garis); border-radius: 14px; background: var(--panel); transition: .2s ease; }
-.deck-card:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(18, 40, 74, .08); }
+.deck-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.deck-card { align-self: start; height: auto; overflow: hidden; border: 1px solid var(--garis); border-radius: 14px; background: var(--panel); transition: transform .2s ease, box-shadow .2s ease; }
+@media (hover: hover) and (pointer: fine) {
+  .deck-card:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(18, 40, 74, .08); }
+}
 .deck-art { height: 83px; position: relative; overflow: hidden; padding: 16px 21px; }
 .deck-art span { position: relative; z-index: 1; color: rgba(255,255,255,.94); font: 700 26px var(--font-serif); }
 .deck-art i { position: absolute; width: 125px; height: 125px; right: -24px; top: -56px; border-radius: 50%; border: 18px solid rgba(255,255,255,.12); }
@@ -318,12 +322,12 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 .deck-art.sage { background: var(--ai); }
 .deck-body { padding: 17px 19px 15px; }
 .deck-level { color: var(--ai); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
-.deck-body h3 { height: 35px; margin: 6px 0 13px; font: 700 14px/1.35 var(--font-serif); color: var(--tinta); }
+.deck-body h3 { min-height: 35px; height: auto; margin: 6px 0 13px; font: 700 14px/1.35 var(--font-serif); color: var(--tinta); }
 .deck-meta { display: flex; justify-content: space-between; color: var(--tinta-2); font-size: 11px; }
 .deck-meta span { display: flex; align-items: center; gap: 4px; }
 .progress { height: 4px; margin: 12px 0 13px; border-radius: 999px; background: var(--garis); overflow: hidden; }
 .progress i { height: 100%; display: block; border-radius: 999px; background: linear-gradient(90deg, var(--kon), var(--ai)); }
-.deck-open { border: 0; padding: 0; display: flex; align-items: center; gap: 7px; background: transparent; color: var(--ai); font-size: 12px; font-weight: 700; }
+.deck-open { border: 0; padding: 0; min-height: 28px; display: inline-flex; align-items: center; gap: 7px; background: transparent; color: var(--ai); font-size: 12px; font-weight: 700; }
 .deck-open:hover { color: var(--kon); }
 
 .mining-section { padding-top: 31px; border-top: 1px solid var(--garis); }
@@ -426,6 +430,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   .searchbox span, .searchbox input, .searchbox kbd { display: none; }
   .streak span, .profile div:last-child { display: none; }
   .top-actions { gap: 4px; }
+  .streak { min-height: 44px; min-width: 44px; justify-content: center; padding: 6px 10px; }
   .icon-button { border: 0; padding: 7px; min-width: 44px; min-height: 44px; }
   .avatar { width: 32px; height: 32px; }
   .content { padding: 24px 16px calc(96px + env(safe-area-inset-bottom)); }
@@ -452,11 +457,31 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
     backdrop-filter: blur(12px);
   }
   .mobile-nav a {
-    border: 0; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 0; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 3px; background: transparent; color: var(--tinta-2); font-size: 10px; font-weight: 600; text-decoration: none;
     white-space: nowrap;
   }
   .mobile-nav a.active { color: var(--ai); font-weight: 700; }
+}
+@media (pointer: coarse) {
+  .deck-open,
+  .text-button,
+  .review-back,
+  .prof-link,
+  .auth-toggle button,
+  .auth-back,
+  .beranda-deck-info h3 button,
+  .source-copy h3 button {
+    min-height: 44px;
+    padding-block: 6px;
+  }
+  .icon-button,
+  .searchbox,
+  .streak,
+  .outline-button,
+  .primary-light {
+    min-height: 44px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar, .main, .nav-item, .nav-item-icon, .deck-card, .modal, .toast {
@@ -964,6 +989,9 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   background: transparent;
   color: var(--ai);
   font-weight: 700;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
 }
 .auth-divider {
   position: relative;
@@ -998,9 +1026,12 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   min-height: 40px;
 }
 .auth-back {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   margin-top: 22px;
+  min-height: 28px;
   color: var(--tinta-2);
   font-size: 12px;
   text-decoration: none;
@@ -1113,9 +1144,10 @@ a.nav-item {
 .review-back {
   border: 0;
   background: transparent;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 28px;
   color: var(--tinta-2);
   font-size: 12px;
   font-weight: 600;
@@ -1643,8 +1675,9 @@ a.nav-item {
   color: var(--ai);
   font-size: 11px;
   font-weight: 600;
-  padding: 0;
-  display: flex;
+  padding: 4px 2px;
+  min-height: 28px;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }

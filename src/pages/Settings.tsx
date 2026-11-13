@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import { useAppStore } from "../store/useAppStore";
+import { useReviewStore } from "../store/useReviewStore";
 import DictionaryManagerModal from "../components/DictionaryManagerModal";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 
@@ -25,6 +26,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const [size, setSize] = useState(settings.size);
   const [dictModalOpen, setDictModalOpen] = useState(false);
   const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
     void listDictionaries().then(setDictionaries).catch(() => {});
@@ -97,7 +99,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
         </section>
 
         <section className="st-card st-danger">
-          <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h2>Data &amp; Kamus</h2><p>Kelola kamus Yomitan dan cadangkan koleksimu</p></div></div>
+          <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h2>Data &amp; Kamus</h2><p>Kelola kamus lokal, koleksi deck, dan riwayat belajarmu</p></div></div>
           <div className="st-actions">
             <Button className="outline-button" onClick={() => navigate("/license")}>
               <Icon name="bookmark" size={16} /> Lisensi &amp; Atribusi Sumber Data
@@ -105,9 +107,33 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
             <Button className="outline-button" onClick={() => setDictModalOpen(true)}>
               <Icon name="book" size={16} /> Kelola Kamus Yomitan ({dictionaries.filter((d) => d.enabled).length})
             </Button>
-            <Button className="outline-button" onClick={() => notify("Deck diekspor sebagai .apkg")}><Icon name="upload" size={16} /> Ekspor deck</Button>
-            <Button className="outline-button" onClick={() => notify("Pilih berkas untuk diimpor")}><Icon name="plus" size={16} /> Impor deck</Button>
-            <Button className="outline-button warn" onClick={() => notify("Progres belum dihapus — konfirmasi diperlukan")}><Icon name="trash" size={16} /> Reset progres</Button>
+            <Button className="outline-button" onClick={() => navigate("/deck")}>
+              <Icon name="upload" size={16} /> Ekspor / Kelola Deck
+            </Button>
+            <Button className="outline-button" onClick={() => navigate("/deck")}>
+              <Icon name="plus" size={16} /> Impor Deck (.apkg)
+            </Button>
+            {!confirmReset ? (
+              <Button className="outline-button warn" onClick={() => setConfirmReset(true)}>
+                <Icon name="trash" size={16} /> Reset progres review
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="outline-button warn"
+                  onClick={() => {
+                    useReviewStore.setState({ srsCards: {}, newIntroduced: {}, activity: {} });
+                    setConfirmReset(false);
+                    notify("Semua progres ulasan kartu berhasil direset");
+                  }}
+                >
+                  <Icon name="trash" size={16} /> Konfirmasi Reset Progres
+                </Button>
+                <Button className="outline-button" onClick={() => setConfirmReset(false)}>
+                  Batal
+                </Button>
+              </>
+            )}
           </div>
         </section>
       </div>

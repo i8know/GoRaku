@@ -2073,9 +2073,9 @@ export function get2018N4ListeningQuestions(): QuestionItem[] {
 export function generateOfficial2018N4MockTest(): MockTest {
   return {
     id: 20184,
-    title: "2018年 日本語能力試験 N4【完全再現】",
+    title: "日本語能力試験 N4 模擬テスト (Simulasi 2018)",
     subtitle: "35 文字・語彙（用法付） • 35 文法・読解（★並べ替え・水泳・東京駅・青野市予定表） • 28 聴解（会話原文付）",
-    badgeLabel: "2018年 公式過去問 • 98問",
+    badgeLabel: "Simulasi N4 • 98問",
     isOfficialPastPaper: true,
     officialYear: "2018",
     level: 4,

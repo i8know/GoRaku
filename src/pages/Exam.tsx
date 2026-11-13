@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   MockTest,
   MockSection,
@@ -1042,24 +1043,31 @@ export default function ExamPage({ notify }: ExamPageProps) {
           <div className="space-y-1.5">
             <div className="flex items-center flex-wrap gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--kon)] text-white">
-                {`${
-                  currentExamTest.officialYear?.includes("年")
-                    ? currentExamTest.officialYear
-                    : `${currentExamTest.officialYear || "2018"}年`
-                } 日本語能力試験 ${currentExamTest.levelLabel}`}
+                {`模擬試験 • 日本語能力試験 ${currentExamTest.levelLabel} (Seri ${
+                  currentExamTest.officialYear || "2018"
+                })`}
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--ai)]">
                 {`全${currentExamTest.totalQuestions}問 • ${currentExamTest.totalDurationMinutes}分 • 180点満点`}
               </span>
               <span className="text-xs text-[var(--tinta-2)]">
-                Format Ujian Asli (文字・語彙 / 文法・読解 / 聴解)
+                Format Latihan Standar (文字・語彙 / 文法・読解 / 聴解)
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tinta)] [font-family:var(--font-serif)]">
-              Ujian Kemampuan Bahasa Jepang (JLPT)
+              Simulasi Ujian Bahasa Jepang (JLPT)
             </h1>
             <p className="text-xs sm:text-sm text-[var(--tinta-2)]">
               {currentExamTest.subtitle}
+            </p>
+            <p className="text-[11px] text-[var(--tinta-2)] pt-1">
+              Materi simulasi orisinal berbasis data terbuka — bukan soal resmi The Japan Foundation / JEES.{" "}
+              <Link
+                to="/license"
+                className="inline-flex items-center min-h-[28px] py-0.5 font-semibold text-[var(--ai)] hover:underline"
+              >
+                Lihat lisensi &amp; atribusi →
+              </Link>
             </p>
           </div>
 
@@ -1068,7 +1076,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <button
               type="button"
               onClick={() => setAudioModalOpen(true)}
-              className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-[var(--garis)] bg-[var(--panel)] hover:border-[var(--ai)] hover:text-[var(--ai)] text-[var(--tinta)] transition-colors flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 min-h-[40px] text-xs font-semibold rounded-xl border border-[var(--garis)] bg-[var(--panel)] hover:border-[var(--ai)] hover:text-[var(--ai)] text-[var(--tinta)] transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Icon name="volume" size={16} />
               <span>Cek Audio</span>
@@ -1077,7 +1085,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <button
               type="button"
               onClick={() => setSelectedTest(currentExamTest)}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-2 min-h-[40px] text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Icon name="book" size={16} />
               <span>Lembar Skor & Detail</span>
@@ -1086,37 +1094,37 @@ export default function ExamPage({ notify }: ExamPageProps) {
         </div>
       </header>
 
-      {/* 2. Pemilih Level Ujian Resmi (N5, N4, N3, N2 & N1 公式過去問) */}
+      {/* 2. Pemilih Level Simulasi JLPT (N5, N4, N3, N2 & N1 模擬テスト) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
             lvl: "N5" as const,
             test: official2018N5Test,
-            yearLabel: "2018年 公式過去問",
+            yearLabel: "Simulasi Standar • Seri 2018",
             desc: "35 文字・語彙 • 32 文法・読解（高木大学ルート表） • 24 聴解"
           },
           {
             lvl: "N4" as const,
             test: official2018N4Test,
-            yearLabel: "2018年 公式過去問",
+            yearLabel: "Simulasi Standar • Seri 2018",
             desc: "35 文字・語彙（用法付） • 35 文法・読解（水泳・東京駅・青野市予定表） • 28 聴解"
           },
           {
             lvl: "N3" as const,
             test: official2022N3Test,
-            yearLabel: "2022年12月 公式過去問",
+            yearLabel: "Simulasi Standar • Seri 2022",
             desc: "35 文字・語彙 • 38 文法・読解（京都旅行・古いラジオ・眠りと体温・バス旅行） • 28 聴解"
           },
           {
             lvl: "N2" as const,
             test: official2016N2Test,
-            yearLabel: "2016年12月 公式過去問",
+            yearLabel: "Simulasi Standar • Seri 2016",
             desc: "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・公立図書館A/B・ミハマホテル） • 31 聴解"
           },
           {
             lvl: "N1" as const,
             test: official2023N1Test,
-            yearLabel: "2023年7月 公式過去問",
+            yearLabel: "Simulasi Standar • Seri 2023",
             desc: "25 文字・語彙（用法付） • 41 文法・読解（一生の仕事・ロボピーと心・メモA/B・教育論・木原市運動教室） • 30 聴解"
           }
         ].map(({ lvl, test, yearLabel, desc }) => {
@@ -1126,7 +1134,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               key={lvl}
               type="button"
               onClick={() => setActiveExamLevel(lvl)}
-              className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center justify-between gap-4 ${
+              className={`p-5 rounded-2xl border-2 text-left transition-colors flex items-center justify-between gap-4 ${
                 isSelected
                   ? "bg-[var(--kon)] text-white border-[var(--kon)] shadow-[0_8px_24px_rgba(16,33,58,0.2)]"
                   : "bg-[var(--panel)] text-[var(--tinta)] border-[var(--garis)] hover:border-[var(--ai)]"
@@ -1180,7 +1188,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--garis)] pb-4">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ai)]">
-              得点範囲・合格点（Standar Penilaian Resmi JLPT {currentExamTest.levelLabel}）
+              得点範囲・合格基準（Simulasi Skala Nilai JLPT {currentExamTest.levelLabel}）
             </span>
             <h2 className="text-lg font-bold text-[var(--tinta)] [font-family:var(--font-serif)] mt-0.5">
               Simulasi Nilai Skala 0〜180 &amp; Ambang Batas Seksi (基準点)
@@ -1192,7 +1200,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               <button
                 type="button"
                 onClick={handleResetCurrentTestSessions}
-                className="px-3 py-1.5 rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--shu)] hover:text-[var(--shu)] transition-colors"
+                className="px-3 py-1.5 min-h-[36px] rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--shu)] hover:text-[var(--shu)] transition-colors"
               >
                 Reset Skor
               </button>
@@ -1209,7 +1217,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               {!currentExamSummary.hasTakenAny
                 ? "未受験 • Siap Mulai Ujian"
                 : currentExamSummary.scaled.overallPassed
-                ? "合格圏内 • Lulus Standar JLPT"
+                ? "合格圏内 • Mencapai Target Simulasi"
                 : `不合格圏 • Perlu Mencapai ${currentExamSummary.scaled.passThresholdTotal}点 & 基準点`}
             </span>
           </div>

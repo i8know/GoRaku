@@ -44,7 +44,9 @@ export default function LoginPage() {
         </div>
         <h1>{isRegister ? "Buat akun" : "Masuk"}</h1>
         <p className="welcome-copy">
-          {isRegister ? "Daftar untuk mulai belajar." : "Selamat kembali, pelajar."}
+          {isRegister
+            ? "Daftar untuk mulai belajar — seluruh dek dan progres tersimpan aman di perangkat."
+            : "Selamat kembali, pelajar. Lanjutkan belajarmu secara offline di perangkat ini."}
         </p>
 
         <form onSubmit={submit} className="auth-form" noValidate>

@@ -20,9 +20,9 @@ export default function LicenseAttributionPage() {
         <div className="flex items-center gap-2 mb-2">
           <Link
             to="/exam"
-            className="text-xs font-medium text-[var(--ai)] hover:underline flex items-center gap-1"
+            className="text-xs font-medium text-[var(--ai)] hover:underline inline-flex items-center gap-1 min-h-[28px] py-0.5"
           >
-            ← Kembali ke Ujian JLPT
+            ← Kembali ke Simulasi Ujian JLPT
           </Link>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-[var(--tinta)]" style={{ fontFamily: "var(--font-serif)" }}>
@@ -85,7 +85,7 @@ export default function LicenseAttributionPage() {
                 href="https://www.edrdg.org/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[var(--ai)] hover:underline"
+                className="text-[var(--ai)] hover:underline inline-flex items-center min-h-[28px]"
               >
                 https://www.edrdg.org/
               </a>
@@ -123,7 +123,7 @@ export default function LicenseAttributionPage() {
                 href="https://tatoeba.org/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[var(--ai)] hover:underline"
+                className="text-[var(--ai)] hover:underline inline-flex items-center min-h-[28px]"
               >
                 https://tatoeba.org/
               </a>
@@ -166,9 +166,9 @@ export default function LicenseAttributionPage() {
       </div>
 
       {/* Navigasi Footer */}
-      <div className="flex justify-between items-center pt-4 border-t border-[var(--garis)] text-xs text-[var(--tinta-2)]">
-        <span>Aplikasi Belajar Bahasa Jepang • Modul Ujian JLPT Orisinal</span>
-        <Link to="/exam" className="text-[var(--ai)] font-semibold hover:underline">
+      <div className="flex flex-wrap justify-between items-center gap-2 pt-4 border-t border-[var(--garis)] text-xs text-[var(--tinta-2)]">
+        <span>Aplikasi Belajar Bahasa Jepang • Modul Simulasi Ujian JLPT Orisinal</span>
+        <Link to="/exam" className="text-[var(--ai)] font-semibold hover:underline inline-flex items-center min-h-[28px]">
           Mulai Latihan Sekarang
         </Link>
       </div>

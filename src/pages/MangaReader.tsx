@@ -1676,7 +1676,7 @@ export default function MangaReaderPage({
                   ? currentPage >= pageCount - 1
                   : currentPage <= 0
               }
-              className="rounded-xl px-3 py-1.5 text-[12px] font-medium border hover:bg-white/10 disabled:opacity-35 transition shrink-0"
+              className="rounded-xl px-3 py-1.5 min-h-[32px] max-sm:min-h-[44px] text-[12px] font-medium border hover:bg-white/10 disabled:opacity-35 transition-colors shrink-0"
               style={{ borderColor: "rgba(255,255,255,0.18)" }}
             >
               {readingDirection === "rtl" ? "← Berikutnya" : "← Sebelumnya"}
@@ -1691,7 +1691,7 @@ export default function MangaReaderPage({
                 dir={readingDirection}
                 onChange={(e) => goToPage(Number(e.target.value))}
                 aria-label="Slider navigasi halaman manga"
-                className="w-full accent-[var(--ai)] cursor-pointer"
+                className="manga-page-slider w-full min-h-[28px] max-sm:min-h-[44px] touch-none accent-[var(--ai)] cursor-pointer"
               />
             </div>
 
@@ -1709,7 +1709,7 @@ export default function MangaReaderPage({
                   ? currentPage <= 0
                   : currentPage >= pageCount - 1
               }
-              className="rounded-xl px-3 py-1.5 text-[12px] font-medium border hover:bg-white/10 disabled:opacity-35 transition shrink-0"
+              className="rounded-xl px-3 py-1.5 min-h-[32px] max-sm:min-h-[44px] text-[12px] font-medium border hover:bg-white/10 disabled:opacity-35 transition-colors shrink-0"
               style={{ borderColor: "rgba(255,255,255,0.18)" }}
             >
               {readingDirection === "rtl" ? "Sebelumnya →" : "Berikutnya →"}

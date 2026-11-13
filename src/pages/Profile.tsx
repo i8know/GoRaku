@@ -140,7 +140,7 @@ export default function ProfilePage() {
               <strong className="prof-stat-hot">{totalDue}</strong>
             </div>
             <div className="prof-stat">
-              <span className="prof-stat-label">Sumber Library</span>
+              <span className="prof-stat-label">Koleksi Pustaka</span>
               <strong>{totalLibrary}</strong>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function ProfilePage() {
               </Button>
               <Button className="prof-action-btn primary-light" onClick={() => navigate("/library")}>
                 <Icon name="book" size={18} />
-                <div><strong>Jelajahi Library</strong><small>Temukan sumber baru</small></div>
+                <div><strong>Jelajahi Perpustakaan</strong><small>Temukan sumber baru</small></div>
               </Button>
             </div>
           </section>
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                   <p><strong>Sesi Aktif</strong></p>
                   <small>Saat ini masuk di 1 perangkat</small>
                 </div>
-                <Button className="outline-button" onClick={() => setStatusNotice("Hanya 1 sesi lokal aktif pada peramban ini.")}>
+                <Button className="outline-button" onClick={() => setStatusNotice("Hanya 1 sesi lokal aktif pada browser ini.")}>
                   Kelola Sesi
                 </Button>
               </div>

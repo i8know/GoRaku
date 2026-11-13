@@ -150,7 +150,7 @@ export default function TestDetailsModal({
                   </div>
                   <div className="text-xs font-semibold text-[var(--tinta-2)]">
                     {officialScore.overallPassed
-                      ? "合格圏内！ お疲れ様！ (Lulus Standar JLPT)"
+                      ? "合格圏内！ お疲れ様！ (Mencapai Target Simulasi)"
                       : "頑張ってください！ (Belum Mencapai Ambang Lulus)"}
                   </div>
                 </div>

@@ -509,7 +509,7 @@ export default function App() {
                 <h3>
                   <button
                     type="button"
-                    className="text-left bg-transparent border-0 p-0 cursor-pointer hover:text-[var(--ai)] transition-colors"
+                    className="text-left bg-transparent border-0 p-0 py-0.5 min-h-[28px] inline-flex items-center cursor-pointer hover:text-[var(--ai)] transition-colors"
                     onClick={() => navigate(source.targetPath)}
                   >
                     {source.title}
@@ -525,7 +525,7 @@ export default function App() {
                     onClick={() => speakJapanese(source.sentence)}
                     title="Dengarkan pengucapan kalimat"
                     aria-label="Dengarkan pengucapan kalimat"
-                    className="rounded-md p-1 text-[var(--tinta-2)] hover:text-[var(--ai)] transition-colors shrink-0"
+                    className="rounded-md p-1.5 min-w-[28px] min-h-[28px] max-sm:min-w-[36px] max-sm:min-h-[36px] inline-flex items-center justify-center text-[var(--tinta-2)] hover:text-[var(--ai)] transition-colors shrink-0"
                   >
                     <Icon name="volume" size={14} />
                   </button>

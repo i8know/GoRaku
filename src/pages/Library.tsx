@@ -532,7 +532,7 @@ export default function LibraryPage({
               <button
                 type="button"
                 onClick={() => setManagingBook(heroBook)}
-                className="p-1.5 rounded-lg opacity-80 hover:opacity-100 transition"
+                className="p-1.5 min-w-[28px] min-h-[28px] max-sm:min-w-[36px] max-sm:min-h-[36px] inline-flex items-center justify-center rounded-lg opacity-80 hover:opacity-100 transition-opacity"
                 title="Edit judul atau urutan halaman"
                 aria-label={`Edit ${heroBook.title}`}
               >
@@ -583,13 +583,13 @@ export default function LibraryPage({
             await handleFilesSelected(droppedFiles);
           }
         }}
-        className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-all flex flex-col sm:flex-row items-center justify-between gap-4"
+        className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-colors flex flex-col lg:flex-row items-center justify-between gap-4"
         style={{
           borderColor: isDragging ? "var(--ai)" : "var(--garis)",
           background: isDragging ? "rgba(180, 201, 219, 0.16)" : "var(--panel)",
         }}
       >
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3.5 min-w-0 flex-1 w-full">
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
             style={{
@@ -605,13 +605,13 @@ export default function LibraryPage({
               manga (<code>.cbz</code>, <code>.zip</code>, gambar, atau folder)
             </div>
             <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
-              Arsip manga disimpan sebagai Blob lokal dan dibaca secara malas (lazy)
-              per halaman dengan natural sort otomatis.
+              Novel dan arsip manga disimpan langsung di perangkat dan dimuat per
+              halaman sesuai urutan asli secara otomatis.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
           <Button
             className="outline-button"
             disabled={uploading}
@@ -770,7 +770,7 @@ export default function LibraryPage({
                   <button
                     type="button"
                     onClick={() => setManagingBook(book)}
-                    className="p-1 rounded opacity-60 hover:opacity-100 shrink-0"
+                    className="p-1 min-w-[28px] min-h-[28px] max-sm:min-w-[36px] max-sm:min-h-[36px] inline-flex items-center justify-center rounded opacity-60 hover:opacity-100 shrink-0"
                     title={
                       isManga
                         ? "Edit judul & urutan halaman"

@@ -2132,9 +2132,9 @@ export function get2022N3ListeningQuestions(): QuestionItem[] {
 export function generateOfficial2022N3MockTest(): MockTest {
   return {
     id: 20223,
-    title: "2022年12月 日本語能力試験 N3【完全再現】",
+    title: "日本語能力試験 N3 模擬テスト (Simulasi 2022)",
     subtitle: "35 文字・語彙（30分） • 38 文法・読解（70分：京都旅行・短文4題・中文2題・長文・日帰りバス旅行案内） • 28 聴解（40分）",
-    badgeLabel: "2022年12月 公式過去問 • 101問",
+    badgeLabel: "Simulasi N3 • 101問",
     isOfficialPastPaper: true,
     officialYear: "2022-12",
     level: 3,

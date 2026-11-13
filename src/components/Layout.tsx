@@ -472,13 +472,13 @@ export default function ProtectedLayout() {
             return (
               <div
                 key={item.label}
-                className="relative group"
+                className="relative group flex items-center gap-1"
                 onMouseEnter={() => setHoveredNav(item.label)}
                 onMouseLeave={() => setHoveredNav(null)}
               >
                 <Link
                   to={item.path}
-                  className={`nav-item ${isActive ? "active" : ""}`}
+                  className={`nav-item flex-1 min-w-0 ${isActive ? "active" : ""}`}
                   aria-label={item.label}
                 >
                   {isActive && (
@@ -509,7 +509,7 @@ export default function ProtectedLayout() {
                   {badge && <em className={badge.cls ?? ""}>{badge.text}</em>}
                 </Link>
 
-                {/* Micro-Action Quick Add (+) on Hover (Expanded Mode) */}
+                {/* Micro-Action Quick Add (+) saat Sidebar Diperluas (tanpa menumpuk tautan) */}
                 {!effectiveCollapsed &&
                   (item.label === "Deck Saya" ||
                     item.label === "Perpustakaan" ||
@@ -530,9 +530,16 @@ export default function ProtectedLayout() {
                           ? "Tambah Novel / Manga"
                           : "Buka Studio Teks"
                       }
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-white/10 hover:bg-[var(--ai)] hover:text-white text-white/70 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-xs"
+                      aria-label={
+                        item.label === "Deck Saya"
+                          ? "Tambah Deck Baru"
+                          : item.label === "Perpustakaan"
+                          ? "Tambah Novel / Manga"
+                          : "Buka Studio Teks"
+                      }
+                      className="w-7 h-7 min-w-[28px] min-h-[28px] max-md:w-9 max-md:h-9 shrink-0 rounded-md bg-white/10 hover:bg-[var(--ai)] hover:text-white text-white/80 opacity-85 lg:opacity-0 lg:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-xs"
                     >
-                      <Icon name="plus" size={12} />
+                      <Icon name="plus" size={13} />
                     </button>
                   )}
 

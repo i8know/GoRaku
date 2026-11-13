@@ -2433,16 +2433,16 @@ export function get2016N2ListeningQuestions(): QuestionItem[] {
 export function generateOfficial2016N2MockTest(): MockTest {
   return {
     id: 20162,
-    title: "2016年12月 日本語能力試験 N2【完全再現】",
+    title: "日本語能力試験 N2 模擬テスト (Simulasi 2016)",
     subtitle:
       "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・個性・話し言葉と書き言葉・公立図書館A/B・ミハマホテルビュッフェ） • 31 聴解（統合理解付）",
-    badgeLabel: "2016年12月 公式過去問 • 106問",
+    badgeLabel: "Simulasi N2 • 106問",
     isOfficialPastPaper: true,
     officialYear: "2016年12月",
     level: 2,
     levelLabel: "N2",
     difficulty: "standard",
-    difficultyLabel: "Standar Resmi",
+    difficultyLabel: "Standar",
     totalDurationMinutes: 155,
     totalQuestions: 106,
     passingScoreTotal: 90,
