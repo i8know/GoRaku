@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon, Button, type IconName } from "../ui";
 import { speakJapanese } from "../lib/tts";
@@ -253,6 +253,134 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
+const NAV_LINKS = [
+  { id: "simulasi", label: "Simulasi" },
+  { id: "subdeck-jlpt", label: "Sub-Deck & JLPT" },
+  { id: "eksplorer", label: "4 Modul Inti" },
+  { id: "fitur", label: "Arsitektur" },
+  { id: "faq", label: "FAQ" },
+] as const;
+
+function LandingNav({ loggedIn }: { loggedIn: boolean }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
+
+  // Keadaan "scrolled" setelah > 24px
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Scrollspy: section yang melintasi pita di bawah pill dianggap aktif
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const visible = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        setActiveId(NAV_LINKS.find((l) => visible.has(l.id))?.id ?? null);
+      },
+      { rootMargin: "-96px 0px -60% 0px" },
+    );
+    for (const l of NAV_LINKS) {
+      const el = document.getElementById(l.id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, []);
+
+  // Tutup menu saat halaman berpindah
+  useEffect(() => setMenuOpen(false), [location.pathname, location.hash]);
+
+  // Tutup menu: Escape (fokus kembali ke tombol menu) dan klik di luar
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        menuBtnRef.current?.focus();
+      }
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (!navRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [menuOpen]);
+
+  const linkProps = (id: string) => ({
+    href: `#${id}`,
+    "aria-current": activeId === id ? ("true" as const) : undefined,
+    onClick: () => setMenuOpen(false),
+  });
+
+  return (
+    <nav
+      ref={navRef}
+      className={`landing-nav${scrolled ? " is-scrolled" : ""}`}
+      aria-label="Navigasi utama"
+    >
+      <a href="#simulasi" className="lnav-brand" aria-label="GoRaku, kembali ke atas">
+        <span className="lnav-seal" lang="ja" aria-hidden="true">語</span>
+        <span className="lnav-brand-copy" aria-hidden="true">
+          <strong lang="ja">語楽</strong>
+          <small>GoRaku</small>
+        </span>
+        <span className="lnav-tagline" lang="ja" aria-hidden="true">
+          日本語没入型学習環境
+        </span>
+      </a>
+
+      <div className="lnav-links">
+        {NAV_LINKS.map((l) => (
+          <a key={l.id} {...linkProps(l.id)}>
+            {l.label}
+          </a>
+        ))}
+      </div>
+
+      <div className="lnav-actions">
+        <button
+          ref={menuBtnRef}
+          type="button"
+          className="lnav-menu-btn"
+          aria-label="Menu"
+          aria-expanded={menuOpen}
+          aria-controls="lnav-panel"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span className="lnav-menu-lines" aria-hidden="true" />
+        </button>
+        <Link to={loggedIn ? "/beranda" : "/login"} className="lnav-cta">
+          <span className="lnav-cta-long">{loggedIn ? "Buka Dashboard" : "Masuk / Mulai"}</span>
+          <span className="lnav-cta-short">{loggedIn ? "Dashboard" : "Masuk"}</span>
+        </Link>
+      </div>
+
+      <div id="lnav-panel" className="lnav-panel" data-open={menuOpen}>
+        {NAV_LINKS.map((l) => (
+          <a key={l.id} {...linkProps(l.id)}>
+            {l.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const user = useAppStore((s) => s.user);
@@ -293,48 +421,8 @@ export default function LandingPage() {
 
   return (
     <div className="landing">
-      {/* NAVIGASI ATAS — Minimalist Wa-Modern Editorial Bar */}
-      <nav className="landing-nav">
-        <div className="flex items-center gap-3.5">
-          <div className="brand" style={{ padding: 0 }}>
-            <span className="brand-mark">語</span>
-            <span className="brand-copy">
-              <strong>語楽</strong>
-              <small>GORAKU</small>
-            </span>
-          </div>
-          <span className="hidden sm:inline-block h-4 w-[1px] bg-[#d8d2c5]" />
-          <span
-            lang="ja"
-            className="hidden sm:inline-block text-[11px] font-serif text-[#787268] tracking-widest"
-          >
-            日本語没入型学習環境
-          </span>
-        </div>
-
-        <div className="landing-nav-links">
-          <a href="#simulasi" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">壱</span> Simulasi
-          </a>
-          <a href="#subdeck-jlpt" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">弐</span> Sub-Deck &amp; JLPT
-          </a>
-          <a href="#eksplorer" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">参</span> 4 Modul Inti
-          </a>
-          <a href="#fitur" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">肆</span> Arsitektur
-          </a>
-          <a href="#faq" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">伍</span> FAQ
-          </a>
-          <Link to={user ? "/beranda" : "/login"}>
-            <Button className="pg-primary" style={{ padding: "9px 16px" }}>
-              <Icon name="arrow" size={15} /> {user ? "Buka Dashboard" : "Masuk / Mulai"}
-            </Button>
-          </Link>
-        </div>
-      </nav>
+      {/* NAVIGASI ATAS — Floating Pill (Aizome) */}
+      <LandingNav loggedIn={!!user} />
 
       {/* 壱 • HERO SECTION — Editorial Split + Bunkobon Live Simulator */}
       <section id="simulasi" className="landing-hero">
