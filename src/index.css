@@ -136,7 +136,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   margin-bottom: 40px;
   background: var(--bokashi);
   color: #fff;
-  box-shadow: 0 14px 34px rgba(18, 40, 74, .14);
+  box-shadow: inset 0 1px 0 rgba(220, 232, 240, 0.16), 0 14px 34px rgba(18, 40, 74, 0.16);
 }
 .beranda-hero-top {
   display: flex;
@@ -162,7 +162,6 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   color: var(--tsuki);
   font-size: 13.5px;
   max-width: 560px;
-  opacity: .92;
 }
 .beranda-date-vert {
   writing-mode: vertical-rl;
@@ -181,11 +180,11 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   gap: 28px;
   margin-top: 22px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, .16);
+  border-top: 1px solid rgba(220, 232, 240, .24);
 }
 .beranda-hero-stats div { display: flex; flex-direction: column; }
 .beranda-hero-stats strong { font: 700 24px/1.1 var(--font-serif); color: #fff; }
-.beranda-hero-stats span { margin-top: 3px; font-size: 11px; color: var(--tsuki); opacity: .9; }
+.beranda-hero-stats span { margin-top: 3px; font-size: 11px; color: var(--mizu-soft); }
 .beranda-seal-cta {
   position: relative;
   margin-top: 20px;

@@ -300,18 +300,21 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                 title={`${s.newToday} kartu baru hari ini`}
               >
                 {s.newToday}
+                <span className="sr-only"> baru</span>
               </span>
               <span
                 className={`anki-num anki-num-learn ${s.learning > 0 ? "has-cards" : "zero"}`}
                 title={`${s.learning} kartu dalam proses belajar`}
               >
                 {s.learning}
+                <span className="sr-only"> belajar</span>
               </span>
               <span
                 className={`anki-num anki-num-due ${s.reviewDue > 0 ? "has-cards" : "zero"}`}
                 title={`${s.reviewDue} kartu jatuh tempo ulasan`}
               >
                 {s.reviewDue}
+                <span className="sr-only"> ulasan</span>
               </span>
             </div>
           </div>
@@ -497,7 +500,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   </button>
                   {imported && <em className="dk-badge">ANKI</em>}
                   {displaySubdecks.length > 0 && (
-                    <em className="dk-badge" style={{ right: imported ? "56px" : "14px", background: "rgba(38, 61, 54, 0.85)" }}>
+                    <em className="dk-badge" style={{ right: imported ? "56px" : "14px", background: "var(--kon)" }}>
                       {displaySubdecks.length} SUB-DECK
                     </em>
                   )}
@@ -602,6 +605,12 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                       </div>
 
                       <div className="dk-card-subdecks-drawer">
+                        <div className="anki-legend" style={{ marginBottom: "6px" }} aria-label="Keterangan urutan angka kartu">
+                          <span className="anki-legend-label">Urutan:</span>
+                          <span className="anki-hdr-badge anki-hdr-new">Baru</span>
+                          <span className="anki-hdr-badge anki-hdr-learn">Belajar</span>
+                          <span className="anki-hdr-badge anki-hdr-due">Ulasan</span>
+                        </div>
                         {sortedSubdecks.map((c) => {
                           const cs = st(c);
                           return (
@@ -627,18 +636,21 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                     title={`${cs.newToday} baru`}
                                   >
                                     {cs.newToday}
+                                    <span className="sr-only"> baru</span>
                                   </span>
                                   <span
                                     className={`anki-num anki-num-learn ${cs.learning > 0 ? "has-cards" : "zero"}`}
                                     title={`${cs.learning} belajar`}
                                   >
                                     {cs.learning}
+                                    <span className="sr-only"> belajar</span>
                                   </span>
                                   <span
                                     className={`anki-num anki-num-due ${cs.reviewDue > 0 ? "has-cards" : "zero"}`}
                                     title={`${cs.reviewDue} ulasan`}
                                   >
                                     {cs.reviewDue}
+                                    <span className="sr-only"> ulasan</span>
                                   </span>
                                 </div>
                                 <button
@@ -699,9 +711,9 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
           <div className="dk-list-view-header">
             <span>Sampul &amp; Deck</span>
             <span>Level / Jenis</span>
-            <span style={{ textAlign: "right", paddingRight: "14px" }}>
-              <span className="anki-hdr-badge anki-hdr-new" title="Kartu Baru (New)">Baru</span>{" "}
-              <span className="anki-hdr-badge anki-hdr-learn" title="Dalam Belajar (Learn)">Belajar</span>{" "}
+            <span className="dk-list-due-hdr">
+              <span className="anki-hdr-badge anki-hdr-new" title="Kartu Baru (New)">Baru</span>
+              <span className="anki-hdr-badge anki-hdr-learn" title="Dalam Belajar (Learn)">Belajar</span>
               <span className="anki-hdr-badge anki-hdr-due" title="Ulasan Jatuh Tempo (Due)">Ulas</span>
             </span>
             <span>Total Kartu</span>

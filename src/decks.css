@@ -2033,7 +2033,7 @@
 
 .dk-list-view-header {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.1fr 1fr 1.2fr 1.2fr;
+  grid-template-columns: 2fr 1.1fr 1.35fr 0.9fr 1.15fr 1.2fr;
   gap: 14px;
   align-items: center;
   padding: 12px 18px;
@@ -2046,9 +2046,17 @@
   text-transform: uppercase;
 }
 
+.dk-list-due-hdr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+}
+
 .dk-list-row {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.1fr 1fr 1.2fr 1.2fr;
+  grid-template-columns: 2fr 1.1fr 1.35fr 0.9fr 1.15fr 1.2fr;
   gap: 14px;
   align-items: center;
   padding: 12px 18px;
@@ -2257,7 +2265,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--mizu);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2280,7 +2288,7 @@
 .dd-hero-copy p {
   margin: 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--tsuki);
 }
 
 .dd-hero-actions {
@@ -2917,45 +2925,56 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.01em;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(245, 242, 235, 0.6);
+  background: var(--tsuki);
+  border: 1px solid var(--garis);
 }
 
 .anki-num {
-  min-width: 24px;
-  text-align: right;
+  min-width: 26px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border-bottom: 2px solid transparent;
+  text-align: center;
   display: inline-block;
   transition: transform 0.15s ease;
 }
 
 .anki-num.zero {
-  color: #a8a29e;
-  opacity: 0.45;
+  color: var(--tinta-2);
+  opacity: 1;
   font-weight: 500;
 }
 
 .anki-num-new.has-cards {
-  color: #2563eb; /* Anki Classic Blue */
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-bottom-color: #1d4ed8;
 }
 
 .anki-num-learn.has-cards {
-  color: #dc2626; /* Anki Classic Red */
+  color: #b91c1c;
+  background: #fef2f2;
+  border-bottom-color: #b91c1c;
 }
 
 .anki-num-due.has-cards {
-  color: #16a34a; /* Anki Classic Green */
+  color: #166534;
+  background: #f0fdf4;
+  border-bottom-color: #166534;
 }
 
 .anki-hdr-badge {
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 6px;
+  letter-spacing: 0.02em;
+  padding: 2px 5px;
   border-radius: 4px;
   display: inline-block;
 }
@@ -2972,7 +2991,22 @@
 
 .anki-hdr-due {
   background: #dcfce7;
-  color: #15803d;
+  color: #166534;
+}
+
+.anki-legend {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.anki-legend-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tinta-2);
+  margin-right: 2px;
 }
 
 /* Quick Level Selection Chips on Grid View */

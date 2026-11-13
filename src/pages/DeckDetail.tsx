@@ -377,6 +377,13 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                 )}
               </div>
 
+              <div className="anki-legend" aria-label="Keterangan urutan angka kartu">
+                <span className="anki-legend-label">Urutan status:</span>
+                <span className="anki-hdr-badge anki-hdr-new">Baru</span>
+                <span className="anki-hdr-badge anki-hdr-learn">Belajar</span>
+                <span className="anki-hdr-badge anki-hdr-due">Ulasan</span>
+              </div>
+
               <div className="dd-subdeck-grid">
                 {(subdeckViewMode === "all-levels" && leafDescendants.length > 0
                   ? [...leafDescendants].sort((a, b) => {
@@ -437,18 +444,21 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                             title={`${subSt.newToday} kartu baru`}
                           >
                             {subSt.newToday}
+                            <span className="sr-only"> baru</span>
                           </span>
                           <span
                             className={`anki-num anki-num-learn ${subSt.learning > 0 ? "has-cards" : "zero"}`}
                             title={`${subSt.learning} sedang belajar`}
                           >
                             {subSt.learning}
+                            <span className="sr-only"> belajar</span>
                           </span>
                           <span
                             className={`anki-num anki-num-due ${subSt.reviewDue > 0 ? "has-cards" : "zero"}`}
                             title={`${subSt.reviewDue} ulasan jatuh tempo`}
                           >
                             {subSt.reviewDue}
+                            <span className="sr-only"> ulasan</span>
                           </span>
                         </div>
                         <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--shu)" : "var(--tinta-2)" }}>
