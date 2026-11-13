@@ -1038,7 +1038,7 @@ export default function MangaReaderPage({
   if (errorMsg || !book || !source) {
     return (
       <div className="p-8 max-w-lg mx-auto text-center">
-        <p className="text-[15px] font-semibold mb-2 text-[#b42318]">
+        <p className="text-[15px] font-semibold mb-2 text-[var(--shu)]">
           {errorMsg ?? "Manga tidak ditemukan"}
         </p>
         <Button className="outline-button" onClick={() => navigate("/library")}>
@@ -1156,11 +1156,11 @@ export default function MangaReaderPage({
               className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-semibold border transition"
               style={{
                 borderColor: selectBubbleMode
-                  ? "#fbbf24"
+                  ? "var(--mizu)"
                   : "rgba(255,255,255,0.22)",
                 background: selectBubbleMode
-                  ? "#c4543f"
-                  : "rgba(196, 84, 63, 0.18)",
+                  ? "var(--ai)"
+                  : "rgba(38, 72, 122, 0.28)",
                 color: "#ffffff",
               }}
               title="Aktifkan mode Pilih Gelembung (Pintasan: B) lalu seret kotak di sekitar gelembung dialog untuk di-OCR"
@@ -1212,11 +1212,11 @@ export default function MangaReaderPage({
               style={{
                 borderColor:
                   readingDirection === "rtl"
-                    ? "#c4543f"
+                    ? "var(--mizu)"
                     : "rgba(255,255,255,0.18)",
                 background:
                   readingDirection === "rtl"
-                    ? "rgba(196, 84, 63, 0.2)"
+                    ? "rgba(38, 72, 122, 0.36)"
                     : "transparent",
               }}
               title="Ubah arah baca manga (disimpan per judul)"
@@ -1533,18 +1533,18 @@ export default function MangaReaderPage({
                         top: `${topPct}%`,
                         width: `${widthPct}%`,
                         height: `${heightPct}%`,
-                        borderColor: isActive ? "#c4543f" : "#fbbf24",
+                        borderColor: isActive ? "var(--ai)" : "#fbbf24",
                         background: isActive
-                          ? "rgba(196, 84, 63, 0.25)"
+                          ? "rgba(38, 72, 122, 0.30)"
                           : "rgba(251, 191, 36, 0.14)",
                       }}
-                      className="absolute border-2 rounded-md transition-colors hover:bg-[#c4543f]/30 group"
+                      className="absolute border-2 rounded-md transition-colors hover:bg-[var(--ai)]/30 group"
                       title={`Gelembung #${bIdx + 1}: ${cb.text || "(Klik untuk membuka)"}`}
                     >
                       <span
                         className="absolute -top-2.5 -right-2.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shadow"
                         style={{
-                          background: isActive ? "#c4543f" : "#fbbf24",
+                          background: isActive ? "var(--ai)" : "#fbbf24",
                           color: isActive ? "#ffffff" : "#111111",
                         }}
                       >
@@ -1561,7 +1561,7 @@ export default function MangaReaderPage({
         {/* Kotak Seleksi Visual Saat Pengguna Menyeret di Mode Pilih Gelembung */}
         {liveSelectionBox && liveSelectionBox.width > 2 && (
           <div
-            className="fixed pointer-events-none z-40 border-2 border-[#fbbf24] bg-[#c4543f]/25 rounded-sm shadow-lg"
+            className="fixed pointer-events-none z-40 border-2 border-[var(--mizu)] bg-[var(--ai)]/25 rounded-sm shadow-lg"
             style={{
               left: `${liveSelectionBox.left}px`,
               top: `${liveSelectionBox.top}px`,
@@ -1691,7 +1691,7 @@ export default function MangaReaderPage({
                 dir={readingDirection}
                 onChange={(e) => goToPage(Number(e.target.value))}
                 aria-label="Slider navigasi halaman manga"
-                className="w-full accent-[#c4543f] cursor-pointer"
+                className="w-full accent-[var(--ai)] cursor-pointer"
               />
             </div>
 

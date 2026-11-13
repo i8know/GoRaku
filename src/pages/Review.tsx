@@ -316,7 +316,7 @@ export default function ReviewPage() {
             disabled={history.length === 0}
             onClick={handleUndo}
             title="Batalkan penilaian sebelumnya (Ctrl+Z)"
-            className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1 text-[11px] font-semibold text-[var(--tinta-2)] hover:border-[#c9604b] hover:text-[#c0503b] disabled:opacity-40 transition-colors"
+            className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1 text-[11px] font-semibold text-[var(--tinta-2)] hover:border-[var(--ai)] hover:text-[var(--ai)] disabled:opacity-40 transition-colors"
           >
             ↶ Undo
           </button>
@@ -340,7 +340,7 @@ export default function ReviewPage() {
             title="Putar audio otomatis saat jawaban dibuka"
             className={`rounded-lg border px-2 py-1 text-[11px] font-semibold transition-colors ${
               settings.audio
-                ? "border-[#d95b43] bg-[#f1e6df] text-[#bf5b46]"
+                ? "border-[var(--ai)] bg-[var(--ai)] text-white"
                 : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta-2)]"
             }`}
           >

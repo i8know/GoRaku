@@ -175,9 +175,9 @@ export default function MangaManageModal({
           <div
             className="mb-4 rounded-xl px-3.5 py-2.5 border text-[12px]"
             style={{
-              background: "rgba(180, 35, 24, 0.08)",
-              borderColor: "rgba(180, 35, 24, 0.3)",
-              color: "#b42318",
+              background: "rgba(185, 60, 34, 0.08)",
+              borderColor: "rgba(185, 60, 34, 0.3)",
+              color: "var(--shu)",
             }}
           >
             {errorMsg}
@@ -195,9 +195,9 @@ export default function MangaManageModal({
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-xl border px-3.5 py-2.5 text-[14px]"
               style={{
-                background: "var(--bg-elevated)",
-                borderColor: "var(--line-strong)",
-                color: "var(--ink)",
+                background: "var(--tsuki)",
+                borderColor: "var(--garis)",
+                color: "var(--tinta)",
               }}
               placeholder="Masukkan judul..."
               required
@@ -214,10 +214,10 @@ export default function MangaManageModal({
                   <button
                     type="button"
                     onClick={handleNaturalSort}
-                    className="rounded-lg border px-2.5 py-1 text-[12px] font-medium hover: opacity-90 transition"
+                    className="rounded-lg border px-2.5 py-1 text-[12px] font-medium hover:opacity-90 transition"
                     style={{
-                      background: "var(--bg-elevated)",
-                      borderColor: "var(--line-strong)",
+                      background: "var(--tsuki)",
+                      borderColor: "var(--garis)",
                     }}
                     title="Urutkan kembali secara natural sort (halaman 2 sebelum halaman 10)"
                   >
@@ -228,8 +228,8 @@ export default function MangaManageModal({
                     onClick={handleReverseOrder}
                     className="rounded-lg border px-2.5 py-1 text-[12px] font-medium hover:opacity-90 transition"
                     style={{
-                      background: "var(--bg-elevated)",
-                      borderColor: "var(--line-strong)",
+                      background: "var(--tsuki)",
+                      borderColor: "var(--garis)",
                     }}
                     title="Balikkan urutan halaman dari akhir ke awal"
                   >
@@ -243,8 +243,8 @@ export default function MangaManageModal({
                 <div
                   className="md:col-span-2 rounded-xl border overflow-y-auto max-h-64 divide-y"
                   style={{
-                    background: "var(--surface)",
-                    borderColor: "var(--line)",
+                    background: "var(--panel)",
+                    borderColor: "var(--garis)",
                   }}
                 >
                   {pages.map((pageName, idx) => {
@@ -255,7 +255,7 @@ export default function MangaManageModal({
                         className="flex items-center justify-between gap-2 px-3 py-2 text-[12.5px] cursor-pointer transition-colors"
                         style={{
                           background: isSelected
-                            ? "var(--accent-soft)"
+                            ? "rgba(38, 72, 122, 0.1)"
                             : "transparent",
                         }}
                         onClick={() => setPreviewIndex(idx)}
@@ -266,9 +266,9 @@ export default function MangaManageModal({
                             style={{
                               background:
                                 idx === 0
-                                  ? "var(--accent)"
-                                  : "var(--bg-elevated)",
-                              color: idx === 0 ? "#fff" : "var(--ink-2)",
+                                  ? "var(--ai)"
+                                  : "var(--tsuki)",
+                              color: idx === 0 ? "#fff" : "var(--tinta-2)",
                             }}
                             title={
                               idx === 0
@@ -288,8 +288,8 @@ export default function MangaManageModal({
                             <span
                               className="text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0"
                               style={{
-                                background: "var(--bg-elevated)",
-                                color: "var(--accent)",
+                                background: "var(--tsuki)",
+                                color: "var(--ai)",
                               }}
                             >
                               Sampul
@@ -306,7 +306,7 @@ export default function MangaManageModal({
                               type="button"
                               onClick={() => movePage(idx, 0)}
                               className="px-1.5 py-0.5 rounded border text-[10px] hover:opacity-80"
-                              style={{ borderColor: "var(--line-strong)" }}
+                              style={{ borderColor: "var(--garis)" }}
                               title="Jadikan halaman pertama (Sampul)"
                             >
                               Ke #1
@@ -317,7 +317,7 @@ export default function MangaManageModal({
                             disabled={idx === 0}
                             onClick={() => movePage(idx, idx - 1)}
                             className="w-6 h-6 rounded border flex items-center justify-center disabled:opacity-30"
-                            style={{ borderColor: "var(--line-strong)" }}
+                            style={{ borderColor: "var(--garis)" }}
                             aria-label={`Pindah halaman ${idx + 1} ke atas`}
                             title="Geser ke atas"
                           >
@@ -328,7 +328,7 @@ export default function MangaManageModal({
                             disabled={idx === pages.length - 1}
                             onClick={() => movePage(idx, idx + 1)}
                             className="w-6 h-6 rounded border flex items-center justify-center disabled:opacity-30"
-                            style={{ borderColor: "var(--line-strong)" }}
+                            style={{ borderColor: "var(--garis)" }}
                             aria-label={`Pindah halaman ${idx + 1} ke bawah`}
                             title="Geser ke bawah"
                           >
@@ -344,20 +344,20 @@ export default function MangaManageModal({
                 <div
                   className="rounded-xl border p-3 flex flex-col items-center justify-center min-h-[180px] text-center"
                   style={{
-                    background: "var(--bg-elevated)",
-                    borderColor: "var(--line)",
+                    background: "var(--tsuki)",
+                    borderColor: "var(--garis)",
                   }}
                 >
                   {previewIndex === null ? (
                     <p
                       className="text-[12px] px-2"
-                      style={{ color: "var(--ink-3)" }}
+                      style={{ color: "var(--tinta-2)" }}
                     >
                       Klik salah satu baris halaman di samping untuk melihat
                       pratinjau gambarnya secara malas (lazy).
                     </p>
                   ) : previewLoading ? (
-                    <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+                    <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
                       Memuat pratinjau halaman #{previewIndex + 1}...
                     </p>
                   ) : previewUrl ? (
@@ -366,17 +366,17 @@ export default function MangaManageModal({
                         src={previewUrl}
                         alt={`Pratinjau halaman ${previewIndex + 1}`}
                         className="max-h-48 w-auto object-contain rounded border"
-                        style={{ borderColor: "var(--line)" }}
+                        style={{ borderColor: "var(--garis)" }}
                       />
                       <span
                         className="text-[11px] font-mono truncate max-w-full"
-                        style={{ color: "var(--ink-3)" }}
+                        style={{ color: "var(--tinta-2)" }}
                       >
                         Hal. {previewIndex + 1}: {pages[previewIndex]}
                       </span>
                     </div>
                   ) : (
-                    <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+                    <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
                       Pratinjau tidak tersedia.
                     </p>
                   )}
