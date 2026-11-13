@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
 :root {
@@ -482,18 +481,18 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   position: relative;
   overflow-x: hidden;
 }
-/* Landing nav — Floating Pill (Aizome). Token dibatasi pada .landing-nav */
+/* Landing nav — Floating Pill (Aizome). Token mewarisi src/aizome.css */
 .landing-nav {
-  --nav-kon: #12284A;
-  --nav-ai-tua: #17406A;
-  --nav-ai: #1F5C85;
-  --nav-mizu: #BCD6E2;
-  --nav-tsukishiro: #EDF2F5;
-  --nav-shu: #B93C22;
+  --nav-kon: var(--kon);
+  --nav-ai-tua: var(--ai-tua);
+  --nav-ai: var(--ai);
+  --nav-mizu: var(--mizu);
+  --nav-tsukishiro: var(--tsuki);
+  --nav-shu: var(--shu);
   --nav-link: #DCE9F0;
   --nav-gradient: linear-gradient(90deg, var(--nav-kon) 0%, var(--nav-ai-tua) 55%, var(--nav-ai) 100%);
-  --nav-font-serif: "Shippori Mincho", "Noto Serif JP", serif;
-  --nav-font-sans: "Zen Kaku Gothic New", "DM Sans", system-ui, sans-serif;
+  --nav-font-serif: var(--font-serif);
+  --nav-font-sans: var(--font-sans);
 
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
@@ -658,7 +657,9 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   .landing-nav,
   .lnav-links a,
   .lnav-panel,
-  .lnav-panel[data-open="true"] { transition: none; }
+  .lnav-panel[data-open="true"],
+  .landing-card { transition: none; }
+  .landing-card:hover { transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   html:has(.landing) { scroll-behavior: smooth; }
@@ -807,7 +808,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   border-radius: 14px;
   padding: 24px;
   background: var(--panel);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, box-shadow 0.22s ease;
   position: relative;
   overflow: hidden;
 }

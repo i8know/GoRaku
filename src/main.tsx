@@ -1,28 +1,41 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import ProtectedLayout from './components/Layout'
 import PageTransition from './components/PageTransition'
 import ToastContainer from './components/ToastContainer'
 import LandingPage from './pages/Landing'
-import LoginPage from './pages/LoginPage'
-import DecksPage from './pages/Decks'
-import DeckDetailPage from './pages/DeckDetail'
-import ReviewPage from './pages/Review'
-import MiningPage from './pages/Mining'
-import LibraryPage from './pages/Library'
-import ReaderPage from './pages/Reader'
-import MangaReaderPage from './pages/MangaReader'
-import ProgressPage from './pages/Progress'
-import ProfilePage from './pages/Profile'
-import SettingsPage from './pages/Settings'
-import ExamPage from './pages/Exam'
-import LicenseAttributionPage from './pages/LicenseAttribution'
-import App from './App'
 import './aizome.css'
 import './index.css'
 import { useToastStore } from './store/useToastStore'
+
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const App = lazy(() => import('./App'))
+const DecksPage = lazy(() => import('./pages/Decks'))
+const DeckDetailPage = lazy(() => import('./pages/DeckDetail'))
+const ReviewPage = lazy(() => import('./pages/Review'))
+const MiningPage = lazy(() => import('./pages/Mining'))
+const LibraryPage = lazy(() => import('./pages/Library'))
+const ReaderPage = lazy(() => import('./pages/Reader'))
+const MangaReaderPage = lazy(() => import('./pages/MangaReader'))
+const ProgressPage = lazy(() => import('./pages/Progress'))
+const ProfilePage = lazy(() => import('./pages/Profile'))
+const SettingsPage = lazy(() => import('./pages/Settings'))
+const ExamPage = lazy(() => import('./pages/Exam'))
+const LicenseAttributionPage = lazy(() => import('./pages/LicenseAttribution'))
+
+function RouteFallback() {
+  return (
+    <div
+      className="app-shell grid place-items-center min-h-dvh px-4 text-sm text-[var(--tinta-2)]"
+      role="status"
+      aria-live="polite"
+    >
+      Memuat halaman…
+    </div>
+  );
+}
 
 function AppRoutes() {
   const notify = useToastStore((s) => s.notify);
@@ -33,8 +46,10 @@ function AppRoutes() {
       : 'protected-app';
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={topGroupKey}>
+    <MotionConfig reducedMotion="user">
+      <Suspense fallback={<RouteFallback />}>
+        <AnimatePresence mode="wait" initial={false}>
+          <Routes location={location} key={topGroupKey}>
         {/* Public Routes */}
         <Route
           path="/"
@@ -80,7 +95,9 @@ function AppRoutes() {
           }
         />
       </Routes>
-    </AnimatePresence>
+        </AnimatePresence>
+      </Suspense>
+    </MotionConfig>
   );
 }
 
