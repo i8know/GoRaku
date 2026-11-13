@@ -25,7 +25,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
   const [statusFilter, setStatusFilter] = useState<(typeof statusFilters)[number]>("Semua");
   const [sort, setSort] = useState<(typeof sorts)[number]>("Jatuh tempo");
   const [q, setQ] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [importOpen, setImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -649,9 +649,9 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                         onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
                       >
                         {s.due > 0 ? (
-                          <>Belajar {children.length > 0 ? "Semua" : "sekarang"} <Icon name="arrow" size={16} /></>
+                          <>Belajar {children.length > 0 ? "Semua" : "sekarang"}</>
                         ) : (
-                          <>Buka deck <Icon name="arrow" size={16} /></>
+                          <>Buka deck</>
                         )}
                       </Button>
                     )}

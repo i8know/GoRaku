@@ -417,7 +417,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                                 {subChildren.length} Sub-deck
                               </span>
                             )}
-                            <small style={{ color: "#777" }}>{sub.total.toLocaleString("id-ID")} kartu</small>
+                            <small style={{ color: "var(--tinta-2)" }}>{sub.total.toLocaleString("id-ID")} kartu</small>
                           </div>
                         </div>
                       </div>
@@ -443,7 +443,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                             {subSt.reviewDue}
                           </span>
                         </div>
-                        <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--hot)" : "#777" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: subSt.due > 0 ? "var(--shu)" : "var(--tinta-2)" }}>
                           {subSt.due > 0 ? `${subSt.due} tugas` : "✓ Tuntas"}
                         </span>
                       </div>
@@ -463,7 +463,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                             onClick={() => navigate(`/deck/${sub.id}`)}
                             title="Buka sub-deck di dalamnya"
                           >
-                            Buka Sub-deck →
+                            Buka Sub-deck
                           </Button>
                         )}
                       </div>

@@ -941,13 +941,13 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                 )}
 
                 {destMode === "new" && parsed.hierarchy?.hasSubdecks && (
-                  <section className="imp-panel" style={{ background: "#fcfaf7", border: "1px solid #d9d2c5" }}>
+                  <section className="imp-panel" style={{ background: "var(--tsuki)", border: "1px solid var(--garis)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "8px" }}>
                       <div>
                         <h4 style={{ margin: 0, fontSize: "13px", color: "var(--kon)", display: "flex", alignItems: "center", gap: "6px" }}>
                           <Icon name="cards" size={15} /> Struktur Sub-deck (Revolusi Anki)
                         </h4>
-                        <small style={{ color: "#6e685f", fontSize: "11px", display: "block", marginTop: "2px" }}>
+                        <small style={{ color: "var(--tinta-2)", fontSize: "11px", display: "block", marginTop: "2px" }}>
                           {parsed.hierarchy.strategy === "anki-subdecks"
                             ? `Ditemukan ${parsed.hierarchy.groups.length} sub-deck di dalam paket Anki ini.`
                             : `Ditemukan ${parsed.hierarchy.groups.length} tingkatan level JLPT (N5–N1) dari tag kartu.`}
@@ -962,7 +962,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
 
                     {splitIntoSubdecks ? (
                       <div style={{ marginTop: "10px" }}>
-                        <p style={{ fontSize: "11px", color: "#544e45", margin: "0 0 8px 0" }}>
+                        <p style={{ fontSize: "11px", color: "var(--tinta-2)", margin: "0 0 8px 0" }}>
                           Kartu otomatis dipisah ke sub-deck masing-masing (mis. <b>N5 hanya di sub-deck N5</b>, <b>N4 di sub-deck N4</b>):
                         </p>
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -975,7 +975,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                                 justifyContent: "space-between",
                                 padding: "7px 10px",
                                 background: "var(--panel)",
-                                border: "1px solid #e5e0d5",
+                                border: "1px solid var(--garis)",
                                 borderRadius: "8px",
                               }}
                             >
@@ -1004,13 +1004,13 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                                     fontWeight: 700,
                                     padding: "2px 6px",
                                     borderRadius: "4px",
-                                    background: "#e8efec",
+                                    background: "rgba(180, 201, 219, 0.28)",
                                     color: "var(--kon)",
                                   }}
                                 >
                                   {g.levelCode}
                                 </span>
-                                <span style={{ fontSize: "11px", fontWeight: 600, color: "#6e685f" }}>
+                                <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--tinta-2)" }}>
                                   {g.noteCount.toLocaleString("id-ID")} kartu
                                 </span>
                               </div>
@@ -1019,7 +1019,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                         </div>
                       </div>
                     ) : (
-                      <p style={{ fontSize: "11px", color: "#8a8479", margin: "6px 0 0" }}>
+                      <p style={{ fontSize: "11px", color: "var(--tinta-2)", margin: "6px 0 0" }}>
                         Mode gabung: Semua {selectedNotesCount.toLocaleString("id-ID")} kartu akan digabung menjadi satu deck tunggal tanpa sub-deck.
                       </p>
                     )}
@@ -1373,11 +1373,11 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
               )}
 
               {result.subdecksCreated && result.subdecksCreated.length > 0 && (
-                <div style={{ marginTop: "14px", padding: "10px 14px", background: "#f5f8f6", border: "1px solid #d2ded7", borderRadius: "10px", fontSize: "12px", color: "var(--kon)", textAlign: "left" }}>
+                <div style={{ marginTop: "14px", padding: "10px 14px", background: "var(--tsuki)", border: "1px solid var(--garis)", borderRadius: "10px", fontSize: "12px", color: "var(--kon)", textAlign: "left" }}>
                   <strong>Terbagi ke dalam {result.subdecksCreated.length} sub-deck:</strong>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
                     {result.subdecksCreated.map((s) => (
-                      <span key={s.id} style={{ background: "#e8efec", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600 }}>
+                      <span key={s.id} style={{ background: "rgba(180, 201, 219, 0.28)", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600 }}>
                         {s.subdeckName} ({s.total.toLocaleString("id-ID")} kartu)
                       </span>
                     ))}
@@ -1389,7 +1389,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                   Kembali ke Koleksi Deck
                 </Button>
                 <Button className="pg-primary" onClick={() => onStudy(result.deckId)}>
-                  Mulai Belajar Sekarang <Icon name="arrow" size={16} />
+                  Mulai Belajar Sekarang
                 </Button>
               </div>
             </div>

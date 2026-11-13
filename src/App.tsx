@@ -66,24 +66,35 @@ const JP_MONTHS = [
   "十二月",
 ] as const;
 
-const ID_DAYS = [
-  "MINGGU",
-  "SENIN",
-  "SELASA",
-  "RABU",
-  "KAMIS",
-  "JUMAT",
-  "SABTU",
+const JP_WEEKDAYS = [
+  "日曜日",
+  "月曜日",
+  "火曜日",
+  "水曜日",
+  "木曜日",
+  "金曜日",
+  "土曜日",
 ] as const;
 
+function toKanjiDay(n: number): string {
+  const digits = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  if (n <= 9) return digits[n];
+  if (n === 10) return "十";
+  if (n < 20) return `十${digits[n - 10]}`;
+  if (n === 20) return "二十";
+  if (n < 30) return `二十${digits[n - 20]}`;
+  if (n === 30) return "三十";
+  return `三十${digits[n - 30]}`;
+}
+
 const WEEK_DATA = [
-  { label: "S", full: "Senin", pct: 62, mins: 28, cards: 34 },
-  { label: "S", full: "Selasa", pct: 40, mins: 18, cards: 22 },
-  { label: "R", full: "Rabu", pct: 82, mins: 38, cards: 49 },
-  { label: "K", full: "Kamis", pct: 52, mins: 24, cards: 29 },
-  { label: "J", full: "Jumat", pct: 94, mins: 45, cards: 61 },
-  { label: "S", full: "Sabtu", pct: 32, mins: 15, cards: 19 },
-  { label: "M", full: "Minggu", pct: 68, mins: 32, cards: 40 },
+  { label: "月", full: "Senin", pct: 62, mins: 28, cards: 34 },
+  { label: "火", full: "Selasa", pct: 40, mins: 18, cards: 22 },
+  { label: "水", full: "Rabu", pct: 82, mins: 38, cards: 49 },
+  { label: "木", full: "Kamis", pct: 52, mins: 24, cards: 29 },
+  { label: "金", full: "Jumat", pct: 94, mins: 45, cards: 61 },
+  { label: "土", full: "Sabtu", pct: 32, mins: 15, cards: 19 },
+  { label: "日", full: "Minggu", pct: 68, mins: 32, cards: 40 },
 ] as const;
 
 export default function App() {
@@ -107,23 +118,21 @@ export default function App() {
   }, []);
 
   const now = new Date();
-  const jpMonth = JP_MONTHS[now.getMonth()];
-  const dayNumber = now.getDate();
-  const idDayName = ID_DAYS[now.getDay()];
+  const jpDateVertical = `${JP_MONTHS[now.getMonth()]}${toKanjiDay(now.getDate())}日 ${JP_WEEKDAYS[now.getDay()]}`;
   const todayWeekIdx = (now.getDay() + 6) % 7; // 0 = Senin .. 6 = Minggu
 
   const greetingInfo = useMemo(() => {
     const h = new Date().getHours();
     if (h >= 4 && h < 11) {
-      return { id: "SELAMAT PAGI", jp: "おはようございます" };
+      return { id: "Selamat pagi", jp: "おはようございます" };
     }
     if (h >= 11 && h < 15) {
-      return { id: "SELAMAT SIANG", jp: "こんにちは" };
+      return { id: "Selamat siang", jp: "こんにちは" };
     }
     if (h >= 15 && h < 18) {
-      return { id: "SELAMAT SORE", jp: "こんにちは" };
+      return { id: "Selamat sore", jp: "こんにちは" };
     }
-    return { id: "SELAMAT MALAM", jp: "こんばんは" };
+    return { id: "Selamat malam", jp: "こんばんは" };
   }, []);
 
   const stats = useMemo(() => {
@@ -196,92 +205,58 @@ export default function App() {
 
   return (
     <>
-      <section className="welcome">
-        <div>
-          <p className="eyebrow">
-            {greetingInfo.id}, {user?.name.toUpperCase()} • {greetingInfo.jp}
-          </p>
-          <h1>Lanjutkan perjalananmu,<br /><span>一歩ずつ。</span></h1>
-          <p className="welcome-copy">Sedikit setiap hari, lebih dekat menuju kefasihan.</p>
+      <section className="beranda-hero">
+        <div className="beranda-hero-top">
+          <div>
+            <p className="beranda-hero-kicker" lang="ja">
+              {greetingInfo.jp}
+            </p>
+            <h1>
+              {greetingInfo.id}, {user?.name || "Pelajar"}
+            </h1>
+            <p className="beranda-hero-sub">
+              Sedikit setiap hari, lebih dekat menuju kefasihan.
+            </p>
+          </div>
+          <div className="beranda-date-vert" lang="ja" title="Tanggal hari ini">
+            {jpDateVertical}
+          </div>
         </div>
-        <div className="date-stamp" title="Tanggal hari ini">
-          <span>{jpMonth}</span>
-          <strong>{dayNumber}</strong>
-          <small>{idDayName}</small>
+
+        <div className="beranda-hero-stats">
+          <div>
+            <strong>{totalDue > 0 ? totalDue : 0}</strong>
+            <span>kartu menunggu</span>
+          </div>
+          <div>
+            <strong>~{Math.max(5, Math.round(totalDue * 0.4))}</strong>
+            <span>menit estimasi</span>
+          </div>
+          <div>
+            <strong>87%</strong>
+            <span>retensi</span>
+          </div>
         </div>
-      </section>
 
-      <section className="overview-grid">
-        <article className="review-card">
-          <div className="review-top">
-            <div><p className="eyebrow light">SESI HARI INI</p><h2>Siap untuk mengingat?</h2></div>
-            <div className="ensō">復</div>
-          </div>
-          <div className="review-stats">
-            <div><strong>{totalDue > 0 ? totalDue : 0}</strong><span>kartu menunggu</span></div>
-            <div><strong>~{Math.max(5, Math.round(totalDue * 0.4))}</strong><span>menit estimasi</span></div>
-            <div><strong>87%</strong><span>retensi</span></div>
-          </div>
-          <Button className="primary-light" onClick={handleStartReview}>
-            Mulai sesi review <Icon name="arrow" size={18} />
-          </Button>
-        </article>
-
-        <article className="week-card">
-          <div className="section-heading compact">
-            <div>
-              <p className="eyebrow">RITME BELAJAR</p>
-              <h3>Minggu ini</h3>
-            </div>
-            <span className="goal">
-              {activeDayStat.full}: {activeDayStat.cards} kartu
-            </span>
-          </div>
-          <div className="week-bars">
-            {WEEK_DATA.map((d, i) => {
-              const isSelected = (hoveredDay ?? todayWeekIdx) === i;
-              return (
-                <div
-                  className="day cursor-pointer"
-                  key={i}
-                  onMouseEnter={() => setHoveredDay(i)}
-                  onMouseLeave={() => setHoveredDay(null)}
-                  onClick={() => setHoveredDay(i)}
-                  title={`${d.full}: ${d.mins} menit • ${d.cards} kartu`}
-                >
-                  <div className="bar">
-                    <i
-                      style={{
-                        height: `${d.pct}%`,
-                        background: isSelected ? "var(--kon)" : undefined,
-                      }}
-                    />
-                  </div>
-                  <span style={{ fontWeight: isSelected ? 700 : 400, color: isSelected ? "var(--kon)" : undefined }}>
-                    {d.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <p className="week-note">
-            <Icon name="flame" size={16} />{" "}
-            <span>
-              {activeDayStat.full}: belajar <strong>{activeDayStat.mins} menit</strong> ({activeDayStat.cards} kartu diulas)
-            </span>
-          </p>
-        </article>
+        <button type="button" className="beranda-seal-cta" onClick={handleStartReview}>
+          <span className="beranda-seal-stamp" lang="ja" aria-hidden="true">
+            復
+          </span>
+          <span>Mulai sesi review</span>
+        </button>
       </section>
 
       <section className="section">
         <div className="section-heading">
-          <div><p className="eyebrow">KOLEKSI PRIBADI</p><h2>Deck belajarmu</h2></div>
+          <div>
+            <h2>Deck belajarmu</h2>
+          </div>
           <div className="dk-head-actions">
-            <Button className="outline-button dk-import-btn" onClick={() => setModal("import")}><Icon name="upload" size={15} /> Impor .apkg</Button>
-            <Button className="text-button" onClick={() => setModal("deck")}><Icon name="plus" size={17} /> Buat deck baru</Button>
+            <Button className="outline-button dk-import-btn" onClick={() => setModal("import")}><Icon name="upload" size={16} /> Impor .apkg</Button>
+            <Button className="pg-primary" onClick={() => setModal("deck")}><Icon name="plus" size={17} /> Buat deck baru</Button>
           </div>
         </div>
-        <div className="deck-grid">
+        <div className="beranda-deck-rows">
           {rootDecks.map((deck) => {
             const s = st(deck);
             const imported = deck.source === "apkg";
@@ -297,74 +272,79 @@ export default function App() {
             const isExpanded = expandedDeckId === deck.id;
             const toggleDeckExpand = () =>
               setExpandedDeckId((prev) => (prev === deck.id ? null : deck.id));
+            const kanjiTone =
+              deck.color === "indigo" ? "" : deck.color === "sage" ? "ai" : "ai-tua";
 
             return (
-              <article className={`deck-card dk-card ${isExpanded ? "is-expanded" : ""}`} key={deck.id}>
-                <div
-                  className={`deck-art ${deck.color} cursor-pointer`}
-                  onClick={() => {
-                    if (displaySubdecks.length > 0) {
-                      toggleDeckExpand();
-                    } else {
-                      navigate(`/deck/${deck.id}`);
-                    }
-                  }}
-                  title={
-                    displaySubdecks.length > 0
-                      ? isExpanded
-                        ? "Tutup sub-deck"
-                        : "Tekan untuk melihat sub-deck"
-                      : `Buka dashboard ${deck.title}`
-                  }
-                >
-                  <span>{deck.kanji}</span><i />
-                  {imported && <em className="dk-badge">ANKI</em>}
-                  {displaySubdecks.length > 0 && (
-                    <em
-                      className="dk-badge"
-                      style={{ right: imported ? "56px" : "14px", background: "rgba(38, 61, 54, 0.85)" }}
-                    >
-                      {displaySubdecks.length} SUB-DECK
-                    </em>
-                  )}
-                </div>
-                <div className="deck-body">
-                  <div className="dk-card-top-meta">
-                    <span className="deck-level">{deck.level}</span>
-                    {displaySubdecks.length > 0 && (
-                      <button
-                        type="button"
-                        className={`dk-subdeck-inline-toggle ${isExpanded ? "active" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDeckExpand();
-                        }}
-                        title={isExpanded ? "Tutup daftar sub-deck" : "Tekan untuk melihat sub-deck"}
-                      >
-                        <span>{isExpanded ? "Tutup" : `${displaySubdecks.length} Sub-deck`}</span>
-                        <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={11} />
-                      </button>
-                    )}
-                  </div>
-                  <h3
-                    className="cursor-pointer hover:text-coral transition-colors"
+              <div key={deck.id} className="border-b border-[var(--garis)] last:border-b-0">
+                <article className="beranda-deck-row">
+                  <div
+                    className={`beranda-deck-kanji ${kanjiTone} cursor-pointer`}
+                    lang="ja"
                     onClick={() => {
-                      if (displaySubdecks.length > 0) {
-                        toggleDeckExpand();
-                      } else {
-                        navigate(`/deck/${deck.id}`);
-                      }
+                      if (displaySubdecks.length > 0) toggleDeckExpand();
+                      else navigate(`/deck/${deck.id}`);
                     }}
                   >
-                    {deck.title}
-                  </h3>
-                  <div className="deck-meta">
-                    <span><Icon name="clock" size={15} /> {s.due > 0 ? (imported || displaySubdecks.length > 0 ? `${s.reviewDue} ulasan • ${s.newToday} baru` : `${s.due} jatuh tempo`) : "Selesai hari ini"}</span>
-                    <span>{deck.total.toLocaleString("id-ID")} kartu</span>
+                    {deck.kanji}
                   </div>
-                  <div className="progress"><i style={{ width: `${s.progress}%` }} /></div>
 
-                  {displaySubdecks.length > 0 && isExpanded && (
+                  <div className="beranda-deck-info">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
+                      {imported && (
+                        <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
+                          ANKI
+                        </span>
+                      )}
+                    </div>
+                    <h3
+                      onClick={() => {
+                        if (displaySubdecks.length > 0) toggleDeckExpand();
+                        else navigate(`/deck/${deck.id}`);
+                      }}
+                    >
+                      {deck.title}
+                    </h3>
+                    <div className="beranda-deck-counts">
+                      {s.due > 0 ? (
+                        <>
+                          <span className="is-due">{s.reviewDue} ulasan</span>
+                          <span className="is-new">{s.newToday} baru</span>
+                        </>
+                      ) : (
+                        <span>Selesai hari ini</span>
+                      )}
+                      <span>{deck.total.toLocaleString("id-ID")} kartu</span>
+                    </div>
+                  </div>
+
+                  <div className="beranda-deck-prog-wrap">
+                    <div className="beranda-deck-prog-bar">
+                      <i style={{ width: `${s.progress}%` }} />
+                    </div>
+                    <small>{s.progress}% dikuasai</small>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {displaySubdecks.length > 0 ? (
+                      <Button className="outline-button" onClick={toggleDeckExpand}>
+                        {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
+                        <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
+                      </Button>
+                    ) : (
+                      <Button
+                        className="outline-button"
+                        onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
+                      >
+                        {s.due > 0 ? "Belajar" : "Buka"}
+                      </Button>
+                    )}
+                  </div>
+                </article>
+
+                {displaySubdecks.length > 0 && isExpanded && (
+                  <div className="px-5 pb-4 pt-1 bg-[var(--tsuki)]/50">
                     <div className="dk-card-subdecks-wrap" onClick={(e) => e.stopPropagation()}>
                       <div className="dk-quick-levels">
                         <div className="dk-quick-levels-label">
@@ -422,29 +402,64 @@ export default function App() {
                         })}
                       </div>
                     </div>
-                  )}
-
-                  {displaySubdecks.length > 0 && !isExpanded ? (
-                    <Button
-                      className="deck-open deck-open-ready"
-                      onClick={toggleDeckExpand}
-                    >
-                      Pilih Sub-deck ({displaySubdecks.length}) <Icon name="chevron-down" size={15} />
-                    </Button>
-                  ) : (
-                    <Button
-                      className={`deck-open ${s.due > 0 ? "deck-open-ready" : ""}`}
-                      onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
-                    >
-                      {s.due > 0 ? <>Belajar {displaySubdecks.length > 0 ? "Semua" : "sekarang"} <Icon name="arrow" size={16} /></> : <>Buka deck <Icon name="arrow" size={16} /></>}
-                    </Button>
-                  )}
-                </div>
-              </article>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
       </section>
+
+      <article className="week-card">
+        <div className="section-heading compact">
+          <div>
+            <h3>Ritme minggu ini</h3>
+          </div>
+          <span className="goal">
+            {activeDayStat.full}: {activeDayStat.cards} kartu
+          </span>
+        </div>
+        <div className="week-bars">
+          {WEEK_DATA.map((d, i) => {
+            const isToday = i === todayWeekIdx;
+            const isSelected = (hoveredDay ?? todayWeekIdx) === i;
+            return (
+              <div
+                className={`day cursor-pointer${isToday ? " is-today" : ""}`}
+                key={i}
+                onMouseEnter={() => setHoveredDay(i)}
+                onMouseLeave={() => setHoveredDay(null)}
+                onClick={() => setHoveredDay(i)}
+                title={`${d.full}: ${d.mins} menit • ${d.cards} kartu`}
+              >
+                <div className="bar">
+                  <i
+                    style={{
+                      height: `${d.pct}%`,
+                      background: isToday ? "var(--shu)" : isSelected ? "var(--kon)" : undefined,
+                    }}
+                  />
+                </div>
+                <span
+                  lang="ja"
+                  style={{
+                    fontWeight: isToday || isSelected ? 700 : 500,
+                    color: isToday ? "var(--shu)" : isSelected ? "var(--kon)" : undefined,
+                  }}
+                >
+                  {d.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="week-note">
+          <Icon name="flame" size={16} />{" "}
+          <span>
+            {activeDayStat.full}: belajar <strong>{activeDayStat.mins} menit</strong> ({activeDayStat.cards} kartu diulas)
+          </span>
+        </p>
+      </article>
 
       <section className="mining-section">
         <div className="section-heading">
@@ -471,7 +486,7 @@ export default function App() {
               <div className="source-copy">
                 <span>{source.type}</span>
                 <h3
-                  className="cursor-pointer hover:text-[#c4543f] transition-colors"
+                  className="cursor-pointer hover:text-[var(--ai)] transition-colors"
                   onClick={() => navigate(source.targetPath)}
                 >
                   {source.title}
@@ -485,7 +500,8 @@ export default function App() {
                     type="button"
                     onClick={() => speakJapanese(source.sentence)}
                     title="Dengarkan pengucapan kalimat"
-                    className="rounded-md p-1 text-[var(--tinta-2)] hover:text-[#c4543f] transition-colors shrink-0"
+                    aria-label="Dengarkan pengucapan kalimat"
+                    className="rounded-md p-1 text-[var(--tinta-2)] hover:text-[var(--ai)] transition-colors shrink-0"
                   >
                     <Icon name="volume" size={14} />
                   </button>

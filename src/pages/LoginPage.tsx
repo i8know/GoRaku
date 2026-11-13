@@ -57,7 +57,7 @@ export default function LoginPage() {
           <Button className="outline-button" onClick={() => login("Akira", "akira@github.com")}>GitHub</Button>
         </div>
 
-        <Link to="/" className="auth-back">← Kembali</Link>
+        <Link to="/" className="auth-back">Kembali ke beranda</Link>
       </div>
     </div>
   );
