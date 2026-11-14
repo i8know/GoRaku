@@ -23,6 +23,11 @@ import {
   getAllReviewLogs,
   getCardReviewLogs,
 } from "../deckDb";
+import {
+  exportScheduleBackup,
+  exportScheduleBackupJson,
+  importScheduleBackup,
+} from "../scheduleBackup";
 import { useAppStore, type DeckItem } from "../../store/useAppStore";
 import { newCardsLeftToday, useReviewStore } from "../../store/useReviewStore";
 
@@ -489,5 +494,196 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     );
     expect(Array.isArray(reviewProjection)).toBe(true);
     expect(reviewProjection).toHaveLength(5);
+  });
+
+  it("Tahap 5: exports schedule backup JSON, rejects corrupt payloads without mutating data, and imports with or without reviewLogs", async () => {
+    const deckId = "deck-backup";
+    const now = new Date(2026, 4, 10, 14, 0, 0, 0);
+
+    useReviewStore
+      .getState()
+      .reviewCardAction(deckId, "card-a", 4, { now, fuzz: false });
+    useReviewStore
+      .getState()
+      .reviewCardAction(deckId, "card-b", 5, { now, fuzz: false });
+    await flushReviewLogs();
+
+    const snapshotCards = JSON.parse(
+      JSON.stringify(useReviewStore.getState().srsCards),
+    );
+    const snapshotLogs = await getAllReviewLogs();
+    expect(snapshotLogs).toHaveLength(2);
+
+    const exportedJson = await exportScheduleBackupJson();
+
+    // 1. Corrupt JSON string is rejected and does NOT mutate existing store or logs
+    await expect(importScheduleBackup("{corrupt-json")).rejects.toThrow();
+    expect(useReviewStore.getState().srsCards).toEqual(snapshotCards);
+    expect(await getAllReviewLogs()).toHaveLength(2);
+
+    // 2. Malformed card structure is rejected without mutating existing store or logs
+    await expect(
+      importScheduleBackup({
+        reviewStorage: {
+          srsCards: {
+            [deckId]: {
+              "card-bad": { id: "card-bad", easeFactor: "not-a-number" },
+            },
+          },
+        },
+      }),
+    ).rejects.toThrow();
+    expect(useReviewStore.getState().srsCards).toEqual(snapshotCards);
+    expect(await getAllReviewLogs()).toHaveLength(2);
+
+    // 3. Clear state & logs, then restore from valid exported JSON
+    useReviewStore.setState({ srsCards: {}, newIntroduced: {}, activity: {} });
+    await clearAllReviewLogs();
+    await flushReviewLogs();
+    expect(await getAllReviewLogs()).toHaveLength(0);
+
+    const imported = await importScheduleBackup(exportedJson);
+    expect(imported).toEqual({ cardsCount: 2, logsCount: 2 });
+    expect(useReviewStore.getState().srsCards).toEqual(snapshotCards);
+    expect(await getAllReviewLogs()).toHaveLength(2);
+
+    // 4. Backup without reviewLogs field still succeeds
+    const backupObj = await exportScheduleBackup();
+    delete backupObj.reviewLogs;
+    useReviewStore.setState({ srsCards: {}, newIntroduced: {}, activity: {} });
+    const importedNoLogs = await importScheduleBackup(backupObj);
+    expect(importedNoLogs.cardsCount).toBe(2);
+    expect(importedNoLogs.logsCount).toBe(0);
+    expect(useReviewStore.getState().srsCards).toEqual(snapshotCards);
+  });
+
+  it("Verifikasi akhir: multi-day clock simulation (Day 1 quota -> Day 2 due at 04:00 + Day 2 quota) with Undo across new/Hard/Again/drill", async () => {
+    const deckId = "deck-e2e";
+    const deck: DeckItem = {
+      id: deckId,
+      title: "E2E Deck",
+      sub: "Sub",
+      level: "N3",
+      kind: "Kosakata",
+      total: 10,
+      due: 0,
+      newToday: 3,
+      color: "#335",
+      kanji: "語",
+      progress: 0,
+    };
+    const settings = {
+      newCards: 3,
+      maxReview: 50,
+      dayStartHour: 4,
+      desiredRetention: 0.9,
+    };
+    useAppStore.getState().updateSettings(settings);
+    useAppStore.getState().setDeckLimits(deckId, null);
+
+    // Day 1 at 22:30 local
+    const day1Night = new Date(2026, 4, 10, 22, 30, 0, 0);
+    const statsStart = liveDeckStats(
+      deck,
+      useReviewStore.getState().srsCards[deckId],
+      useReviewStore.getState().newIntroduced[deckId],
+      settings,
+      day1Night,
+    );
+    expect(statsStart.newToday).toBe(3);
+    expect(statsStart.reviewDue).toBe(0);
+    expect(statsStart.due).toBe(3);
+
+    // Grade 3 new cards: c-1 Again (0), c-2 Hard (2), c-3 Good (4)
+    const c1AfterAgain = useReviewStore
+      .getState()
+      .reviewCardAction(deckId, "c-1", 0, {
+        now: day1Night,
+        fuzz: false,
+        dayStartHour: 4,
+      });
+    useReviewStore.getState().reviewCardAction(deckId, "c-2", 2, {
+      now: day1Night,
+      fuzz: false,
+      dayStartHour: 4,
+    });
+    useReviewStore.getState().reviewCardAction(deckId, "c-3", 4, {
+      now: day1Night,
+      fuzz: false,
+      dayStartHour: 4,
+    });
+    await flushReviewLogs();
+
+    // In-session drill on c-1 (re-queued after Lupa) -> does not change state or logs, and Undo of drill is a no-op
+    useReviewStore.getState().reviewCardAction(deckId, "c-1", 4, {
+      now: day1Night,
+      fuzz: false,
+      dayStartHour: 4,
+      drill: true,
+    });
+    useReviewStore
+      .getState()
+      .restoreCardState(deckId, "c-1", c1AfterAgain, false, {
+        now: day1Night,
+        dayStartHour: 4,
+        drill: true,
+      });
+    await flushReviewLogs();
+    expect(useReviewStore.getState().srsCards[deckId]["c-1"]).toEqual(
+      c1AfterAgain,
+    );
+    expect(await getAllReviewLogs()).toHaveLength(3);
+
+    // Undo normal new card c-3 -> frees 1 new quota today, then re-grade c-3
+    useReviewStore
+      .getState()
+      .restoreCardState(deckId, "c-3", undefined, true, {
+        now: day1Night,
+        dayStartHour: 4,
+      });
+    await flushReviewLogs();
+    expect(await getAllReviewLogs()).toHaveLength(2);
+    expect(
+      liveDeckStats(
+        deck,
+        useReviewStore.getState().srsCards[deckId],
+        useReviewStore.getState().newIntroduced[deckId],
+        settings,
+        day1Night,
+      ).newToday,
+    ).toBe(1);
+
+    useReviewStore.getState().reviewCardAction(deckId, "c-3", 4, {
+      now: day1Night,
+      fuzz: false,
+      dayStartHour: 4,
+    });
+    await flushReviewLogs();
+    expect(await getAllReviewLogs()).toHaveLength(3);
+
+    // Still Day 1 at 02:30 AM next calendar day (before 04:00 dayStartHour) -> 0 due, 0 newToday
+    const beforeRollover = new Date(2026, 4, 11, 2, 30, 0, 0);
+    const statsBeforeRollover = liveDeckStats(
+      deck,
+      useReviewStore.getState().srsCards[deckId],
+      useReviewStore.getState().newIntroduced[deckId],
+      settings,
+      beforeRollover,
+    );
+    expect(statsBeforeRollover.newToday).toBe(0);
+    expect(statsBeforeRollover.reviewDue).toBe(0);
+
+    // Day 2 at 04:00 AM (study day rollover!) -> 1-day interval cards are due right at 04:00, and newToday resets to 3
+    const day2Rollover = new Date(2026, 4, 11, 4, 0, 0, 0);
+    const statsDay2 = liveDeckStats(
+      deck,
+      useReviewStore.getState().srsCards[deckId],
+      useReviewStore.getState().newIntroduced[deckId],
+      settings,
+      day2Rollover,
+    );
+    expect(statsDay2.newToday).toBe(3);
+    expect(statsDay2.reviewDue).toBeGreaterThanOrEqual(1);
+    expect(statsDay2.due).toBe(statsDay2.newToday + statsDay2.reviewDue);
   });
 });

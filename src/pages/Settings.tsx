@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import DictionaryManagerModal from "../components/DictionaryManagerModal";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
+import {
+  exportScheduleBackupJson,
+  importScheduleBackup,
+} from "../lib/scheduleBackup";
 
 export default function SettingsPage({ notify }: { notify: (m: string) => void }) {
   const navigate = useNavigate();
@@ -28,6 +32,39 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const [size, setSize] = useState(settings.size);
   const [dictModalOpen, setDictModalOpen] = useState(false);
   const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const importFileRef = useRef<HTMLInputElement | null>(null);
+
+  const handleExportSchedule = async () => {
+    try {
+      const json = await exportScheduleBackupJson();
+      const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `goraku-jadwal-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      notify("Jadwal belajar diekspor sebagai JSON");
+    } catch {
+      notify("Gagal mengekspor jadwal belajar");
+    }
+  };
+
+  const handleImportScheduleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const { cardsCount, logsCount } = await importScheduleBackup(text);
+      notify(`Jadwal berhasil diimpor (${cardsCount} kartu, ${logsCount} log review)`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Berkas jadwal tidak valid";
+      notify(msg);
+    }
+  };
 
   useEffect(() => {
     void listDictionaries().then(setDictionaries).catch(() => {});
@@ -109,6 +146,15 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
 
         <section className="st-card st-danger">
           <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h3>Data &amp; Kamus</h3><p>Kelola kamus Yomitan dan cadangkan koleksimu</p></div></div>
+          <p className="st-note">Data belajar disimpan di peramban ini (localStorage &amp; IndexedDB). Ekspor jadwal secara berkala agar progres tidak hilang saat data situs dibersihkan.</p>
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".json,application/json"
+            style={{ display: "none" }}
+            onChange={(e) => void handleImportScheduleFile(e)}
+            aria-label="Pilih berkas JSON jadwal belajar"
+          />
           <div className="st-actions">
             <Button className="outline-button" onClick={() => navigate("/license")}>
               <Icon name="bookmark" size={16} /> Lisensi &amp; Atribusi Sumber Data
@@ -116,6 +162,8 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
             <Button className="outline-button" onClick={() => setDictModalOpen(true)}>
               <Icon name="book" size={16} /> Kelola Kamus Yomitan ({dictionaries.filter((d) => d.enabled).length})
             </Button>
+            <Button className="outline-button" onClick={() => void handleExportSchedule()}><Icon name="download" size={16} /> Ekspor jadwal belajar (JSON)</Button>
+            <Button className="outline-button" onClick={() => importFileRef.current?.click()}><Icon name="upload" size={16} /> Impor jadwal belajar (JSON)</Button>
             <Button className="outline-button" onClick={() => notify("Deck diekspor sebagai .apkg")}><Icon name="upload" size={16} /> Ekspor deck</Button>
             <Button className="outline-button" onClick={() => notify("Pilih berkas untuk diimpor")}><Icon name="plus" size={16} /> Impor deck</Button>
             <Button className="outline-button warn" onClick={() => notify("Progres belum dihapus — konfirmasi diperlukan")}><Icon name="trash" size={16} /> Reset progres</Button>
