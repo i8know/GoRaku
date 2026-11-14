@@ -25,7 +25,10 @@ function resolveDayStartHour(dayStartHour?: number): number {
   }
 }
 
-export const isMature = (c: SRSCard) => c.repetitions >= 3 || c.interval >= 21;
+export const isMature = (c: SRSCard) =>
+  c.scheduler === "fsrs"
+    ? (c.stability ?? 0) >= 21
+    : c.repetitions >= 3 || c.interval >= 21;
 
 /** Due / progress figures for a deck, computed live from its SRS state. */
 export function liveDeckStats(

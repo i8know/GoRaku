@@ -9,6 +9,20 @@ export interface SRSCard {
   interval: number; // days
   repetitions: number;
   nextReview: number; // Unix timestamp (ms)
+  /** FSRS memory stability in days (optional; present when scheduler === "fsrs"). */
+  stability?: number;
+  /** FSRS difficulty in [1, 10] (optional; present when scheduler === "fsrs"). */
+  difficulty?: number;
+  /** FSRS card state: 0=New, 1=Learning, 2=Review, 3=Relearning. */
+  state?: number;
+  /** Total number of times the card was forgotten (Rating.Again). */
+  lapses?: number;
+  /** Total number of reviews conducted on the card. */
+  reps?: number;
+  /** Epoch timestamp (ms) of the most recent review. */
+  lastReview?: number;
+  /** Identifies cards scheduled by FSRS; cards without this field are legacy SM-2 cards. */
+  scheduler?: "fsrs";
 }
 
 function toMs(now: Date | number = Date.now()): number {

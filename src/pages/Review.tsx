@@ -5,7 +5,8 @@ import { useAppStore } from "../store/useAppStore";
 import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
-import { initCard, isDue, reviewCard, type SRSCard } from "../lib/srs";
+import { initCard, isDue, type SRSCard } from "../lib/srs";
+import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
 import "../decks.css";
@@ -23,6 +24,8 @@ type ReviewCard = {
   audio?: string;
   sentenceAudio?: string;
   image?: string;
+  /** True when re-queued inside the same session after "Lupa" (in-session drill). */
+  isDrill?: boolean;
 };
 
 interface UndoHistoryItem {
@@ -32,6 +35,7 @@ interface UndoHistoryItem {
   prevSrsCard: SRSCard | undefined;
   wasNew: boolean;
   wasRequeued: boolean;
+  wasDrill: boolean;
 }
 
 function formatInterval(days: number) {
@@ -182,7 +186,8 @@ export default function ReviewPage() {
       const currentSrsMap = useReviewStore.getState().srsCards[targetDeckId] ?? {};
       const prevSrsCard = currentSrsMap[card.id];
       const wasNew = !prevSrsCard;
-      const wasRequeued = quality < 3;
+      const wasDrill = Boolean(card.isDrill);
+      const wasRequeued = quality === 0;
 
       setHistory((h) => [
         ...h,
@@ -193,13 +198,14 @@ export default function ReviewPage() {
           prevSrsCard: prevSrsCard ? { ...prevSrsCard } : undefined,
           wasNew,
           wasRequeued,
+          wasDrill,
         },
       ]);
 
-      reviewCardAction(targetDeckId, card.id, quality);
+      reviewCardAction(targetDeckId, card.id, quality, { drill: wasDrill });
       setReviewed((r) => r + 1);
-      // "Lupa" puts the card back at the end of this session, like Anki's relearning step.
-      if (wasRequeued) setQueue((q) => (q ? [...q, card] : q));
+      // "Lupa" puts the card back at the end of this session as a drill (does not alter FSRS state on second pass).
+      if (wasRequeued) setQueue((q) => (q ? [...q, { ...card, isDrill: true }] : q));
       setShowAnswer(false);
       setPos((p) => p + 1);
     },
@@ -210,7 +216,9 @@ export default function ReviewPage() {
     if (history.length === 0 || !deckId) return;
     const last = history[history.length - 1];
     const targetDeckId = last.deckId || deckId;
-    restoreCardState(targetDeckId, last.cardId, last.prevSrsCard, last.wasNew);
+    restoreCardState(targetDeckId, last.cardId, last.prevSrsCard, last.wasNew, {
+      drill: last.wasDrill,
+    });
     if (last.wasRequeued) {
       setQueue((q) => (q && q.length > 0 ? q.slice(0, -1) : q));
     }
@@ -298,6 +306,9 @@ export default function ReviewPage() {
 
   const base = srsCard ?? initCard(card.id);
   const isNewCard = !srsCard;
+  const intervals = previewIntervals(base, Date.now(), {
+    desiredRetention: settings.desiredRetention,
+  });
 
   return (
     <div className="review-container">
@@ -396,7 +407,7 @@ export default function ReviewPage() {
               {GRADES.map((g, i) => (
                 <Button key={g.q} className={`review-btn review-btn-${g.cls}`} onClick={() => answer(g.q)}>
                   <strong>{g.label}</strong>
-                  <small>{g.q < 3 ? "Ulangi lagi" : formatInterval(reviewCard(base, g.q).interval)}</small>
+                  <small>{g.q === 0 ? "Ulangi lagi" : formatInterval(intervals[qualityToRating(g.q)])}</small>
                   <kbd className="rv-kbd">{i + 1}</kbd>
                 </Button>
               ))}

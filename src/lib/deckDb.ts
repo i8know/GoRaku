@@ -1,7 +1,12 @@
-// IndexedDB storage for imported deck content.
-// Deck metadata lives in zustand/localStorage, but card bodies and media blobs
-// are far too large for localStorage (an Anki deck with audio easily exceeds 50 MB).
+// IndexedDB storage for imported deck content and FSRS review logs.
+// Deck metadata lives in zustand/localStorage, but card bodies, media blobs, and reviewLogs
+// live in IndexedDB (managed via Dexie schema versions).
 // Note: IndexedDB is available both on the main thread and inside Web Workers.
+
+import Dexie, { type Table } from "dexie";
+import type { ReviewLogEntry } from "./fsrsScheduler";
+
+export type { ReviewLogEntry };
 
 export interface StoredCard {
   /** Anki note id (stable across re-imports of the same deck). */
@@ -26,28 +31,126 @@ export interface StoredCard {
 export const CARD_BATCH_SIZE = 500;
 
 const DB_NAME = "ma-immersion-decks";
-const DB_VERSION = 1;
 const CARDS = "cards";
 const MEDIA = "media";
 
-let dbPromise: Promise<IDBDatabase> | null = null;
+export class DeckDatabase extends Dexie {
+  reviewLogs!: Table<ReviewLogEntry, number>;
 
-function openDb(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(CARDS)) db.createObjectStore(CARDS);
-      if (!db.objectStoreNames.contains(MEDIA)) db.createObjectStore(MEDIA);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => {
-      dbPromise = null;
-      reject(req.error ?? new Error("IndexedDB tidak tersedia"));
-    };
+  constructor(dbName = DB_NAME) {
+    super(dbName);
+
+    // v0.1 corresponds to native IndexedDB version 1 used by the legacy openDb()
+    this.version(0.1).stores({
+      cards: "",
+      media: "",
+    });
+
+    this.version(1).stores({
+      cards: "",
+      media: "",
+    });
+
+    this.version(2)
+      .stores({
+        cards: "",
+        media: "",
+        reviewLogs: "++id, deckId, cardId, reviewedAt, [deckId+cardId]",
+      })
+      .upgrade(() => {
+        // Safe upgrade: existing cards and media stores remain intact while adding reviewLogs.
+      });
+  }
+}
+
+export const deckDexie = new DeckDatabase();
+
+async function openDb(): Promise<IDBDatabase> {
+  if (!deckDexie.isOpen()) {
+    await deckDexie.open();
+  }
+  return deckDexie.backendDB();
+}
+
+// Serialized promise queue for reviewLogs so synchronous store actions (review + Undo)
+// execute their IndexedDB writes/deletes strictly in order.
+let reviewLogQueue: Promise<unknown> = Promise.resolve();
+
+function enqueueLogOp<T>(fn: () => Promise<T>): Promise<T> {
+  const next = reviewLogQueue.then(fn, fn);
+  reviewLogQueue = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
+
+export function flushReviewLogs(): Promise<void> {
+  return reviewLogQueue.then(() => undefined);
+}
+
+export function appendReviewLog(entry: Omit<ReviewLogEntry, "id">): Promise<number> {
+  return enqueueLogOp(async () => {
+    return deckDexie.reviewLogs.add({ ...entry });
   });
-  return dbPromise;
+}
+
+export function removeLatestReviewLog(deckId: string, cardId: string): Promise<void> {
+  return enqueueLogOp(async () => {
+    const matches = await deckDexie.reviewLogs
+      .where("[deckId+cardId]")
+      .equals([deckId, cardId])
+      .toArray();
+    if (matches.length === 0) return;
+    matches.sort((a, b) => (a.reviewedAt - b.reviewedAt) || ((a.id ?? 0) - (b.id ?? 0)));
+    const latest = matches[matches.length - 1];
+    if (latest?.id !== undefined) {
+      await deckDexie.reviewLogs.delete(latest.id);
+    }
+  });
+}
+
+export function removeCardReviewLogs(deckId: string, cardIds: string[]): Promise<void> {
+  if (cardIds.length === 0) return Promise.resolve();
+  return enqueueLogOp(async () => {
+    const pairs = cardIds.map((cardId) => [deckId, cardId] as [string, string]);
+    await deckDexie.reviewLogs.where("[deckId+cardId]").anyOf(pairs).delete();
+  });
+}
+
+export function removeDeckReviewLogs(deckId: string): Promise<void> {
+  return enqueueLogOp(async () => {
+    await deckDexie.reviewLogs.where("deckId").equals(deckId).delete();
+  });
+}
+
+export async function getAllReviewLogs(): Promise<ReviewLogEntry[]> {
+  await flushReviewLogs();
+  return deckDexie.reviewLogs.orderBy("reviewedAt").toArray();
+}
+
+export async function getCardReviewLogs(cardId: string): Promise<ReviewLogEntry[]> {
+  await flushReviewLogs();
+  const rows = await deckDexie.reviewLogs.where("cardId").equals(cardId).toArray();
+  return rows.sort((a, b) => (a.reviewedAt - b.reviewedAt) || ((a.id ?? 0) - (b.id ?? 0)));
+}
+
+export function clearAllReviewLogs(): Promise<void> {
+  return enqueueLogOp(async () => {
+    await deckDexie.reviewLogs.clear();
+  });
+}
+
+export function replaceAllReviewLogs(entries: ReviewLogEntry[]): Promise<void> {
+  return enqueueLogOp(async () => {
+    await deckDexie.transaction("rw", deckDexie.reviewLogs, async () => {
+      await deckDexie.reviewLogs.clear();
+      if (entries.length > 0) {
+        const sanitized = entries.map(({ id: _id, ...rest }) => rest);
+        await deckDexie.reviewLogs.bulkAdd(sanitized);
+      }
+    });
+  });
 }
 
 /** All keys are prefixed with the deck id so a whole deck can be fetched/deleted with one key range. */
@@ -66,7 +169,7 @@ export function isQuotaError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
   const name = (err as { name?: string }).name ?? "";
   const message = (err as { message?: string }).message ?? "";
-  return name === "QuotaExceededError" || /quota/i.test( name ) || /quota/i.test(message);
+  return name === "QuotaExceededError" || /quota/i.test(name) || /quota/i.test(message);
 }
 
 /** Write a batch of cards in a single IndexedDB readwrite transaction without awaiting per row. */
@@ -225,6 +328,7 @@ export async function deleteDeckData(deckId: string): Promise<void> {
   tx.objectStore(CARDS).delete(deckRange(deckId));
   tx.objectStore(MEDIA).delete(deckRange(deckId));
   await done(tx);
+  await removeDeckReviewLogs(deckId);
 }
 
 export async function storageEstimate(): Promise<{ usage: number; quota: number } | null> {

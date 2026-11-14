@@ -1,6 +1,17 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import { SRSCard, initCard, reviewCard, isDue, getDueCards } from "../lib/srs";
+import { SRSCard, initCard, isDue, getDueCards } from "../lib/srs";
+import {
+  DEFAULT_DESIRED_RETENTION,
+  qualityToRating,
+  scheduleReview,
+} from "../lib/fsrsScheduler";
+import {
+  appendReviewLog,
+  removeCardReviewLogs,
+  removeDeckReviewLogs,
+  removeLatestReviewLog,
+} from "../lib/deckDb";
 import {
   DEFAULT_DAY_START_HOUR,
   normalizeStudyDayKey,
@@ -54,8 +65,33 @@ function resolveDayStartHour(dayStartHour?: number): number {
   }
 }
 
+function resolveDesiredRetention(desiredRetention?: number): number {
+  if (desiredRetention !== undefined) return desiredRetention;
+  try {
+    return useAppStore.getState()?.settings?.desiredRetention ?? DEFAULT_DESIRED_RETENTION;
+  } catch {
+    return DEFAULT_DESIRED_RETENTION;
+  }
+}
+
 const currentStudyDay = (now: Date | number = Date.now(), dayStartHour?: number) =>
   studyDayKey(now, resolveDayStartHour(dayStartHour));
+
+export interface ReviewActionOptions {
+  /** Jika true, pengulangan dalam sesi ("drill"): tidak mengubah status FSRS, tidak menulis log, tidak menambah activity. */
+  drill?: boolean;
+  now?: Date | number;
+  desiredRetention?: number;
+  fuzz?: boolean;
+  dayStartHour?: number;
+}
+
+export interface RestoreCardOptions {
+  /** Jika true, Undo berasal dari penilaian drill dalam sesi sehingga state store & reviewLogs tidak disentuh. */
+  drill?: boolean;
+  now?: Date | number;
+  dayStartHour?: number;
+}
 
 interface ReviewStore {
   srsCards: Record<string, Record<string, SRSCard>>; // deckId -> cardId -> SRSCard
@@ -64,7 +100,12 @@ interface ReviewStore {
   /** Per-deck study activity: last review timestamp and how many cards were graded today. */
   activity: Record<string, DeckActivity>;
   addCardToDeck: (deckId: string, cardId: string) => void;
-  reviewCardAction: (deckId: string, cardId: string, quality: number) => SRSCard;
+  reviewCardAction: (
+    deckId: string,
+    cardId: string,
+    quality: number,
+    opts?: ReviewActionOptions,
+  ) => SRSCard;
   getDueCards: (deckId: string) => SRSCard[];
   getDeckStats: (deckId: string) => { total: number; due: number; learned: number };
   importSchedule: (deckId: string, cards: SRSCard[]) => void;
@@ -76,6 +117,7 @@ interface ReviewStore {
     cardId: string,
     prevCard: SRSCard | undefined,
     wasNew: boolean,
+    opts?: RestoreCardOptions,
   ) => void;
   removeDeck: (deckId: string) => void;
 }
@@ -104,15 +146,35 @@ export const useReviewStore = create<ReviewStore>()(
           };
         });
       },
-      reviewCardAction: (deckId, cardId, quality) => {
-        const now = Date.now();
-        const dayStartHour = resolveDayStartHour();
-        const dayKey = currentStudyDay(now, dayStartHour);
+      reviewCardAction: (deckId, cardId, quality, opts) => {
+        const now = opts?.now !== undefined
+          ? typeof opts.now === "number"
+            ? opts.now
+            : opts.now.getTime()
+          : Date.now();
         const state = get();
         const deckCards = state.srsCards[deckId] || {};
-        const isNew = !deckCards[cardId];
-        const card = deckCards[cardId] || initCard(cardId, now);
-        const updated = reviewCard(card, quality, now, dayStartHour);
+        const existing = deckCards[cardId];
+
+        // Jalur drill (pengulangan kartu gagal di sesi yang sama): tidak mengubah jadwal FSRS,
+        // tidak menulis reviewLogs, dan tidak menambah activity/newIntroduced.
+        if (opts?.drill) {
+          return existing ?? initCard(cardId, now);
+        }
+
+        const dayStartHour = resolveDayStartHour(opts?.dayStartHour);
+        const desiredRetention = resolveDesiredRetention(opts?.desiredRetention);
+        const dayKey = currentStudyDay(now, dayStartHour);
+        const isNew = !existing;
+        const card = existing || initCard(cardId, now);
+        const rating = qualityToRating(quality);
+        const { card: updated, log } = scheduleReview(card, rating, now, {
+          desiredRetention,
+          fuzz: opts?.fuzz,
+          dayStartHour,
+          deckId,
+        });
+
         set((state) => {
           const prev = state.newIntroduced[deckId];
           const count = normalizeStudyDayKey(prev?.date) === dayKey ? prev.count : 0;
@@ -132,6 +194,8 @@ export const useReviewStore = create<ReviewStore>()(
             },
           };
         });
+
+        void appendReviewLog(log);
         return updated;
       },
       getDueCards: (deckId) => {
@@ -142,7 +206,11 @@ export const useReviewStore = create<ReviewStore>()(
         const deckCards = get().srsCards[deckId] || {};
         const cards = Object.values(deckCards);
         const due = cards.filter(isDue).length;
-        const learned = cards.filter((c) => c.repetitions >= 3).length;
+        const learned = cards.filter((c) =>
+          c.scheduler === "fsrs"
+            ? (c.stability ?? 0) >= 21
+            : c.repetitions >= 3 || c.interval >= 21,
+        ).length;
         return { total: cards.length, due, learned };
       },
       importSchedule: (deckId, cards) =>
@@ -155,17 +223,23 @@ export const useReviewStore = create<ReviewStore>()(
             },
           },
         })),
-      forgetCards: (deckId, cardIds) =>
+      forgetCards: (deckId, cardIds) => {
+        if (cardIds.length > 0) {
+          void removeCardReviewLogs(deckId, cardIds);
+        }
         set((state) => {
           const deckCards = state.srsCards[deckId];
           if (!deckCards || cardIds.length === 0) return state;
           const next = { ...deckCards };
           for (const id of cardIds) delete next[id];
           return { srsCards: { ...state.srsCards, [deckId]: next } };
-        }),
-      restoreCardState: (deckId, cardId, prevCard, wasNew) =>
+        });
+      },
+      restoreCardState: (deckId, cardId, prevCard, wasNew, opts) => {
+        if (opts?.drill) return;
+        void removeLatestReviewLog(deckId, cardId);
         set((state) => {
-          const dayKey = currentStudyDay();
+          const dayKey = currentStudyDay(opts?.now, opts?.dayStartHour);
           const deckCards = { ...(state.srsCards[deckId] || {}) };
           if (prevCard) {
             deckCards[cardId] = prevCard;
@@ -198,20 +272,23 @@ export const useReviewStore = create<ReviewStore>()(
                 }
               : state.activity,
           };
-        }),
-      removeDeck: (deckId) =>
+        });
+      },
+      removeDeck: (deckId) => {
+        void removeDeckReviewLogs(deckId);
         set((state) => {
           const { [deckId]: _cards, ...srsCards } = state.srsCards;
           const { [deckId]: _intro, ...newIntroduced } = state.newIntroduced;
           const { [deckId]: _act, ...activity } = state.activity;
           return { srsCards, newIntroduced, activity };
-        }),
+        });
+      },
     }),
     {
       name: "japanese-review-storage",
       version: 1,
       storage: createJSONStorage(() => safeStateStorage),
-      migrate: (persistedState) => migrateReviewState(persistedState),
+      migrate: (persistedState) => migrateReviewState(persistedState) as ReviewStore,
       merge: (persistedState, currentState) => ({
         ...currentState,
         ...migrateReviewState(persistedState),

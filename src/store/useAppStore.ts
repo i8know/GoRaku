@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { clampDayStartHour, DEFAULT_DAY_START_HOUR } from "../lib/studyDay";
+import { clampDesiredRetention, DEFAULT_DESIRED_RETENTION } from "../lib/fsrsScheduler";
 
 const fallbackAppMemoryStorage = new Map<string, string>();
 
@@ -125,6 +126,7 @@ interface AppState {
     newCards: number;
     maxReview: number;
     dayStartHour: number;
+    desiredRetention: number;
     furi: boolean;
     audio: boolean;
     romaji: boolean;
@@ -376,6 +378,7 @@ export const useAppStore = create<AppState>()(
         newCards: 15,
         maxReview: 120,
         dayStartHour: DEFAULT_DAY_START_HOUR,
+        desiredRetention: DEFAULT_DESIRED_RETENTION,
         furi: true,
         audio: true,
         romaji: false,
@@ -393,16 +396,21 @@ export const useAppStore = create<AppState>()(
               newSettings.dayStartHour !== undefined
                 ? clampDayStartHour(newSettings.dayStartHour)
                 : state.settings.dayStartHour,
+            desiredRetention:
+              newSettings.desiredRetention !== undefined
+                ? clampDesiredRetention(newSettings.desiredRetention)
+                : state.settings.desiredRetention,
           },
         })),
     }),
     {
       name: "japanese-learning-storage",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => safeAppStateStorage),
       // v2: every deck is "live" (cards in IndexedDB). The old demo decks carried fake
       // due/total/progress numbers; convert them to real seeded decks.
       // v3: adds settings.dayStartHour (default 4).
+      // v4: adds settings.desiredRetention (default 0.9).
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<AppState>;
         if (version < 2 && Array.isArray(state.decks)) {
@@ -417,6 +425,7 @@ export const useAppStore = create<AppState>()(
             newCards: 15,
             maxReview: 120,
             dayStartHour: DEFAULT_DAY_START_HOUR,
+            desiredRetention: DEFAULT_DESIRED_RETENTION,
             furi: true,
             audio: true,
             romaji: false,
@@ -426,6 +435,7 @@ export const useAppStore = create<AppState>()(
             size: "Sedang",
             ...state.settings,
             dayStartHour: clampDayStartHour(state.settings.dayStartHour ?? DEFAULT_DAY_START_HOUR),
+            desiredRetention: clampDesiredRetention(state.settings.desiredRetention ?? DEFAULT_DESIRED_RETENTION),
           };
         }
         return state as AppState;

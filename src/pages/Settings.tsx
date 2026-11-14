@@ -17,6 +17,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const [newCards, setNewCards] = useState(settings.newCards);
   const [maxReview, setMaxReview] = useState(settings.maxReview);
   const [dayStartHour, setDayStartHour] = useState(settings.dayStartHour ?? 4);
+  const [desiredRetention, setDesiredRetention] = useState(settings.desiredRetention ?? 0.9);
   const [furi, setFuri] = useState(settings.furi);
   const [audio, setAudio] = useState(settings.audio);
   const [romaji, setRomaji] = useState(settings.romaji);
@@ -37,6 +38,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
       newCards,
       maxReview,
       dayStartHour,
+      desiredRetention,
       furi,
       audio,
       romaji,
@@ -69,6 +71,8 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
           <div className="st-range"><div><span>Kartu baru per hari</span><b>{newCards}</b></div><input type="range" min={5} max={50} step={5} value={newCards} onChange={(e) => setNewCards(+e.target.value)} aria-label="Kartu baru per hari" /></div>
           <div className="st-range"><div><span>Maksimum review per hari</span><b>{maxReview}</b></div><input type="range" min={40} max={300} step={20} value={maxReview} onChange={(e) => setMaxReview(+e.target.value)} aria-label="Maksimum review per hari" /></div>
           <div className="st-range"><div><span>Pergantian hari belajar</span><b>{String(dayStartHour).padStart(2, "0")}:00</b></div><input type="range" min={0} max={8} step={1} value={dayStartHour} onChange={(e) => setDayStartHour(+e.target.value)} aria-label="Pergantian hari belajar" /></div>
+          <div className="st-range"><div><span>Target ingatan (FSRS)</span><b>{Math.round(desiredRetention * 100)}%</b></div><input type="range" min={0.8} max={0.97} step={0.01} value={desiredRetention} onChange={(e) => setDesiredRetention(+e.target.value)} aria-label="Target ingatan (FSRS)" /></div>
+          <p className="st-note">Target retensi lebih tinggi menjadwalkan review lebih sering agar hafalan lebih kuat.</p>
           <p className="st-note">Estimasi waktu: sekitar <strong>{Math.round((newCards * 1.2 + maxReview * 0.18) / 5) * 5} menit</strong> per hari.</p>
         </section>
 

@@ -24,6 +24,7 @@
     "react-router-dom": "^7.18.4",
     "sql.js": "^1.15.2",
     "tesseract.js": "^7.0.0",
+    "ts-fsrs": "5.4.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
