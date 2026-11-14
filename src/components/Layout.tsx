@@ -175,7 +175,11 @@ export default function ProtectedLayout() {
     return Object.values(activity).reduce((sum, act) => sum + reviewedToday(act), 0);
   }, [activity]);
 
-  const dailyGoalTarget = Math.max(10, settings.newCards + 15);
+  // Rumus target harian: total kuota kartu baru hari ini + review jatuh tempo di seluruh
+  // deck daun (dihitung lewat liveDeckStats: st.due = st.newToday + st.reviewDue), ditambah
+  // kartu yang sudah selesai direview hari ini agar target mencerminkan beban kerja harian
+  // penuh dan progres mencapai 100% ketika antrean habis (minimal 1 untuk mencegah bagi nol).
+  const dailyGoalTarget = Math.max(1, todayReviewedCount + totalDue);
   const dailyGoalPct = Math.min(100, Math.round((todayReviewedCount / dailyGoalTarget) * 100));
 
   const todayDayOfWeek = (new Date().getDay() + 6) % 7; // 0 = Senin, 6 = Minggu

@@ -8,7 +8,14 @@ import {
   qualityToRating,
   scheduleReview,
 } from "../fsrsScheduler";
-import { isMature, limitsFor, liveDeckStats, orderNewCards } from "../deckStats";
+import {
+  forecast,
+  forecastNew,
+  isMature,
+  limitsFor,
+  liveDeckStats,
+  orderNewCards,
+} from "../deckStats";
 import { aggregateParentStats } from "../deckSubdecks";
 import {
   clearAllReviewLogs,
@@ -17,7 +24,7 @@ import {
   getCardReviewLogs,
 } from "../deckDb";
 import { useAppStore, type DeckItem } from "../../store/useAppStore";
-import { useReviewStore } from "../../store/useReviewStore";
+import { newCardsLeftToday, useReviewStore } from "../../store/useReviewStore";
 
 describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
   beforeEach(async () => {
@@ -380,5 +387,107 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     expect(randomOtherDeck.map((c) => c.id)).not.toEqual(
       random1.map((c) => c.id),
     );
+  });
+
+  it("Tahap 4: addExtraNewToday ('Pelajari lebih') increases today's quota and resets on the next study day, and forecastNew projects new cards", () => {
+    const deckId = "deck-extra";
+    const day1 = new Date(2026, 4, 10, 10, 0, 0, 0);
+    const day2 = new Date(2026, 4, 11, 5, 0, 0, 0); // past 04:00 -> next study day
+    const limit = 5;
+
+    for (let i = 1; i <= 5; i++) {
+      useReviewStore
+        .getState()
+        .reviewCardAction(deckId, `c-${i}`, 4, { now: day1, dayStartHour: 4 });
+    }
+    expect(
+      newCardsLeftToday(
+        useReviewStore.getState().newIntroduced[deckId],
+        limit,
+        day1,
+        4,
+      ),
+    ).toBe(0);
+
+    // Click "Pelajari lebih +10"
+    useReviewStore.getState().addExtraNewToday(deckId, 10, day1, 4);
+    expect(
+      newCardsLeftToday(
+        useReviewStore.getState().newIntroduced[deckId],
+        limit,
+        day1,
+        4,
+      ),
+    ).toBe(10);
+
+    // Grade 2 more new cards on day 1 -> 8 left today
+    useReviewStore
+      .getState()
+      .reviewCardAction(deckId, "c-6", 4, { now: day1, dayStartHour: 4 });
+    useReviewStore
+      .getState()
+      .reviewCardAction(deckId, "c-7", 4, { now: day1, dayStartHour: 4 });
+    expect(
+      newCardsLeftToday(
+        useReviewStore.getState().newIntroduced[deckId],
+        limit,
+        day1,
+        4,
+      ),
+    ).toBe(8);
+
+    // Next study day (after 04:00) -> extraNew resets, quota returns to base limit (5)
+    expect(
+      newCardsLeftToday(
+        useReviewStore.getState().newIntroduced[deckId],
+        limit,
+        day2,
+        4,
+      ),
+    ).toBe(limit);
+
+    // forecastNew projects daily new cards across leaf decks without changing forecast()
+    const parentDeck: DeckItem = {
+      id: "parent-1",
+      title: "Parent",
+      sub: "",
+      level: "N3",
+      kind: "Kosakata",
+      total: 19,
+      due: 0,
+      newToday: 0,
+      color: "#335",
+      kanji: "語",
+      progress: 0,
+    };
+    const leafDeck: DeckItem = {
+      ...parentDeck,
+      id: deckId,
+      title: "Parent::Child",
+      parentId: "parent-1",
+      total: 19, // 7 already seen on day1 -> 12 unlearned left
+    };
+
+    const settings = { newCards: 5, maxReview: 100, dayStartHour: 4 };
+    const projectedNew = forecastNew(
+      [parentDeck, leafDeck],
+      useReviewStore.getState().srsCards,
+      useReviewStore.getState().newIntroduced,
+      settings,
+      5,
+      day1,
+    );
+    // Today has 8 left (from +10 extra minus 2 used), leaving 12 - 8 = 4 for tomorrow, then 0
+    expect(projectedNew).toEqual([8, 4, 0, 0, 0]);
+
+    // forecast() return value remains a number[] of scheduled reviews
+    const reviewProjection = forecast(
+      [useReviewStore.getState().srsCards[deckId]],
+      5,
+      day1,
+      4,
+    );
+    expect(Array.isArray(reviewProjection)).toBe(true);
+    expect(reviewProjection).toHaveLength(5);
   });
 });

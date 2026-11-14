@@ -103,6 +103,54 @@ export function forecast(
   return out;
 }
 
+/**
+ * Proyeksi jumlah kartu baru yang akan dipelajari untuk `days` hari ke depan
+ * (indeks 0 = hari ini, indeks 1 = besok, dst.) berdasarkan sisa kartu belum
+ * dipelajari di tiap deck daun dan kuota kartu baru harian (`limitsFor`).
+ * Nilai balik `forecast()` tidak diubah agar pemanggil lama tetap kompatibel.
+ */
+export function forecastNew(
+  decks: readonly DeckItem[],
+  srsCards: Record<string, Record<string, SRSCard> | undefined>,
+  newIntroduced: Record<string, { date: string; count: number; extraNew?: number } | undefined>,
+  settings: { newCards: number; maxReview: number; dayStartHour?: number },
+  days = 7,
+  now: Date | number = Date.now(),
+  deckLimits?: Record<string, DeckLimitOverride>,
+): number[] {
+  const out = new Array<number>(days).fill(0);
+  if (days <= 0) return out;
+  const h = resolveDayStartHour(settings.dayStartHour);
+
+  const parentIds = new Set<string>();
+  for (const d of decks) {
+    if (d.parentId) parentIds.add(d.parentId);
+  }
+  const leafDecks = decks.filter((d) => !parentIds.has(d.id));
+
+  for (const deck of leafDecks) {
+    const learnedOrSeen = Object.keys(srsCards[deck.id] ?? {}).length;
+    let remainingUnlearned = Math.max(0, deck.total - learnedOrSeen);
+    if (remainingUnlearned === 0) continue;
+
+    const limits = limitsFor(deck.id, settings, deckLimits);
+    const todayQuota = Math.min(
+      remainingUnlearned,
+      newCardsLeftToday(newIntroduced[deck.id], limits.newCards, now, h),
+    );
+    out[0] += todayQuota;
+    remainingUnlearned -= todayQuota;
+
+    for (let day = 1; day < days && remainingUnlearned > 0; day++) {
+      const dayQuota = Math.min(remainingUnlearned, limits.newCards);
+      out[day] += dayQuota;
+      remainingUnlearned -= dayQuota;
+    }
+  }
+
+  return out;
+}
+
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 export function forecastLabels(

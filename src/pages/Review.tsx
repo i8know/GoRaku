@@ -60,7 +60,9 @@ export default function ReviewPage() {
   const updateSettings = useAppStore((s) => s.updateSettings);
   const reviewCardAction = useReviewStore((s) => s.reviewCardAction);
   const restoreCardState = useReviewStore((s) => s.restoreCardState);
+  const addExtraNewToday = useReviewStore((s) => s.addExtraNewToday);
 
+  const [allCards, setAllCards] = useState<StoredCard[]>([]);
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [pos, setPos] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -84,6 +86,7 @@ export default function ReviewPage() {
     loadDeckCards(deck.id)
       .then((cards) => {
         if (!alive) return;
+        setAllCards(cards);
         const { srsCards, newIntroduced } = useReviewStore.getState();
         const getCardSrs = (c: StoredCard): SRSCard | undefined => {
           const targetDeckId = c.deckId || deck.id;
@@ -291,6 +294,29 @@ export default function ReviewPage() {
 
   if (!card) {
     const nothingToDo = queue.length === 0;
+    const { srsCards } = useReviewStore.getState();
+    const queuedIds = new Set(queue.map((q) => q.id));
+    const remainingUnlearned = allCards.filter((c) => {
+      const targetDeckId = c.deckId || deck.id;
+      const sc = targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
+      return !sc && !queuedIds.has(c.id);
+    });
+
+    const handleLearnMore = (extraAmount: number) => {
+      addExtraNewToday(deck.id, extraAmount, Date.now(), settings.dayStartHour);
+      const ordered = orderNewCards(
+        remainingUnlearned,
+        deck.id,
+        settings.newOrder ?? "urutan",
+        Date.now(),
+        settings.dayStartHour,
+      );
+      const nextBatch = ordered.slice(0, extraAmount);
+      if (nextBatch.length > 0) {
+        setQueue((prev) => [...(prev ?? []), ...nextBatch]);
+      }
+    };
+
     return (
       <div className="review-complete">
         <div className="review-complete-content">
@@ -303,6 +329,19 @@ export default function ReviewPage() {
               ? `Semua kartu di "${deck.title}" sudah kamu kerjakan. Kembali lagi besok, ya.`
               : `Kamu telah menyelesaikan ${reviewed} kartu hari ini dengan penuh konsistensi.`}
           </p>
+          {remainingUnlearned.length > 0 && (
+            <div className="review-complete-actions" style={{ marginBottom: 12 }}>
+              {([5, 10, 20] as const).map((n) => (
+                <Button
+                  key={n}
+                  className="outline-button"
+                  onClick={() => handleLearnMore(n)}
+                >
+                  <Icon name="plus" size={16} /> Pelajari lebih +{n} kartu baru
+                </Button>
+              ))}
+            </div>
+          )}
           <div className="review-complete-actions">
             {history.length > 0 && (
               <Button className="outline-button" onClick={handleUndo}>

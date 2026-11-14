@@ -93,10 +93,16 @@ export interface RestoreCardOptions {
   dayStartHour?: number;
 }
 
+export interface NewIntroducedEntry {
+  date: string;
+  count: number;
+  extraNew?: number;
+}
+
 interface ReviewStore {
   srsCards: Record<string, Record<string, SRSCard>>; // deckId -> cardId -> SRSCard
-  /** New cards introduced per deck today (enforces the daily new-card limit). */
-  newIntroduced: Record<string, { date: string; count: number }>;
+  /** New cards introduced per deck today (enforces the daily new-card limit + optional extraNew bonus). */
+  newIntroduced: Record<string, NewIntroducedEntry>;
   /** Per-deck study activity: last review timestamp and how many cards were graded today. */
   activity: Record<string, DeckActivity>;
   addCardToDeck: (deckId: string, cardId: string) => void;
@@ -106,6 +112,13 @@ interface ReviewStore {
     quality: number,
     opts?: ReviewActionOptions,
   ) => SRSCard;
+  /** Tambah kuota kartu baru ekstra untuk hari belajar ini ("Pelajari lebih"). Reset otomatis di hari berikutnya. */
+  addExtraNewToday: (
+    deckId: string,
+    amount: number,
+    now?: Date | number,
+    dayStartHour?: number,
+  ) => void;
   getDueCards: (deckId: string) => SRSCard[];
   getDeckStats: (deckId: string) => { total: number; due: number; learned: number };
   importSchedule: (deckId: string, cards: SRSCard[]) => void;
@@ -177,7 +190,9 @@ export const useReviewStore = create<ReviewStore>()(
 
         set((state) => {
           const prev = state.newIntroduced[deckId];
-          const count = normalizeStudyDayKey(prev?.date) === dayKey ? prev.count : 0;
+          const sameDay = normalizeStudyDayKey(prev?.date) === dayKey;
+          const count = sameDay ? prev.count : 0;
+          const extraNew = sameDay ? prev?.extraNew : undefined;
           const act = state.activity[deckId];
           const actCount = normalizeStudyDayKey(act?.date) === dayKey ? act.count : 0;
           return {
@@ -186,7 +201,14 @@ export const useReviewStore = create<ReviewStore>()(
               [deckId]: { ...(state.srsCards[deckId] || {}), [cardId]: updated },
             },
             newIntroduced: isNew
-              ? { ...state.newIntroduced, [deckId]: { date: dayKey, count: count + 1 } }
+              ? {
+                  ...state.newIntroduced,
+                  [deckId]: {
+                    date: dayKey,
+                    count: count + 1,
+                    ...(extraNew ? { extraNew } : {}),
+                  },
+                }
               : state.newIntroduced,
             activity: {
               ...state.activity,
@@ -197,6 +219,27 @@ export const useReviewStore = create<ReviewStore>()(
 
         void appendReviewLog(log);
         return updated;
+      },
+      addExtraNewToday: (deckId, amount, now = Date.now(), dayStartHour) => {
+        const extraDelta = Math.max(0, Math.round(amount));
+        if (extraDelta <= 0) return;
+        const dayKey = currentStudyDay(now, dayStartHour);
+        set((state) => {
+          const prev = state.newIntroduced[deckId];
+          const sameDay = normalizeStudyDayKey(prev?.date) === dayKey;
+          const count = sameDay ? prev.count : 0;
+          const prevExtra = sameDay ? (prev?.extraNew ?? 0) : 0;
+          return {
+            newIntroduced: {
+              ...state.newIntroduced,
+              [deckId]: {
+                date: dayKey,
+                count,
+                extraNew: prevExtra + extraDelta,
+              },
+            },
+          };
+        });
       },
       getDueCards: (deckId) => {
         const deckCards = get().srsCards[deckId] || {};
@@ -262,7 +305,11 @@ export const useReviewStore = create<ReviewStore>()(
             newIntroduced: prevIntro
               ? {
                   ...state.newIntroduced,
-                  [deckId]: { date: prevIntro.date, count: nextIntroCount },
+                  [deckId]: {
+                    ...prevIntro,
+                    date: prevIntro.date,
+                    count: nextIntroCount,
+                  },
                 }
               : state.newIntroduced,
             activity: prevAct
@@ -322,7 +369,7 @@ function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
   };
 }
 
-/** New cards still allowed today for a deck. */
+/** New cards still allowed today for a deck (includes any extraNew bonus added today). */
 export function newCardsLeftToday(
   intro: ReviewStore["newIntroduced"][string] | undefined,
   limit: number,
@@ -330,8 +377,10 @@ export function newCardsLeftToday(
   dayStartHour?: number,
 ) {
   const dayKey = currentStudyDay(now, dayStartHour);
-  const used = normalizeStudyDayKey(intro?.date) === dayKey ? intro!.count : 0;
-  return Math.max(0, limit - used);
+  const sameDay = normalizeStudyDayKey(intro?.date) === dayKey;
+  const used = sameDay ? intro!.count : 0;
+  const extra = sameDay ? (intro?.extraNew ?? 0) : 0;
+  return Math.max(0, limit + extra - used);
 }
 
 /** Cards graded today for a deck (0 if the last activity was on an earlier day). */
