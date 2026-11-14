@@ -1,7 +1,15 @@
-import { useAppStore, type DeckItem } from "../store/useAppStore";
+import {
+  limitsFor,
+  orderNewCards,
+  useAppStore,
+  type DeckItem,
+  type DeckLimitOverride,
+} from "../store/useAppStore";
 import { newCardsLeftToday } from "../store/useReviewStore";
 import { isDue, type SRSCard } from "./srs";
 import { DEFAULT_DAY_START_HOUR, startOfStudyDay } from "./studyDay";
+
+export { limitsFor, orderNewCards };
 
 export interface LiveDeckStats {
   due: number;
@@ -34,20 +42,22 @@ export const isMature = (c: SRSCard) =>
 export function liveDeckStats(
   deck: DeckItem,
   srsDeck: Record<string, SRSCard> | undefined,
-  intro: { date: string; count: number } | undefined,
+  intro: { date: string; count: number; extraNew?: number } | undefined,
   settings: { newCards: number; maxReview: number; dayStartHour?: number },
   now: Date | number = Date.now(),
+  deckLimits?: Record<string, DeckLimitOverride>,
 ): LiveDeckStats {
   const cards = srsDeck ? Object.values(srsDeck) : [];
   const dayStartHour = resolveDayStartHour(settings.dayStartHour);
+  const limits = limitsFor(deck.id, settings, deckLimits);
   const reviewDue = Math.min(
-    settings.maxReview,
+    limits.maxReview,
     cards.filter((c) => isDue(c, now)).length,
   );
   const newTotal = Math.max(0, deck.total - cards.length);
   const newToday = Math.min(
     newTotal,
-    newCardsLeftToday(intro, settings.newCards, now, dayStartHour),
+    newCardsLeftToday(intro, limits.newCards, now, dayStartHour),
   );
   const learned = cards.filter(isMature).length;
   return {

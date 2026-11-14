@@ -1,7 +1,14 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import { clampDayStartHour, DEFAULT_DAY_START_HOUR } from "../lib/studyDay";
+import { clampDayStartHour, DEFAULT_DAY_START_HOUR, studyDayKey } from "../lib/studyDay";
 import { clampDesiredRetention, DEFAULT_DESIRED_RETENTION } from "../lib/fsrsScheduler";
+
+export type NewCardOrder = "urutan" | "acak";
+
+export interface DeckLimitOverride {
+  newCards?: number;
+  maxReview?: number;
+}
 
 const fallbackAppMemoryStorage = new Map<string, string>();
 
@@ -127,6 +134,7 @@ interface AppState {
     maxReview: number;
     dayStartHour: number;
     desiredRetention: number;
+    newOrder: NewCardOrder;
     furi: boolean;
     audio: boolean;
     romaji: boolean;
@@ -135,6 +143,8 @@ interface AppState {
     weekly: boolean;
     size: string;
   };
+  deckLimits: Record<string, DeckLimitOverride>;
+  setDeckLimits: (deckId: string, limits: DeckLimitOverride | null) => void;
   updateSettings: (settings: Partial<AppState["settings"]>) => void;
 }
 
@@ -379,6 +389,7 @@ export const useAppStore = create<AppState>()(
         maxReview: 120,
         dayStartHour: DEFAULT_DAY_START_HOUR,
         desiredRetention: DEFAULT_DESIRED_RETENTION,
+        newOrder: "urutan",
         furi: true,
         audio: true,
         romaji: false,
@@ -387,6 +398,31 @@ export const useAppStore = create<AppState>()(
         weekly: true,
         size: "Sedang",
       },
+      deckLimits: {},
+      setDeckLimits: (deckId, limits) =>
+        set((state) => {
+          const next = { ...(state.deckLimits ?? {}) };
+          if (
+            !limits ||
+            (limits.newCards === undefined && limits.maxReview === undefined)
+          ) {
+            delete next[deckId];
+          } else {
+            const entry: DeckLimitOverride = {};
+            if (typeof limits.newCards === "number" && Number.isFinite(limits.newCards)) {
+              entry.newCards = Math.max(1, Math.min(50, Math.round(limits.newCards)));
+            }
+            if (typeof limits.maxReview === "number" && Number.isFinite(limits.maxReview)) {
+              entry.maxReview = Math.max(1, Math.round(limits.maxReview));
+            }
+            if (entry.newCards === undefined && entry.maxReview === undefined) {
+              delete next[deckId];
+            } else {
+              next[deckId] = entry;
+            }
+          }
+          return { deckLimits: next };
+        }),
       updateSettings: (newSettings) =>
         set((state) => ({
           settings: {
@@ -400,17 +436,22 @@ export const useAppStore = create<AppState>()(
               newSettings.desiredRetention !== undefined
                 ? clampDesiredRetention(newSettings.desiredRetention)
                 : state.settings.desiredRetention,
+            newOrder:
+              newSettings.newOrder === "acak" || newSettings.newOrder === "urutan"
+                ? newSettings.newOrder
+                : (state.settings.newOrder ?? "urutan"),
           },
         })),
     }),
     {
       name: "japanese-learning-storage",
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => safeAppStateStorage),
       // v2: every deck is "live" (cards in IndexedDB). The old demo decks carried fake
       // due/total/progress numbers; convert them to real seeded decks.
       // v3: adds settings.dayStartHour (default 4).
       // v4: adds settings.desiredRetention (default 0.9).
+      // v5: adds deckLimits ({}) and settings.newOrder ("urutan").
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<AppState>;
         if (version < 2 && Array.isArray(state.decks)) {
@@ -420,12 +461,16 @@ export const useAppStore = create<AppState>()(
               : { ...d, source: "manual" as const, due: 0, progress: 0, total: SEED_TOTALS[d.id] ?? 0 },
           );
         }
+        if (!state.deckLimits || typeof state.deckLimits !== "object" || Array.isArray(state.deckLimits)) {
+          state.deckLimits = {};
+        }
         if (state.settings) {
           state.settings = {
             newCards: 15,
             maxReview: 120,
             dayStartHour: DEFAULT_DAY_START_HOUR,
             desiredRetention: DEFAULT_DESIRED_RETENTION,
+            newOrder: "urutan",
             furi: true,
             audio: true,
             romaji: false,
@@ -436,6 +481,7 @@ export const useAppStore = create<AppState>()(
             ...state.settings,
             dayStartHour: clampDayStartHour(state.settings.dayStartHour ?? DEFAULT_DAY_START_HOUR),
             desiredRetention: clampDesiredRetention(state.settings.desiredRetention ?? DEFAULT_DESIRED_RETENTION),
+            newOrder: state.settings.newOrder === "acak" ? "acak" : "urutan",
           };
         }
         return state as AppState;
@@ -443,3 +489,74 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+/**
+ * Mengambil batas harian efektif (kartu baru & maksimum review) untuk suatu deck.
+ * Jika deck memiliki override di `deckLimits`, nilai override dipakai; jika tidak,
+ * kembali ke nilai bawaan global di `settings`.
+ */
+export function limitsFor(
+  deckId: string,
+  settings: { newCards: number; maxReview: number },
+  deckLimits?: Record<string, DeckLimitOverride>,
+): { newCards: number; maxReview: number } {
+  const map = deckLimits ?? useAppStore.getState()?.deckLimits ?? {};
+  const override = map[deckId];
+  return {
+    newCards:
+      typeof override?.newCards === "number" && Number.isFinite(override.newCards)
+        ? Math.max(1, Math.min(50, Math.round(override.newCards)))
+        : settings.newCards,
+    maxReview:
+      typeof override?.maxReview === "number" && Number.isFinite(override.maxReview)
+        ? Math.max(1, Math.round(override.maxReview))
+        : settings.maxReview,
+  };
+}
+
+function fnv1a32(input: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+/**
+ * Mengurutkan kartu baru sesuai pengaturan `newOrder`:
+ * - `"urutan"` (bawaan): mempertahankan urutan asli array deck.
+ * - `"acak"`: mengacak secara deterministik dengan seed `studyDayKey(now, dayStartHour) + deckId`
+ *   sehingga urutan tidak berubah ketika sesi dibuka ulang pada hari belajar yang sama,
+ *   tetapi berubah pada hari belajar berikutnya.
+ */
+export function orderNewCards<T extends { id?: string }>(
+  cards: readonly T[],
+  deckId: string,
+  newOrder: NewCardOrder = "urutan",
+  now: Date | number = Date.now(),
+  dayStartHour?: number,
+): T[] {
+  const copy = [...cards];
+  if (newOrder !== "acak" || copy.length <= 1) return copy;
+
+  const resolvedHour =
+    dayStartHour ??
+    useAppStore.getState()?.settings?.dayStartHour ??
+    DEFAULT_DAY_START_HOUR;
+  const daySeed = `${studyDayKey(now, resolvedHour)}::${deckId}`;
+
+  return copy
+    .map((item, idx) => ({
+      item,
+      idx,
+      key: fnv1a32(`${daySeed}::${item.id ?? idx}`),
+    }))
+    .sort((a, b) => (a.key !== b.key ? a.key - b.key : a.idx - b.idx))
+    .map((entry) => entry.item);
+}

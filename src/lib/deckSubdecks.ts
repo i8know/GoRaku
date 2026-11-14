@@ -1,4 +1,4 @@
-import type { DeckItem } from "../store/useAppStore";
+import { limitsFor, type DeckItem } from "../store/useAppStore";
 import type { LiveDeckStats } from "./deckStats";
 import { liveDeckStats } from "./deckStats";
 import type { SRSCard } from "./srs";
@@ -325,7 +325,13 @@ export function aggregateParentStats(
       : childDecks;
 
   if (targetChildren.length === 0) {
-    return liveDeckStats(parentDeck, srsCards[parentDeck.id], newIntroduced[parentDeck.id], settings);
+    const parentLimits = limitsFor(parentDeck.id, settings);
+    return liveDeckStats(
+      parentDeck,
+      srsCards[parentDeck.id],
+      newIntroduced[parentDeck.id],
+      parentLimits,
+    );
   }
 
   let due = 0;
@@ -337,7 +343,13 @@ export function aggregateParentStats(
   let totalCards = 0;
 
   for (const child of targetChildren) {
-    const st = liveDeckStats(child, srsCards[child.id], newIntroduced[child.id], settings);
+    const childLimits = limitsFor(child.id, settings);
+    const st = liveDeckStats(
+      child,
+      srsCards[child.id],
+      newIntroduced[child.id],
+      childLimits,
+    );
     due += st.due;
     reviewDue += st.reviewDue;
     newToday += st.newToday;

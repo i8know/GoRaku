@@ -8,14 +8,15 @@ import {
   qualityToRating,
   scheduleReview,
 } from "../fsrsScheduler";
-import { isMature } from "../deckStats";
+import { isMature, limitsFor, liveDeckStats, orderNewCards } from "../deckStats";
+import { aggregateParentStats } from "../deckSubdecks";
 import {
   clearAllReviewLogs,
   flushReviewLogs,
   getAllReviewLogs,
   getCardReviewLogs,
 } from "../deckDb";
-import { useAppStore } from "../../store/useAppStore";
+import { useAppStore, type DeckItem } from "../../store/useAppStore";
 import { useReviewStore } from "../../store/useReviewStore";
 
 describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
@@ -250,5 +251,134 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     useReviewStore.getState().removeDeck(deckId);
     await flushReviewLogs();
     expect(await getAllReviewLogs()).toHaveLength(0);
+  });
+
+  it("Tahap 3: applies per-deck limits override in limitsFor, liveDeckStats, and aggregateParentStats, and falls back to global", () => {
+    const globalSettings = { newCards: 15, maxReview: 120, dayStartHour: 4 };
+    useAppStore.getState().updateSettings(globalSettings);
+    useAppStore.getState().setDeckLimits("deck-custom", null);
+
+    const deckA: DeckItem = {
+      id: "deck-custom",
+      title: "Custom Deck",
+      sub: "Sub",
+      level: "N3",
+      kind: "Kosakata",
+      total: 40,
+      due: 0,
+      newToday: 15,
+      color: "#335",
+      kanji: "語",
+      progress: 0,
+    };
+    const deckB: DeckItem = {
+      ...deckA,
+      id: "deck-default",
+      title: "Default Deck",
+    };
+
+    // Fallback to global when no override exists
+    expect(limitsFor("deck-custom", globalSettings)).toEqual({
+      newCards: 15,
+      maxReview: 120,
+    });
+
+    // Apply per-deck override
+    useAppStore
+      .getState()
+      .setDeckLimits("deck-custom", { newCards: 7, maxReview: 45 });
+    expect(limitsFor("deck-custom", globalSettings)).toEqual({
+      newCards: 7,
+      maxReview: 45,
+    });
+    expect(limitsFor("deck-default", globalSettings)).toEqual({
+      newCards: 15,
+      maxReview: 120,
+    });
+
+    // liveDeckStats respects per-deck override
+    const statsCustom = liveDeckStats(deckA, {}, undefined, globalSettings);
+    const statsDefault = liveDeckStats(deckB, {}, undefined, globalSettings);
+    expect(statsCustom.newToday).toBe(7);
+    expect(statsDefault.newToday).toBe(15);
+
+    // aggregateParentStats sums leaf decks using each leaf's limitsFor
+    const parentDeck: DeckItem = {
+      ...deckA,
+      id: "deck-parent",
+      title: "Parent",
+      total: 80,
+    };
+    const agg = aggregateParentStats(
+      parentDeck,
+      [deckA, deckB],
+      {},
+      {},
+      globalSettings,
+    );
+    expect(agg.newToday).toBe(7 + 15);
+
+    // Resetting override falls back to global
+    useAppStore.getState().setDeckLimits("deck-custom", null);
+    expect(limitsFor("deck-custom", globalSettings)).toEqual({
+      newCards: 15,
+      maxReview: 120,
+    });
+  });
+
+  it("Tahap 3: orders new cards deterministically per studyDayKey + deckId when newOrder is 'acak'", () => {
+    const cards = Array.from({ length: 20 }, (_, i) => ({
+      id: `card-${i + 1}`,
+    }));
+
+    const morningSameDay = new Date(2026, 4, 10, 9, 0, 0, 0);
+    const lateNightSameStudyDay = new Date(2026, 4, 11, 2, 30, 0, 0); // 02:30 before dayStartHour=4 is still May 10 study day
+    const nextStudyDay = new Date(2026, 4, 11, 8, 0, 0, 0);
+
+    // "urutan" preserves original deck order
+    const sequential = orderNewCards(
+      cards,
+      "deck-1",
+      "urutan",
+      morningSameDay,
+      4,
+    );
+    expect(sequential.map((c) => c.id)).toEqual(cards.map((c) => c.id));
+
+    // "acak" is identical within the same study day & deck, but differs from sequential
+    const random1 = orderNewCards(cards, "deck-1", "acak", morningSameDay, 4);
+    const random2 = orderNewCards(
+      cards,
+      "deck-1",
+      "acak",
+      lateNightSameStudyDay,
+      4,
+    );
+    expect(random1.map((c) => c.id)).toEqual(random2.map((c) => c.id));
+    expect(random1.map((c) => c.id)).not.toEqual(cards.map((c) => c.id));
+
+    // Next study day produces a different permutation
+    const randomNextDay = orderNewCards(
+      cards,
+      "deck-1",
+      "acak",
+      nextStudyDay,
+      4,
+    );
+    expect(randomNextDay.map((c) => c.id)).not.toEqual(
+      random1.map((c) => c.id),
+    );
+
+    // Different deck on the same day also produces a different permutation
+    const randomOtherDeck = orderNewCards(
+      cards,
+      "deck-2",
+      "acak",
+      morningSameDay,
+      4,
+    );
+    expect(randomOtherDeck.map((c) => c.id)).not.toEqual(
+      random1.map((c) => c.id),
+    );
   });
 });

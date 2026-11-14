@@ -724,7 +724,7 @@ function DeckSettings({
   onReset,
   onDelete,
 }: {
-  deck: { title: string; level: string; kind: string; color: string; kanji: string };
+  deck: { id: string; title: string; level: string; kind: string; color: string; kanji: string };
   onSave: (v: DeckIdentity) => void;
   onExport: (fmt: "csv" | "json") => Promise<void>;
   onReset: () => void;
@@ -734,6 +734,16 @@ function DeckSettings({
   const [form, setForm] = useState(initial);
   const [armed, setArmed] = useState<"reset" | "delete" | null>(null);
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
+
+  const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
+  const setDeckLimits = useAppStore((s) => s.setDeckLimits);
+  const currentOverride = deckLimits[deck.id];
+  const hasOverride =
+    currentOverride?.newCards !== undefined ||
+    currentOverride?.maxReview !== undefined;
+  const effectiveNewCards = currentOverride?.newCards ?? settings.newCards;
+  const effectiveMaxReview = currentOverride?.maxReview ?? settings.maxReview;
 
   useEffect(() => setForm(initial), [initial]);
 
@@ -749,6 +759,64 @@ function DeckSettings({
       </section>
 
       <div className="dd-settings-side">
+        <section className="imp-panel">
+          <h4>Batas harian deck ini</h4>
+          <p className="dd-muted">
+            {hasOverride
+              ? "Memakai batas khusus untuk deck ini."
+              : `Memakai batas bawaan global (${settings.newCards} baru / ${settings.maxReview} review).`}
+          </p>
+          <div className="st-range">
+            <div>
+              <span>Kartu baru per hari</span>
+              <b>{effectiveNewCards}</b>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={50}
+              step={1}
+              value={effectiveNewCards}
+              onChange={(e) =>
+                setDeckLimits(deck.id, {
+                  ...currentOverride,
+                  newCards: +e.target.value,
+                })
+              }
+              aria-label="Kartu baru per hari deck ini"
+            />
+          </div>
+          <div className="st-range">
+            <div>
+              <span>Maksimum review per hari</span>
+              <b>{effectiveMaxReview}</b>
+            </div>
+            <input
+              type="range"
+              min={20}
+              max={300}
+              step={10}
+              value={effectiveMaxReview}
+              onChange={(e) =>
+                setDeckLimits(deck.id, {
+                  ...currentOverride,
+                  maxReview: +e.target.value,
+                })
+              }
+              aria-label="Maksimum review per hari deck ini"
+            />
+          </div>
+          <div className="dd-export">
+            <Button
+              className="outline-button"
+              disabled={!hasOverride}
+              onClick={() => setDeckLimits(deck.id, null)}
+            >
+              Pakai bawaan
+            </Button>
+          </div>
+        </section>
+
         <section className="imp-panel">
           <h4>Ekspor data</h4>
           <p className="dd-muted">Unduh isi deck untuk cadangan atau dipakai di aplikasi lain. Media tidak ikut diekspor.</p>

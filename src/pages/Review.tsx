@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon, Button } from "../ui";
-import { useAppStore } from "../store/useAppStore";
+import { limitsFor, orderNewCards, useAppStore } from "../store/useAppStore";
 import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
@@ -56,6 +56,7 @@ export default function ReviewPage() {
   const navigate = useNavigate();
   const deck = useAppStore((s) => s.decks.find((d) => d.id === deckId));
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const reviewCardAction = useReviewStore((s) => s.reviewCardAction);
   const restoreCardState = useReviewStore((s) => s.restoreCardState);
@@ -89,17 +90,33 @@ export default function ReviewPage() {
           return targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
         };
 
+        const limits = limitsFor(deck.id, settings, deckLimits);
+
         const due = cards
           .filter((c) => {
             const sc = getCardSrs(c);
             return sc && isDue(sc);
           })
           .sort((a, b) => (getCardSrs(a)?.nextReview ?? 0) - (getCardSrs(b)?.nextReview ?? 0))
-          .slice(0, settings.maxReview);
+          .slice(0, limits.maxReview);
 
-        const fresh = cards
-          .filter((c) => !getCardSrs(c))
-          .slice(0, newCardsLeftToday(newIntroduced[deck.id], settings.newCards));
+        const unlearned = cards.filter((c) => !getCardSrs(c));
+        const orderedFresh = orderNewCards(
+          unlearned,
+          deck.id,
+          settings.newOrder ?? "urutan",
+          Date.now(),
+          settings.dayStartHour,
+        );
+        const fresh = orderedFresh.slice(
+          0,
+          newCardsLeftToday(
+            newIntroduced[deck.id],
+            limits.newCards,
+            Date.now(),
+            settings.dayStartHour,
+          ),
+        );
 
         setQueue([...due, ...fresh]);
       })
