@@ -285,3 +285,194 @@ progress {
     animation: hanko-stamp-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
+
+
+/* =========================================================
+   Aizome v2 — Secondary Kon Button & Landing Composition
+   ========================================================= */
+
+.btn-kon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--kon);
+  color: #fff;
+  border: 1px solid var(--kon);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.btn-kon:hover:not(:disabled) {
+  background: var(--ai-tua);
+  border-color: var(--ai-tua);
+}
+
+.btn-kon:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.landing-v2 .lnav-cta {
+  background: var(--kon);
+  color: #fff;
+}
+
+.landing-v2 .lnav-cta:hover {
+  background: var(--ai-tua);
+}
+
+.landing-hero-v2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: stretch;
+  position: relative;
+}
+
+@media (min-width: 960px) {
+  .landing-hero-v2 {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 48px;
+  }
+}
+
+.landing-tategaki-lead {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--serif-jp);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--ai-tua);
+  border-left: 1px solid var(--garis);
+  padding-left: 12px;
+  line-height: 1.7;
+  max-height: 220px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+@media (max-width: 639px) {
+  .landing-tategaki-lead {
+    writing-mode: horizontal-tb;
+    border-left: none;
+    border-bottom: 1px solid var(--garis);
+    padding-left: 0;
+    padding-bottom: 8px;
+    max-height: none;
+    letter-spacing: 0.14em;
+  }
+}
+
+.landing-fabric-panel {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid var(--garis);
+  background: linear-gradient(
+    180deg,
+    #12284A 0%,
+    #17406A 28%,
+    #1F5C85 58%,
+    #BCD6E2 84%,
+    #EDF2F5 100%
+  );
+  padding: 28px 20px 24px;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 440px;
+}
+
+.landing-fabric-panel__seigaiha {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  --seigaiha-opacity: 0.09;
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.65) 55%, transparent 90%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.65) 55%, transparent 90%);
+}
+
+.landing-fabric-panel__glyph {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  font-family: var(--serif-jp);
+  font-size: clamp(96px, 12vw, 156px);
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  user-select: none;
+}
+
+.landing-bunko-overlap {
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 900px) {
+  .landing-bunko-overlap {
+    margin-left: -48px;
+  }
+}
+
+.landing-jlpt-ribbon {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid var(--garis);
+  background: linear-gradient(
+    90deg,
+    #12284A 0%,
+    #17406A 38%,
+    #1F5C85 72%,
+    #2F6C95 100%
+  );
+  color: #fff;
+  padding: 28px 24px;
+  overflow: hidden;
+}
+
+.landing-jlpt-ribbon__seigaiha {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --seigaiha-opacity: 0.06;
+}
+
+.landing-faq-details {
+  border-bottom: 1px solid var(--garis);
+}
+
+.landing-faq-details summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 8px;
+  transition: background-color 150ms ease;
+}
+
+.landing-faq-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.landing-faq-details summary:hover {
+  background-color: rgba(23, 64, 106, 0.03);
+}
+
+.landing-faq-details[open] .landing-faq-chevron {
+  transform: rotate(180deg);
+}
+
+.landing-v2 .step-num {
+  background: var(--ai-tua);
+  color: #fff;
+}
