@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dyeStep, jlptDyeStep, titleDyeStep } from "../dye";
+import { forecastKanji, formatKanjiDate } from "../deckStats";
 
 describe("Skala celupan indigo Aizome v2 (dye.ts)", () => {
   it("memetakan rentang persentase 0-100 ke langkah celupan 0-4 dan menjepit nilai di luar rentang", () => {
@@ -40,5 +41,11 @@ describe("Skala celupan indigo Aizome v2 (dye.ts)", () => {
     expect(stepA1).toBe(stepA2);
     expect(stepA1).toBeGreaterThanOrEqual(0);
     expect(stepA1).toBeLessThanOrEqual(4);
+  });
+
+  it("forecastKanji dan formatKanjiDate menghasilkan label kanji hari dalam seminggu yang akurat", () => {
+    const sunNoon = new Date(2026, 10, 15, 12, 0, 0);
+    expect(forecastKanji(7, sunNoon, 4)).toEqual(["日", "月", "火", "水", "木", "金", "土"]);
+    expect(formatKanjiDate(sunNoon)).toBe("十一月十五日・日");
   });
 });

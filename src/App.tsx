@@ -1,10 +1,20 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icon, Button } from "./ui";
-import { useAppStore, type DeckItem } from "./store/useAppStore";
-import { useReviewStore } from "./store/useReviewStore";
-import { liveDeckStats, type LiveDeckStats } from "./lib/deckStats";
+import { Icon, Button, DyeTile, DyeProgress, Hanko } from "./ui";
+import { useAppStore, limitsFor, type DeckItem } from "./store/useAppStore";
+import { useReviewStore, newCardsLeftToday } from "./store/useReviewStore";
+import {
+  liveDeckStats,
+  estimateMinutes,
+  forecast,
+  forecastNew,
+  forecastKanji,
+  forecastLabels,
+  formatKanjiDate,
+  type LiveDeckStats,
+} from "./lib/deckStats";
 import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
+import { dyeStep, jlptDyeStep } from "./lib/dye";
 import { ensureSeeded } from "./lib/deckCards";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
 import type { BookRecord } from "./lib/lexiconDb";
@@ -49,74 +59,27 @@ const defaultSources = [
   },
 ];
 
-const JP_MONTHS = [
-  "一月",
-  "二月",
-  "三月",
-  "四月",
-  "五月",
-  "六月",
-  "七月",
-  "八月",
-  "九月",
-  "十月",
-  "十一月",
-  "十二月",
-] as const;
-
-const JP_WEEKDAYS = [
-  "日曜日",
-  "月曜日",
-  "火曜日",
-  "水曜日",
-  "木曜日",
-  "金曜日",
-  "土曜日",
-] as const;
-
-function toKanjiDay(n: number): string {
-  const digits = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-  if (n <= 9) return digits[n];
-  if (n === 10) return "十";
-  if (n < 20) return `十${digits[n - 10]}`;
-  if (n === 20) return "二十";
-  if (n < 30) return `二十${digits[n - 20]}`;
-  if (n === 30) return "三十";
-  return `三十${digits[n - 30]}`;
-}
-
-const WEEK_DATA = [
-  { label: "月", full: "Senin", pct: 62, mins: 28, cards: 34 },
-  { label: "火", full: "Selasa", pct: 40, mins: 18, cards: 22 },
-  { label: "水", full: "Rabu", pct: 82, mins: 38, cards: 49 },
-  { label: "木", full: "Kamis", pct: 52, mins: 24, cards: 29 },
-  { label: "金", full: "Jumat", pct: 94, mins: 45, cards: 61 },
-  { label: "土", full: "Sabtu", pct: 32, mins: 15, cards: 19 },
-  { label: "日", full: "Minggu", pct: 68, mins: 32, cards: 40 },
-] as const;
-
 export default function App() {
   const navigate = useNavigate();
   const [modal, setModal] = useState<"deck" | "mining" | "import" | null>(null);
   const [notice, setNotice] = useState("");
   const [books, setBooks] = useState<BookRecord[]>([]);
-  const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [expandedDeckId, setExpandedDeckId] = useState<string | null>(null);
 
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const srsCards = useReviewStore((s) => s.srsCards);
   const newIntroduced = useReviewStore((s) => s.newIntroduced);
 
   useEffect(() => {
     void ensureSeeded();
-    void listNovels().then(setBooks).catch(() => { });
+    void listNovels().then(setBooks).catch(() => {});
   }, []);
 
   const now = new Date();
-  const jpDateVertical = `${JP_MONTHS[now.getMonth()]}${toKanjiDay(now.getDate())}日 ${JP_WEEKDAYS[now.getDay()]}`;
-  const todayWeekIdx = (now.getDay() + 6) % 7; // 0 = Senin .. 6 = Minggu
+  const jpDateVertical = formatKanjiDate(now);
 
   const greetingInfo = useMemo(() => {
     const h = new Date().getHours();
@@ -137,21 +100,91 @@ export default function App() {
     for (const d of decks) {
       const children = decks.filter((c) => c.parentId === d.id);
       if (children.length > 0) {
-        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks));
+        m.set(
+          d.id,
+          aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks, Date.now(), deckLimits),
+        );
       } else {
-        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings, Date.now(), deckLimits));
       }
     }
     return m;
-  }, [decks, srsCards, newIntroduced, settings]);
+  }, [decks, srsCards, newIntroduced, settings, deckLimits]);
   const st = (d: DeckItem) => stats.get(d.id)!;
 
   const rootDecks = useMemo(() => decks.filter((d) => !d.parentId), [decks]);
-  const totalDue = useMemo(() => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.due ?? 0), 0), [rootDecks, stats]);
+  const totalDue = useMemo(
+    () => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.due ?? 0), 0),
+    [rootDecks, stats],
+  );
+  const totalReviewDue = useMemo(
+    () => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.reviewDue ?? 0), 0),
+    [rootDecks, stats],
+  );
+  const totalNewToday = useMemo(
+    () => rootDecks.reduce((s, d) => s + (stats.get(d.id)?.newToday ?? 0), 0),
+    [rootDecks, stats],
+  );
+  const estMinutes = useMemo(
+    () => (totalDue > 0 ? estimateMinutes(totalReviewDue, totalNewToday) : 0),
+    [totalDue, totalReviewDue, totalNewToday],
+  );
+  const retentionPercent = Math.round((settings.desiredRetention ?? 0.9) * 100);
+
   const firstDueDeck = useMemo(
     () => rootDecks.find((d) => (stats.get(d.id)?.due ?? 0) > 0) ?? rootDecks[0],
     [rootDecks, stats],
   );
+
+  // 7-day forecast combining scheduled reviews + projected new cards
+  const forecastData = useMemo(() => {
+    const rev = forecast(Object.values(srsCards), 7, now, settings.dayStartHour);
+    const fresh = forecastNew(decks, srsCards, newIntroduced, settings, 7, now, deckLimits);
+    const kanji = forecastKanji(7, now, settings.dayStartHour);
+    const labels = forecastLabels(7, now, settings.dayStartHour);
+    const totals = rev.map((r, i) => r + (fresh[i] ?? 0));
+    const maxVal = Math.max(1, ...totals);
+    const barColors = [
+      "var(--celup-4)",
+      "var(--celup-3)",
+      "var(--celup-3)",
+      "var(--celup-2)",
+      "var(--celup-2)",
+      "var(--celup-1)",
+      "var(--celup-1)",
+    ];
+    return totals.map((count, i) => ({
+      count,
+      reviewCount: rev[i] ?? 0,
+      newCount: fresh[i] ?? 0,
+      kanji: kanji[i] ?? "日",
+      label: labels[i] ?? "",
+      heightPct: count === 0 ? 6 : Math.max(12, Math.round((count / maxVal) * 100)),
+      color: barColors[i] ?? "var(--celup-1)",
+    }));
+  }, [decks, srsCards, newIntroduced, settings, deckLimits]);
+
+  // Kuota hari ini (remaining new cards & review limit across active leaf decks)
+  const quotaSummary = useMemo(() => {
+    const parentIds = new Set(decks.filter((d) => d.parentId).map((d) => d.parentId!));
+    const leafDecks = decks.filter((d) => !parentIds.has(d.id));
+    let remainingNew = 0;
+    let totalNewLimit = 0;
+    for (const d of leafDecks) {
+      const lim = limitsFor(d.id, settings, deckLimits);
+      const left = newCardsLeftToday(newIntroduced[d.id], lim.newCards, now, settings.dayStartHour);
+      const unlearned = Math.max(0, d.total - Object.keys(srsCards[d.id] ?? {}).length);
+      remainingNew += Math.min(unlearned, left);
+      totalNewLimit += lim.newCards;
+    }
+    return {
+      remainingNew,
+      totalNewLimit,
+      defaultNewLimit: settings.newCards,
+      defaultReviewLimit: settings.maxReview,
+      reviewDueToday: totalReviewDue,
+    };
+  }, [decks, settings, deckLimits, newIntroduced, srsCards, totalReviewDue]);
 
   useEffect(() => {
     if (modal !== "mining") return;
@@ -176,7 +209,6 @@ export default function App() {
     }
   };
 
-  // Combine user's real uploaded novels & mangas with sample immersion sources
   const displaySources = useMemo(() => {
     const userBookRows = books.slice(0, 2).map((b) => {
       const isManga =
@@ -207,12 +239,11 @@ export default function App() {
     return [...userBookRows, ...defaultSources].slice(0, 3);
   }, [books]);
 
-  const activeDayStat = WEEK_DATA[hoveredDay ?? todayWeekIdx];
-
   return (
     <>
-      <section className="beranda-hero">
-        <div className="beranda-hero-top">
+      <section className="beranda-hero beranda-hero-v2">
+        <div className="beranda-hero-v2__seigaiha motif-seigaiha" aria-hidden="true" />
+        <div className="relative z-10 flex-1 flex flex-col justify-between gap-5">
           <div>
             <p className="beranda-hero-kicker" lang="ja">
               {greetingInfo.jp}
@@ -220,268 +251,324 @@ export default function App() {
             <h1>
               {greetingInfo.id}, {user?.name || "Pelajar"}
             </h1>
-            <p className="beranda-hero-sub">
-              Sedikit setiap hari, lebih dekat menuju kefasihan.
+            <p className="beranda-hero-sub mt-2 text-sm text-white/90">
+              {totalDue} kartu menunggu, sekitar {estMinutes} menit. Retensi {retentionPercent}%
             </p>
           </div>
-          <div className="beranda-date-vert" lang="ja" title="Tanggal hari ini">
-            {jpDateVertical}
+
+          <div>
+            <button type="button" className="beranda-seal-cta" onClick={handleStartReview}>
+              <span className="beranda-seal-stamp" lang="ja" aria-hidden="true">
+                復
+              </span>
+              <span>Mulai sesi review</span>
+            </button>
           </div>
         </div>
 
-        <div className="beranda-hero-stats">
-          <div>
-            <strong>{totalDue > 0 ? totalDue : 0}</strong>
-            <span>kartu menunggu</span>
-          </div>
-          <div>
-            <strong>~{Math.max(5, Math.round(totalDue * 0.4))}</strong>
-            <span>menit estimasi</span>
-          </div>
-          <div>
-            <strong>87%</strong>
-            <span>retensi</span>
-          </div>
+        <div className="beranda-hero-v2__tategaki relative z-10" lang="ja" title="Tanggal hari ini">
+          {jpDateVertical}
         </div>
-
-        <button type="button" className="beranda-seal-cta" onClick={handleStartReview}>
-          <span className="beranda-seal-stamp" lang="ja" aria-hidden="true">
-            復
-          </span>
-          <span>Mulai sesi review</span>
-        </button>
       </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <div>
-            <h2>Deck belajarmu</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
+        {/* KOLOM KIRI: DAFTAR DECK BERBORDER */}
+        <section className="lg:col-span-8">
+          <div className="section-heading">
+            <div>
+              <h2>Deck belajarmu</h2>
+            </div>
+            <div className="dk-head-actions">
+              <Button className="outline-button dk-import-btn" onClick={() => setModal("import")}>
+                <Icon name="upload" size={16} /> Impor .apkg
+              </Button>
+              <Button className="outline-button" onClick={() => setModal("deck")}>
+                <Icon name="plus" size={17} /> Buat deck baru
+              </Button>
+            </div>
           </div>
-          <div className="dk-head-actions">
-            <Button className="outline-button dk-import-btn" onClick={() => setModal("import")}><Icon name="upload" size={16} /> Impor .apkg</Button>
-            <Button className="pg-primary" onClick={() => setModal("deck")}><Icon name="plus" size={17} /> Buat deck baru</Button>
-          </div>
-        </div>
-        <div className="beranda-deck-rows">
-          {rootDecks.map((deck) => {
-            const s = st(deck);
-            const imported = deck.source === "apkg";
-            const leaves = getLeafDescendantDecks(deck.id, decks);
-            const children = decks.filter((c) => c.parentId === deck.id);
-            const displaySubdecks = leaves.length > 0 ? leaves : children;
-            const sortedSubdecks = [...displaySubdecks].sort((a, b) => {
-              const order: Record<string, number> = { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5 };
-              const aCode = extractLevelCode(a.title) ?? extractLevelCode(a.subdeckName || "") ?? "Z";
-              const bCode = extractLevelCode(b.title) ?? extractLevelCode(b.subdeckName || "") ?? "Z";
-              return (order[aCode] ?? 9) - (order[bCode] ?? 9);
-            });
-            const isExpanded = expandedDeckId === deck.id;
-            const toggleDeckExpand = () =>
-              setExpandedDeckId((prev) => (prev === deck.id ? null : deck.id));
-            const kanjiTone =
-              deck.color === "indigo" ? "" : deck.color === "sage" ? "ai" : "ai-tua";
 
-            return (
-              <div key={deck.id} className="border-b border-[var(--garis)] last:border-b-0">
-                <article className="beranda-deck-row">
-                  <button
-                    type="button"
-                    className={`beranda-deck-kanji ${kanjiTone}`}
-                    lang="ja"
-                    aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
-                    aria-label={displaySubdecks.length > 0 ? `${isExpanded ? "Tutup" : "Buka"} sub-deck ${deck.title}` : `Buka deck ${deck.title}`}
-                    onClick={() => {
-                      if (displaySubdecks.length > 0) toggleDeckExpand();
-                      else navigate(`/deck/${deck.id}`);
-                    }}
-                  >
-                    {deck.kanji}
-                  </button>
+          <div className="beranda-deck-rows beranda-deck-table">
+            {rootDecks.map((deck) => {
+              const s = st(deck);
+              const imported = deck.source === "apkg";
+              const leaves = getLeafDescendantDecks(deck.id, decks);
+              const children = decks.filter((c) => c.parentId === deck.id);
+              const displaySubdecks = leaves.length > 0 ? leaves : children;
+              const sortedSubdecks = [...displaySubdecks].sort((a, b) => {
+                const order: Record<string, number> = { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5 };
+                const aCode = extractLevelCode(a.title) ?? extractLevelCode(a.subdeckName || "") ?? "Z";
+                const bCode = extractLevelCode(b.title) ?? extractLevelCode(b.subdeckName || "") ?? "Z";
+                return (order[aCode] ?? 9) - (order[bCode] ?? 9);
+              });
+              const isExpanded = expandedDeckId === deck.id;
+              const toggleDeckExpand = () =>
+                setExpandedDeckId((prev) => (prev === deck.id ? null : deck.id));
 
-                  <div className="beranda-deck-info">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
-                      {imported && (
-                        <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
-                          ANKI
+              return (
+                <div key={deck.id} className="border-b border-[var(--garis)] last:border-b-0">
+                  <article className="beranda-deck-row">
+                    <button
+                      type="button"
+                      className="bg-transparent border-0 p-0 cursor-pointer shrink-0"
+                      aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
+                      aria-label={
+                        displaySubdecks.length > 0
+                          ? `${isExpanded ? "Tutup" : "Buka"} sub-deck ${deck.title}`
+                          : `Buka deck ${deck.title}`
+                      }
+                      onClick={() => {
+                        if (displaySubdecks.length > 0) toggleDeckExpand();
+                        else navigate(`/deck/${deck.id}`);
+                      }}
+                    >
+                      <DyeTile step={dyeStep(s.progress)} kanji={deck.kanji} size={44} />
+                    </button>
+
+                    <div className="beranda-deck-info min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
+                        {imported && (
+                          <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
+                            ANKI
+                          </span>
+                        )}
+                      </div>
+                      <h3>
+                        <button
+                          type="button"
+                          className="text-left bg-transparent border-0 p-0 cursor-pointer"
+                          aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
+                          onClick={() => {
+                            if (displaySubdecks.length > 0) toggleDeckExpand();
+                            else navigate(`/deck/${deck.id}`);
+                          }}
+                        >
+                          {deck.title}
+                        </button>
+                      </h3>
+                      <div className="beranda-deck-counts font-mono text-xs flex items-center gap-3 mt-1">
+                        <span
+                          className={
+                            s.newToday > 0
+                              ? "text-[var(--kon)] font-bold"
+                              : "text-[var(--teks-redup)]"
+                          }
+                          aria-label={`${s.newToday} kartu baru`}
+                        >
+                          新 {s.newToday}
                         </span>
-                      )}
+                        <span
+                          className={
+                            s.reviewDue > 0
+                              ? "text-[var(--kon)] font-bold"
+                              : "text-[var(--teks-redup)]"
+                          }
+                          aria-label={`${s.reviewDue} ulasan jatuh tempo`}
+                        >
+                          復 {s.reviewDue}
+                        </span>
+                        <span className="font-sans text-[var(--teks-redup)]">
+                          {deck.total.toLocaleString("id-ID")} kartu
+                        </span>
+                      </div>
                     </div>
-                    <h3>
-                      <button
-                        type="button"
-                        className="text-left bg-transparent border-0 p-0 cursor-pointer"
-                        aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
-                        onClick={() => {
-                          if (displaySubdecks.length > 0) toggleDeckExpand();
-                          else navigate(`/deck/${deck.id}`);
-                        }}
-                      >
-                        {deck.title}
-                      </button>
-                    </h3>
-                    <div className="beranda-deck-counts">
-                      {s.due > 0 ? (
-                        <>
-                          <span className="is-due">{s.reviewDue} ulasan</span>
-                          <span className="is-new">{s.newToday} baru</span>
-                        </>
+
+                    <div className="beranda-deck-row__mastery flex items-center justify-end min-w-[128px]">
+                      {s.progress >= 100 ? (
+                        <Hanko char="済" size={44} title="Deck tuntas 100%" />
                       ) : (
-                        <span>Selesai hari ini</span>
-                      )}
-                      <span>{deck.total.toLocaleString("id-ID")} kartu</span>
-                    </div>
-                  </div>
-
-                  <div className="beranda-deck-prog-wrap">
-                    <div className="beranda-deck-prog-bar">
-                      <i style={{ width: `${s.progress}%` }} />
-                    </div>
-                    <small>{s.progress}% dikuasai</small>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {displaySubdecks.length > 0 ? (
-                      <Button className="outline-button" ariaExpanded={isExpanded} onClick={toggleDeckExpand}>
-                        {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
-                        <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="outline-button"
-                        onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
-                      >
-                        {s.due > 0 ? "Belajar" : "Buka"}
-                      </Button>
-                    )}
-                  </div>
-                </article>
-
-                {displaySubdecks.length > 0 && isExpanded && (
-                  <div className="px-5 pb-4 pt-1 bg-[var(--tsuki)]/50">
-                    <div className="dk-card-subdecks-wrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="dk-quick-levels">
-                        <div className="dk-quick-levels-label">
-                          <span>Pilih Level Belajar:</span>
-                          <small>{displaySubdecks.length} sub-deck</small>
+                        <div className="w-full max-w-[140px]">
+                          <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />
                         </div>
-                        <div className="dk-quick-levels-chips">
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {displaySubdecks.length > 0 ? (
+                        <Button className="outline-button" ariaExpanded={isExpanded} onClick={toggleDeckExpand}>
+                          {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
+                          <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
+                        </Button>
+                      ) : (
+                        <Button
+                          className="outline-button"
+                          onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
+                        >
+                          {s.due > 0 ? "Belajar" : "Buka"}
+                        </Button>
+                      )}
+                    </div>
+                  </article>
+
+                  {displaySubdecks.length > 0 && isExpanded && (
+                    <div className="px-5 pb-4 pt-2 bg-[var(--kertas-2)]/60 border-t border-[var(--garis)]">
+                      <div className="dk-card-subdecks-wrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="dk-quick-levels">
+                          <div className="dk-quick-levels-label">
+                            <span>Pilih Level Belajar:</span>
+                            <small>{displaySubdecks.length} sub-deck</small>
+                          </div>
+                          <div className="dk-quick-levels-chips">
+                            {sortedSubdecks.map((c) => {
+                              const cs = st(c);
+                              const lvlLabel = c.subdeckName || c.level.split("•")[0].trim() || c.kanji;
+                              return (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  className="dk-quick-chip indigo"
+                                  onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
+                                >
+                                  <strong>{lvlLabel}</strong>
+                                  <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="dk-card-subdecks-drawer">
                           {sortedSubdecks.map((c) => {
                             const cs = st(c);
-                            const lvlLabel = c.subdeckName || c.level.split("•")[0].trim() || c.kanji;
+                            const code = extractLevelCode(c.title) ?? extractLevelCode(c.subdeckName || "") ?? "N3";
                             return (
-                              <button
-                                key={c.id}
-                                type="button"
-                                className={`dk-quick-chip ${c.color}`}
-                                onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
-                              >
-                                <strong>{lvlLabel}</strong>
-                                <small>{cs.due > 0 ? cs.due : "✓"}</small>
-                              </button>
+                              <div key={c.id} className="dk-card-subdeck-item">
+                                <button
+                                  type="button"
+                                  className="dk-card-subdeck-item-left"
+                                  onClick={() => navigate(`/deck/${c.id}`)}
+                                >
+                                  <DyeTile step={jlptDyeStep(code)} kanji={c.kanji} size={32} />
+                                  <span>
+                                    <strong>{c.subdeckName || c.title}</strong>
+                                    <small className="font-mono">
+                                      新 {cs.newToday} · 復 {cs.reviewDue} · {c.total.toLocaleString("id-ID")} kartu
+                                    </small>
+                                  </span>
+                                </button>
+                                <div className="dk-card-subdeck-item-right">
+                                  <button
+                                    type="button"
+                                    className="dk-subdeck-study-btn"
+                                    onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
+                                  >
+                                    Belajar
+                                  </button>
+                                </div>
+                              </div>
                             );
                           })}
                         </div>
                       </div>
-                      <div className="dk-card-subdecks-drawer">
-                        {sortedSubdecks.map((c) => {
-                          const cs = st(c);
-                          return (
-                            <div
-                              key={c.id}
-                              className="dk-card-subdeck-item"
-                            >
-                              <button
-                                type="button"
-                                className="dk-card-subdeck-item-left"
-                                onClick={() => navigate(`/deck/${c.id}`)}
-                              >
-                                <span className={`deck-art ${c.color} dk-subdeck-kanji`}>{c.kanji}</span>
-                                <span>
-                                  <strong>{c.subdeckName || c.title}</strong>
-                                  <small>{c.total.toLocaleString("id-ID")} kartu</small>
-                                </span>
-                              </button>
-                              <div className="dk-card-subdeck-item-right">
-                                <button
-                                  type="button"
-                                  className="dk-subdeck-study-btn"
-                                  onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
-                                >
-                                  Belajar
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <article className="week-card">
-        <div className="section-heading compact">
-          <div>
-            <h2>Ritme minggu ini</h2>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <span className="goal">
-            {activeDayStat.full}: {activeDayStat.cards} kartu
-          </span>
-        </div>
-        <div className="week-bars">
-          {WEEK_DATA.map((d, i) => {
-            const isToday = i === todayWeekIdx;
-            const isSelected = (hoveredDay ?? todayWeekIdx) === i;
-            return (
-              <button
-                type="button"
-                className={`day cursor-pointer${isToday ? " is-today" : ""}`}
-                key={i}
-                aria-pressed={isSelected}
-                aria-label={`${d.full}: ${d.mins} menit, ${d.cards} kartu`}
-                onMouseEnter={() => setHoveredDay(i)}
-                onMouseLeave={() => setHoveredDay(null)}
-                onFocus={() => setHoveredDay(i)}
-                onClick={() => setHoveredDay(i)}
-                title={`${d.full}: ${d.mins} menit • ${d.cards} kartu`}
-              >
-                <span className="bar">
-                  <i
-                    style={{
-                      height: `${d.pct}%`,
-                      background: isToday ? "var(--shu)" : isSelected ? "var(--kon)" : undefined,
-                    }}
-                  />
-                </span>
-                <span
-                  lang="ja"
-                  style={{
-                    fontWeight: isToday || isSelected ? 700 : 500,
-                    color: isToday ? "var(--shu)" : isSelected ? "var(--kon)" : undefined,
-                  }}
+        </section>
+
+        {/* KOLOM KANAN: DUA KARTU (TUJUH HARI KE DEPAN & KUOTA HARI INI) */}
+        <aside className="lg:col-span-4 space-y-5">
+          {/* 1. Tujuh hari ke depan */}
+          <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
+            <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
+              <div>
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                  予習と復習
+                </p>
+                <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
+                  Tujuh hari ke depan
+                </h2>
+              </div>
+              <span className="text-xs font-mono text-[var(--teks-redup)]">
+                Ulasan + Baru
+              </span>
+            </div>
+
+            <div className="beranda-forecast-grid" role="list" aria-label="Proyeksi beban belajar tujuh hari ke depan">
+              {forecastData.map((d, idx) => (
+                <div
+                  key={idx}
+                  role="listitem"
+                  aria-label={`${d.label}: ${d.count} kartu (${d.reviewCount} ulasan, ${d.newCount} kartu baru)`}
+                  className="beranda-forecast-col"
                 >
-                  {d.label}
+                  <span
+                    className={`text-[11px] font-mono ${
+                      idx === 0 ? "font-bold text-[var(--kon)]" : "text-[var(--teks-redup)]"
+                    }`}
+                  >
+                    {d.count}
+                  </span>
+                  <div className="beranda-forecast-bar-wrap">
+                    <div
+                      className="beranda-forecast-bar"
+                      style={{
+                        height: `${d.heightPct}%`,
+                        backgroundColor: d.color,
+                      }}
+                    />
+                  </div>
+                  <span
+                    lang="ja"
+                    className={`text-xs font-serif ${
+                      idx === 0 ? "font-bold text-[var(--kon)]" : "text-[var(--teks-redup)]"
+                    }`}
+                  >
+                    {d.kanji}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          {/* 2. Kuota hari ini */}
+          <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
+            <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
+              <div>
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                  本日の割当
+                </p>
+                <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
+                  Kuota hari ini
+                </h2>
+              </div>
+              <span className="text-xs font-mono text-[var(--kon)] font-semibold">
+                {totalDue} aktif
+              </span>
+            </div>
+
+            <div className="divide-y divide-[var(--garis)] text-xs mt-2">
+              <div className="py-2.5 flex items-center justify-between gap-2">
+                <span className="text-[var(--tinta-2)]">Sisa kuota kartu baru (新)</span>
+                <strong className="font-mono text-sm text-[var(--kon)]">
+                  {quotaSummary.remainingNew} kartu
+                </strong>
+              </div>
+              <div className="py-2.5 flex items-center justify-between gap-2">
+                <span className="text-[var(--tinta-2)]">Ulasan jatuh tempo (復)</span>
+                <strong className="font-mono text-sm text-[var(--kon)]">
+                  {quotaSummary.reviewDueToday} / {quotaSummary.defaultReviewLimit} maks
+                </strong>
+              </div>
+              <div className="py-2.5 flex items-center justify-between gap-2">
+                <span className="text-[var(--tinta-2)]">Batas bawaan per deck</span>
+                <span className="font-mono text-[var(--teks-redup)]">
+                  {quotaSummary.defaultNewLimit} baru · {quotaSummary.defaultReviewLimit} ulas
                 </span>
-              </button>
-            );
-          })}
-        </div>
-        <p className="week-note">
-          <Icon name="flame" size={16} />{" "}
-          <span>
-            {activeDayStat.full}: belajar <strong>{activeDayStat.mins} menit</strong> ({activeDayStat.cards} kartu diulas)
-          </span>
-        </p>
-      </article>
+              </div>
+            </div>
+          </article>
+        </aside>
+      </div>
 
       <section className="mining-section">
         <div className="section-heading">
-          <div><p className="eyebrow">DARI DUNIA NYATA</p><h2>Immersion &amp; Sentence Mining</h2></div>
+          <div>
+            <p className="eyebrow">DARI DUNIA NYATA</p>
+            <h2>Immersion &amp; Sentence Mining</h2>
+          </div>
           <div className="flex items-center gap-2">
             <Button className="outline-button" onClick={() => navigate("/library")}>
               <Icon name="book" size={16} /> Buka Perpustakaan ({books.length})
@@ -518,7 +605,9 @@ export default function App() {
               </div>
               <div className="source-sentence">
                 <div className="flex items-center gap-2">
-                  <p lang="ja" className="mb-1">{source.sentence}</p>
+                  <p lang="ja" className="mb-1">
+                    {source.sentence}
+                  </p>
                   <button
                     type="button"
                     onClick={() => speakJapanese(source.sentence)}
@@ -548,7 +637,10 @@ export default function App() {
           <ImportDeckModal
             onClose={() => setModal(null)}
             onImported={(_id, title) => saveAction(`Deck "${title}" berhasil diimpor`)}
-            onStudy={(id) => { setModal(null); navigate(`/deck/${id}/review`); }}
+            onStudy={(id) => {
+              setModal(null);
+              navigate(`/deck/${id}/review`);
+            }}
           />
         </Suspense>
       )}
@@ -575,11 +667,15 @@ export default function App() {
             aria-labelledby="mining-modal-title"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <Button className="modal-close" ariaLabel="Tutup" onClick={() => setModal(null)}><Icon name="close" /></Button>
+            <Button className="modal-close" ariaLabel="Tutup" onClick={() => setModal(null)}>
+              <Icon name="close" />
+            </Button>
             <span className="modal-kanji">採</span>
             <p className="eyebrow">MULAI MENAMBANG</p>
             <h2 id="mining-modal-title">Pilih sumber immersion</h2>
-            <p className="modal-copy">Ubah konten Jepang favoritmu menjadi materi belajar kontekstual.</p>
+            <p className="modal-copy">
+              Ubah konten Jepang favoritmu menjadi materi belajar kontekstual.
+            </p>
             <div className="source-options">
               {[
                 { label: "Novel (EPUB & TXT)", path: "/library", icon: "book" as const },
@@ -603,7 +699,12 @@ export default function App() {
         </div>
       )}
 
-      {notice && <div className="toast"><Icon name="check" size={18} />{notice}</div>}
+      {notice && (
+        <div className="toast">
+          <Icon name="check" size={18} />
+          {notice}
+        </div>
+      )}
     </>
   );
 }

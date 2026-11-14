@@ -152,6 +152,47 @@ export function forecastNew(
 }
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const KANJI_WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"] as const;
+const KANJI_DIGITS = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"] as const;
+
+export function toKanjiNumber(n: number): string {
+  if (n <= 0) return KANJI_DIGITS[0];
+  if (n < 10) return KANJI_DIGITS[n];
+  if (n === 10) return "十";
+  if (n < 20) return `十${KANJI_DIGITS[n - 10]}`;
+  if (n < 100) {
+    const tens = Math.floor(n / 10);
+    const ones = n % 10;
+    return `${KANJI_DIGITS[tens]}十${ones > 0 ? KANJI_DIGITS[ones] : ""}`;
+  }
+  return String(n)
+    .split("")
+    .map((d) => KANJI_DIGITS[Number(d)] ?? d)
+    .join("");
+}
+
+/** Format tanggal ke kanji vertikal tradisional, mis. "十一月十四日・土". */
+export function formatKanjiDate(now: Date | number = Date.now()): string {
+  const d = typeof now === "number" ? new Date(now) : now;
+  const month = toKanjiNumber(d.getMonth() + 1);
+  const day = toKanjiNumber(d.getDate());
+  const wday = KANJI_WEEKDAYS[d.getDay()];
+  return `${month}月${day}日・${wday}`;
+}
+
+/** Label kanji hari dalam seminggu ("日", "月", "火", "水", "木", "金", "土") untuk `days` hari ke depan. */
+export function forecastKanji(
+  days = 7,
+  now: Date | number = Date.now(),
+  dayStartHour?: number,
+): string[] {
+  const h = resolveDayStartHour(dayStartHour);
+  const todayStart = startOfStudyDay(now, h);
+  return Array.from(
+    { length: days },
+    (_, i) => KANJI_WEEKDAYS[new Date(todayStart + i * DAY).getDay()],
+  );
+}
 
 export function forecastLabels(
   days = 7,
