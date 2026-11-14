@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { SRSCard, initCard, reviewCard, isDue, getDueCards } from "../lib/srs";
+import {
+  DEFAULT_DAY_START_HOUR,
+  normalizeStudyDayKey,
+  studyDayKey,
+} from "../lib/studyDay";
+import { useAppStore } from "./useAppStore";
 
 const fallbackMemoryStorage = new Map<string, string>();
 
@@ -39,7 +45,17 @@ const safeStateStorage: StateStorage = {
   },
 };
 
-const today = () => new Date().toDateString();
+function resolveDayStartHour(dayStartHour?: number): number {
+  if (dayStartHour !== undefined) return dayStartHour;
+  try {
+    return useAppStore.getState()?.settings?.dayStartHour ?? DEFAULT_DAY_START_HOUR;
+  } catch {
+    return DEFAULT_DAY_START_HOUR;
+  }
+}
+
+const currentStudyDay = (now: Date | number = Date.now(), dayStartHour?: number) =>
+  studyDayKey(now, resolveDayStartHour(dayStartHour));
 
 interface ReviewStore {
   srsCards: Record<string, Record<string, SRSCard>>; // deckId -> cardId -> SRSCard
@@ -89,23 +105,31 @@ export const useReviewStore = create<ReviewStore>()(
         });
       },
       reviewCardAction: (deckId, cardId, quality) => {
+        const now = Date.now();
+        const dayStartHour = resolveDayStartHour();
+        const dayKey = currentStudyDay(now, dayStartHour);
         const state = get();
         const deckCards = state.srsCards[deckId] || {};
         const isNew = !deckCards[cardId];
-        const card = deckCards[cardId] || initCard(cardId);
-        const updated = reviewCard(card, quality);
+        const card = deckCards[cardId] || initCard(cardId, now);
+        const updated = reviewCard(card, quality, now, dayStartHour);
         set((state) => {
           const prev = state.newIntroduced[deckId];
-          const count = prev?.date === today() ? prev.count : 0;
+          const count = normalizeStudyDayKey(prev?.date) === dayKey ? prev.count : 0;
           const act = state.activity[deckId];
-          const actCount = act?.date === today() ? act.count : 0;
+          const actCount = normalizeStudyDayKey(act?.date) === dayKey ? act.count : 0;
           return {
             srsCards: {
               ...state.srsCards,
               [deckId]: { ...(state.srsCards[deckId] || {}), [cardId]: updated },
             },
-            newIntroduced: isNew ? { ...state.newIntroduced, [deckId]: { date: today(), count: count + 1 } } : state.newIntroduced,
-            activity: { ...state.activity, [deckId]: { last: Date.now(), date: today(), count: actCount + 1 } },
+            newIntroduced: isNew
+              ? { ...state.newIntroduced, [deckId]: { date: dayKey, count: count + 1 } }
+              : state.newIntroduced,
+            activity: {
+              ...state.activity,
+              [deckId]: { last: now, date: dayKey, count: actCount + 1 },
+            },
           };
         });
         return updated;
@@ -125,7 +149,10 @@ export const useReviewStore = create<ReviewStore>()(
         set((state) => ({
           srsCards: {
             ...state.srsCards,
-            [deckId]: { ...(state.srsCards[deckId] || {}), ...Object.fromEntries(cards.map((c) => [c.id, c])) },
+            [deckId]: {
+              ...(state.srsCards[deckId] || {}),
+              ...Object.fromEntries(cards.map((c) => [c.id, c])),
+            },
           },
         })),
       forgetCards: (deckId, cardIds) =>
@@ -138,6 +165,7 @@ export const useReviewStore = create<ReviewStore>()(
         }),
       restoreCardState: (deckId, cardId, prevCard, wasNew) =>
         set((state) => {
+          const dayKey = currentStudyDay();
           const deckCards = { ...(state.srsCards[deckId] || {}) };
           if (prevCard) {
             deckCards[cardId] = prevCard;
@@ -146,12 +174,12 @@ export const useReviewStore = create<ReviewStore>()(
           }
           const prevIntro = state.newIntroduced[deckId];
           const nextIntroCount =
-            wasNew && prevIntro?.date === today()
+            wasNew && normalizeStudyDayKey(prevIntro?.date) === dayKey
               ? Math.max(0, prevIntro.count - 1)
               : prevIntro?.count ?? 0;
           const prevAct = state.activity[deckId];
           const nextActCount =
-            prevAct?.date === today()
+            normalizeStudyDayKey(prevAct?.date) === dayKey
               ? Math.max(0, prevAct.count - 1)
               : prevAct?.count ?? 0;
 
@@ -183,18 +211,58 @@ export const useReviewStore = create<ReviewStore>()(
       name: "japanese-review-storage",
       version: 1,
       storage: createJSONStorage(() => safeStateStorage),
-      migrate: (persistedState) => persistedState as ReviewStore,
-    }
-  )
+      migrate: (persistedState) => migrateReviewState(persistedState),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...migrateReviewState(persistedState),
+      }),
+    },
+  ),
 );
 
+function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
+  const raw = (persistedState ?? {}) as Partial<ReviewStore>;
+  const nextIntro: ReviewStore["newIntroduced"] = {};
+  if (raw.newIntroduced && typeof raw.newIntroduced === "object") {
+    for (const [k, v] of Object.entries(raw.newIntroduced)) {
+      if (v && typeof v.date === "string") {
+        nextIntro[k] = { ...v, date: normalizeStudyDayKey(v.date) };
+      }
+    }
+  }
+  const nextAct: ReviewStore["activity"] = {};
+  if (raw.activity && typeof raw.activity === "object") {
+    for (const [k, v] of Object.entries(raw.activity)) {
+      if (v && typeof v.date === "string") {
+        nextAct[k] = { ...v, date: normalizeStudyDayKey(v.date) };
+      }
+    }
+  }
+  return {
+    ...raw,
+    ...(raw.newIntroduced ? { newIntroduced: nextIntro } : {}),
+    ...(raw.activity ? { activity: nextAct } : {}),
+  };
+}
+
 /** New cards still allowed today for a deck. */
-export function newCardsLeftToday(intro: ReviewStore["newIntroduced"][string] | undefined, limit: number) {
-  const used = intro?.date === today() ? intro.count : 0;
+export function newCardsLeftToday(
+  intro: ReviewStore["newIntroduced"][string] | undefined,
+  limit: number,
+  now: Date | number = Date.now(),
+  dayStartHour?: number,
+) {
+  const dayKey = currentStudyDay(now, dayStartHour);
+  const used = normalizeStudyDayKey(intro?.date) === dayKey ? intro!.count : 0;
   return Math.max(0, limit - used);
 }
 
 /** Cards graded today for a deck (0 if the last activity was on an earlier day). */
-export function reviewedToday(act: DeckActivity | undefined) {
-  return act?.date === today() ? act.count : 0;
+export function reviewedToday(
+  act: DeckActivity | undefined,
+  now: Date | number = Date.now(),
+  dayStartHour?: number,
+) {
+  const dayKey = currentStudyDay(now, dayStartHour);
+  return normalizeStudyDayKey(act?.date) === dayKey ? act!.count : 0;
 }

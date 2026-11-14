@@ -16,6 +16,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const [level, setLevel] = useState(user?.level || "N3");
   const [newCards, setNewCards] = useState(settings.newCards);
   const [maxReview, setMaxReview] = useState(settings.maxReview);
+  const [dayStartHour, setDayStartHour] = useState(settings.dayStartHour ?? 4);
   const [furi, setFuri] = useState(settings.furi);
   const [audio, setAudio] = useState(settings.audio);
   const [romaji, setRomaji] = useState(settings.romaji);
@@ -35,6 +36,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
     updateSettings({
       newCards,
       maxReview,
+      dayStartHour,
       furi,
       audio,
       romaji,
@@ -66,6 +68,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
           <div className="st-title"><span><Icon name="target" size={18} /></span><div><h3>Ritme belajar</h3><p>Batas harian agar tetap konsisten</p></div></div>
           <div className="st-range"><div><span>Kartu baru per hari</span><b>{newCards}</b></div><input type="range" min={5} max={50} step={5} value={newCards} onChange={(e) => setNewCards(+e.target.value)} aria-label="Kartu baru per hari" /></div>
           <div className="st-range"><div><span>Maksimum review per hari</span><b>{maxReview}</b></div><input type="range" min={40} max={300} step={20} value={maxReview} onChange={(e) => setMaxReview(+e.target.value)} aria-label="Maksimum review per hari" /></div>
+          <div className="st-range"><div><span>Pergantian hari belajar</span><b>{String(dayStartHour).padStart(2, "0")}:00</b></div><input type="range" min={0} max={8} step={1} value={dayStartHour} onChange={(e) => setDayStartHour(+e.target.value)} aria-label="Pergantian hari belajar" /></div>
           <p className="st-note">Estimasi waktu: sekitar <strong>{Math.round((newCards * 1.2 + maxReview * 0.18) / 5) * 5} menit</strong> per hari.</p>
         </section>
 

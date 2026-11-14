@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createJSONStorage } from "zustand/middleware";
 import { newCardsLeftToday, reviewedToday, useReviewStore } from "../useReviewStore";
 import { forecast, liveDeckStats } from "../../lib/deckStats";
-import type { DeckItem } from "../useAppStore";
+import { useAppStore, type DeckItem } from "../useAppStore";
+import { studyDayKey } from "../../lib/studyDay";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -23,13 +24,15 @@ function makeDeck(overrides: Partial<DeckItem> = {}): DeckItem {
   };
 }
 
-describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini", () => {
+describe("Tahap 0 & 1 — useReviewStore, deckStats & batas pergantian hari belajar (dayStartHour)", () => {
   const memStore = new Map<string, string>();
+  const appMemStore = new Map<string, string>();
 
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 4, 10, 10, 0, 0, 0)); // 10 Mei 2026 10:00 waktu lokal
     memStore.clear();
+    appMemStore.clear();
     useReviewStore.persist.setOptions({
       storage: createJSONStorage(() => ({
         getItem: (name) => memStore.get(name) ?? null,
@@ -41,6 +44,18 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
         },
       })),
     });
+    useAppStore.persist.setOptions({
+      storage: createJSONStorage(() => ({
+        getItem: (name) => appMemStore.get(name) ?? null,
+        setItem: (name, value) => {
+          appMemStore.set(name, value);
+        },
+        removeItem: (name) => {
+          appMemStore.delete(name);
+        },
+      })),
+    });
+    useAppStore.getState().updateSettings({ dayStartHour: 4, newCards: 15, maxReview: 120 });
     useReviewStore.setState({
       srsCards: {},
       newIntroduced: {},
@@ -52,26 +67,38 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
     vi.useRealTimers();
   });
 
-  it("newCardsLeftToday berkurang saat kartu baru dinilai dan reset di hari berikutnya", () => {
+  it("newCardsLeftToday berkurang saat kartu baru dinilai dan reset tepat pada dayStartHour (bukan tengah malam)", () => {
     const deckId = "deck-1";
     const limit = 5;
 
+    useAppStore.getState().updateSettings({ dayStartHour: 4 });
+    vi.setSystemTime(new Date(2026, 4, 10, 23, 30, 0, 0)); // 10 Mei 23:30
+
     expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(5);
 
-    // Nilai 2 kartu baru
+    // Nilai 2 kartu baru pukul 23:30
     useReviewStore.getState().reviewCardAction(deckId, "c1", 4);
     useReviewStore.getState().reviewCardAction(deckId, "c2", 4);
 
     expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(3);
     expect(reviewedToday(useReviewStore.getState().activity[deckId])).toBe(2);
 
-    // Menilai ulang kartu yang sudah ada di srsCards tidak mengurangi jatah kartu baru
-    useReviewStore.getState().reviewCardAction(deckId, "c1", 4);
+    // Pukul 00:30 dan 03:59 dini hari (sebelum dayStartHour = 4) -> belum reset!
+    vi.setSystemTime(new Date(2026, 4, 11, 0, 30, 0, 0));
     expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(3);
+    expect(reviewedToday(useReviewStore.getState().activity[deckId])).toBe(2);
+
+    // Menilai kartu baru lagi pukul 02:00 masih mengurangi kuota hari belajar 10 Mei
+    vi.setSystemTime(new Date(2026, 4, 11, 2, 0, 0, 0));
+    useReviewStore.getState().reviewCardAction(deckId, "c3", 4);
+    expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(2);
     expect(reviewedToday(useReviewStore.getState().activity[deckId])).toBe(3);
 
-    // Pindah ke hari berikutnya
-    vi.setSystemTime(new Date(2026, 4, 11, 9, 0, 0, 0));
+    vi.setSystemTime(new Date(2026, 4, 11, 3, 59, 59, 0));
+    expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(2);
+
+    // Tepat pukul 04:00 (dayStartHour = 4) -> penghitung kartu baru & activity reset!
+    vi.setSystemTime(new Date(2026, 4, 11, 4, 0, 0, 0));
     expect(newCardsLeftToday(useReviewStore.getState().newIntroduced[deckId], limit)).toBe(5);
     expect(reviewedToday(useReviewStore.getState().activity[deckId])).toBe(0);
   });
@@ -119,17 +146,17 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
     ]);
 
     // 1 kartu baru sudah dipelajari hari ini dari batas 5 -> sisa 4 kartu baru hari ini
-    const todayStr = new Date().toDateString();
+    const todayKey = studyDayKey(now, 4);
     useReviewStore.setState((s) => ({
       ...s,
-      newIntroduced: { "d-stats": { date: todayStr, count: 1 } },
+      newIntroduced: { "d-stats": { date: todayKey, count: 1 } },
     }));
 
     const st = liveDeckStats(
       deck,
       useReviewStore.getState().srsCards["d-stats"],
       useReviewStore.getState().newIntroduced["d-stats"],
-      { newCards: 5, maxReview: 100 },
+      { newCards: 5, maxReview: 100, dayStartHour: 4 },
     );
 
     expect(st.reviewDue).toBe(1); // c1
@@ -140,11 +167,11 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
     expect(st.learning).toBe(1); // c2
     expect(st.progress).toBe(20); // 2 / 10 = 20%
 
-    const fc = forecast([useReviewStore.getState().srsCards["d-stats"]], 7);
+    const fc = forecast([useReviewStore.getState().srsCards["d-stats"]], 7, now, 4);
     expect(fc).toEqual([1, 1, 0, 1, 0, 0, 0]);
   });
 
-  it("memigrasikan data lama tanpa version ke version 1 tanpa kehilangan state", async () => {
+  it("memigrasikan data lama tanpa version di useReviewStore dan menormalisasi tanggal toDateString() lama", async () => {
     const legacyPayload = {
       state: {
         srsCards: {
@@ -165,14 +192,13 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
           "deck-legacy": { last: 1778390000000, date: "Sun May 10 2026", count: 9 },
         },
       },
-      // Tidak ada field `version` (data sebelum Tahap 0)
     };
 
     memStore.set("japanese-review-storage", JSON.stringify(legacyPayload));
     await useReviewStore.persist.rehydrate();
 
     const state = useReviewStore.getState();
-    expect( useReviewStore.persist.getOptions().version ).toBe(1);
+    expect(useReviewStore.persist.getOptions().version).toBe(1);
     expect(state.srsCards["deck-legacy"]?.["card-1"]).toEqual({
       id: "card-1",
       easeFactor: 2.5,
@@ -181,13 +207,41 @@ describe("Tahap 0 — Dokumentasi perilaku useReviewStore & deckStats saat ini",
       nextReview: 1778400000000,
     });
     expect(state.newIntroduced["deck-legacy"]).toEqual({
-      date: "Sun May 10 2026",
+      date: "2026-05-10",
       count: 4,
     });
     expect(state.activity["deck-legacy"]).toEqual({
       last: 1778390000000,
-      date: "Sun May 10 2026",
+      date: "2026-05-10",
       count: 9,
     });
+    // Hitungan hari ini tetap terbaca utuh setelah migrasi
+    expect(newCardsLeftToday(state.newIntroduced["deck-legacy"], 10)).toBe(6);
+    expect(reviewedToday(state.activity["deck-legacy"])).toBe(9);
+  });
+
+  it("memigrasikan useAppStore v2 ke v3 dengan mengisi settings.dayStartHour bawaan = 4", async () => {
+    const legacyAppPayload = {
+      state: {
+        settings: {
+          newCards: 20,
+          maxReview: 150,
+          furi: true,
+          audio: true,
+          romaji: false,
+          remind: true,
+          time: "19:30",
+          weekly: true,
+          size: "Sedang",
+        },
+      },
+      version: 2,
+    };
+
+    appMemStore.set("japanese-learning-storage", JSON.stringify(legacyAppPayload));
+    await useAppStore.persist.rehydrate();
+
+    expect(useAppStore.getState().settings.dayStartHour).toBe(4);
+    expect(useAppStore.getState().settings.newCards).toBe(20);
   });
 });

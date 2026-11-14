@@ -1,5 +1,43 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
+import { clampDayStartHour, DEFAULT_DAY_START_HOUR } from "../lib/studyDay";
+
+const fallbackAppMemoryStorage = new Map<string, string>();
+
+const safeAppStateStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
+        return localStorage.getItem(name);
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    return fallbackAppMemoryStorage.get(name) ?? null;
+  },
+  setItem: (name, value) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
+        localStorage.setItem(name, value);
+        return;
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    fallbackAppMemoryStorage.set(name, value);
+  },
+  removeItem: (name) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.removeItem === "function") {
+        localStorage.removeItem(name);
+        return;
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    fallbackAppMemoryStorage.delete(name);
+  },
+};
 
 export interface DeckImportMeta {
   fileName: string;
@@ -86,6 +124,7 @@ interface AppState {
   settings: {
     newCards: number;
     maxReview: number;
+    dayStartHour: number;
     furi: boolean;
     audio: boolean;
     romaji: boolean;
@@ -336,6 +375,7 @@ export const useAppStore = create<AppState>()(
       settings: {
         newCards: 15,
         maxReview: 120,
+        dayStartHour: DEFAULT_DAY_START_HOUR,
         furi: true,
         audio: true,
         romaji: false,
@@ -346,22 +386,47 @@ export const useAppStore = create<AppState>()(
       },
       updateSettings: (newSettings) =>
         set((state) => ({
-          settings: { ...state.settings, ...newSettings },
+          settings: {
+            ...state.settings,
+            ...newSettings,
+            dayStartHour:
+              newSettings.dayStartHour !== undefined
+                ? clampDayStartHour(newSettings.dayStartHour)
+                : state.settings.dayStartHour,
+          },
         })),
     }),
     {
       name: "japanese-learning-storage",
-      version: 2,
+      version: 3,
+      storage: createJSONStorage(() => safeAppStateStorage),
       // v2: every deck is "live" (cards in IndexedDB). The old demo decks carried fake
       // due/total/progress numbers; convert them to real seeded decks.
+      // v3: adds settings.dayStartHour (default 4).
       migrate: (persisted, version) => {
-        const state = persisted as Partial<AppState>;
+        const state = (persisted ?? {}) as Partial<AppState>;
         if (version < 2 && Array.isArray(state.decks)) {
           state.decks = state.decks.map((d) =>
             d.source
               ? d
               : { ...d, source: "manual" as const, due: 0, progress: 0, total: SEED_TOTALS[d.id] ?? 0 },
           );
+        }
+        if (state.settings) {
+          state.settings = {
+            newCards: 15,
+            maxReview: 120,
+            dayStartHour: DEFAULT_DAY_START_HOUR,
+            furi: true,
+            audio: true,
+            romaji: false,
+            remind: true,
+            time: "19:30",
+            weekly: true,
+            size: "Sedang",
+            ...state.settings,
+            dayStartHour: clampDayStartHour(state.settings.dayStartHour ?? DEFAULT_DAY_START_HOUR),
+          };
         }
         return state as AppState;
       },

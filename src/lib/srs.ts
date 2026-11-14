@@ -1,6 +1,8 @@
 // Simple SRS (Spaced Repetition System) based on SM-2 algorithm
 // Quality: 0 (total blackout) to 5 (perfect recall)
 
+import { DEFAULT_DAY_START_HOUR, scheduleNextStudyDay } from "./studyDay";
+
 export interface SRSCard {
   id: string;
   easeFactor: number; // 1.3 to 2.5+
@@ -9,17 +11,26 @@ export interface SRSCard {
   nextReview: number; // Unix timestamp (ms)
 }
 
-export function initCard(id: string): SRSCard {
+function toMs(now: Date | number = Date.now()): number {
+  return typeof now === "number" ? now : now.getTime();
+}
+
+export function initCard(id: string, now: Date | number = Date.now()): SRSCard {
   return {
     id,
     easeFactor: 2.5,
     interval: 1,
     repetitions: 0,
-    nextReview: Date.now(),
+    nextReview: toMs(now),
   };
 }
 
-export function reviewCard(card: SRSCard, quality: number): SRSCard {
+export function reviewCard(
+  card: SRSCard,
+  quality: number,
+  now: Date | number = Date.now(),
+  dayStartHour: number = DEFAULT_DAY_START_HOUR,
+): SRSCard {
   // Clamp quality to 0-5
   const q = Math.max(0, Math.min(5, quality));
 
@@ -46,7 +57,7 @@ export function reviewCard(card: SRSCard, quality: number): SRSCard {
     }
   }
 
-  const nextReview = Date.now() + newInterval * 24 * 60 * 60 * 1000;
+  const nextReview = scheduleNextStudyDay(now, newInterval, dayStartHour);
 
   return {
     ...card,
@@ -57,10 +68,15 @@ export function reviewCard(card: SRSCard, quality: number): SRSCard {
   };
 }
 
-export function isDue(card: SRSCard): boolean {
-  return card.nextReview <= Date.now();
+export function isDue(card: SRSCard, now?: Date | number, _filterArr?: unknown): boolean {
+  const nowMs =
+    now === undefined || Array.isArray(_filterArr)
+      ? Date.now()
+      : toMs(now);
+  return card.nextReview <= nowMs;
 }
 
-export function getDueCards(cards: SRSCard[]): SRSCard[] {
-  return cards.filter(isDue).sort((a, b) => a.nextReview - b.nextReview);
+export function getDueCards(cards: SRSCard[], now: Date | number = Date.now()): SRSCard[] {
+  const nowMs = toMs(now);
+  return cards.filter((c) => isDue(c, nowMs)).sort((a, b) => a.nextReview - b.nextReview);
 }
