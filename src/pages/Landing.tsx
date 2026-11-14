@@ -261,12 +261,20 @@ const NAV_LINKS = [
   { id: "faq", label: "FAQ" },
 ] as const;
 
+const NAV_PILL_SPRING = {
+  type: "spring" as const,
+  stiffness: 420,
+  damping: 34,
+  mass: 0.78,
+};
+
 function LandingNav({ loggedIn }: { loggedIn: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string>(NAV_LINKS[0].id);
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const targetLockRef = useRef<{ id: string; until: number } | null>(null);
   const location = useLocation();
 
   // Keadaan "scrolled" setelah > 24px
@@ -277,11 +285,39 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Scrollspy deterministik berbasis posisi section terhadap ambang batas bawah pill
+  // Scrollspy deterministik dengan lock singkat saat loncat anchor agar pill meluncur mulus sekali jalan
   useEffect(() => {
     let rafId = 0;
+
+    const clearLockIfManual = () => {
+      targetLockRef.current = null;
+    };
+
     const updateActive = () => {
       rafId = 0;
+      const lock = targetLockRef.current;
+      if (lock) {
+        const now = performance.now();
+        const targetEl = document.getElementById(lock.id);
+        const atBottom =
+          lock.id === NAV_LINKS[NAV_LINKS.length - 1].id &&
+          window.scrollY + window.innerHeight >=
+            document.documentElement.scrollHeight - 24;
+        const settledAtTarget =
+          lock.id === NAV_LINKS[0].id
+            ? window.scrollY <= 12
+            : atBottom ||
+              (targetEl !== null &&
+                Math.abs(targetEl.getBoundingClientRect().top - 96) <= 14);
+
+        if (settledAtTarget || now >= lock.until) {
+          targetLockRef.current = null;
+        } else {
+          setActiveId(lock.id);
+          return;
+        }
+      }
+
       if (window.scrollY <= 8) {
         setActiveId(NAV_LINKS[0].id);
         return;
@@ -315,10 +351,14 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
     updateActive();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate, { passive: true });
+    window.addEventListener("wheel", clearLockIfManual, { passive: true });
+    window.addEventListener("touchmove", clearLockIfManual, { passive: true });
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("wheel", clearLockIfManual);
+      window.removeEventListener("touchmove", clearLockIfManual);
     };
   }, []);
 
@@ -359,6 +399,7 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
     href: `#${id}`,
     "aria-current": activeId === id ? ("true" as const) : undefined,
     onClick: () => {
+      targetLockRef.current = { id, until: performance.now() + 900 };
       setActiveId(id);
       setMenuOpen(false);
     },
@@ -370,7 +411,19 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
       className={`landing-nav${scrolled ? " is-scrolled" : ""}`}
       aria-label="Navigasi utama"
     >
-      <a href="#simulasi" className="lnav-brand" aria-label="GoRaku, kembali ke atas">
+      <a
+        href="#simulasi"
+        className="lnav-brand"
+        aria-label="GoRaku, kembali ke atas"
+        onClick={() => {
+          targetLockRef.current = {
+            id: NAV_LINKS[0].id,
+            until: performance.now() + 900,
+          };
+          setActiveId(NAV_LINKS[0].id);
+          setMenuOpen(false);
+        }}
+      >
         <span className="lnav-seal" lang="ja" aria-hidden="true">語</span>
         <span className="lnav-brand-copy" aria-hidden="true">
           <strong lang="ja">語楽</strong>
@@ -384,7 +437,16 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
       <div className="lnav-links">
         {NAV_LINKS.map((l) => (
           <a key={l.id} {...linkProps(l.id)}>
-            {l.label}
+            {activeId === l.id && (
+              <motion.span
+                layoutId="lnav-desktop-pill"
+                className="lnav-active-bg"
+                style={{ borderRadius: 999 }}
+                transition={NAV_PILL_SPRING}
+                aria-hidden="true"
+              />
+            )}
+            <span className="lnav-link-text">{l.label}</span>
           </a>
         ))}
       </div>
@@ -408,9 +470,23 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
       </div>
 
       <div id="lnav-panel" className="lnav-panel" data-open={menuOpen} aria-hidden={!menuOpen}>
-        {NAV_LINKS.map((l) => (
-          <a key={l.id} {...linkProps(l.id)} tabIndex={menuOpen ? undefined : -1}>
-            {l.label}
+        {NAV_LINKS.map((l, idx) => (
+          <a
+            key={l.id}
+            {...linkProps(l.id)}
+            tabIndex={menuOpen ? undefined : -1}
+            style={{ "--lnav-i": idx } as React.CSSProperties}
+          >
+            {activeId === l.id && (
+              <motion.span
+                layoutId="lnav-mobile-pill"
+                className="lnav-active-bg"
+                style={{ borderRadius: 999 }}
+                transition={NAV_PILL_SPRING}
+                aria-hidden="true"
+              />
+            )}
+            <span className="lnav-link-text">{l.label}</span>
           </a>
         ))}
       </div>
