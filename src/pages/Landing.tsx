@@ -263,7 +263,7 @@ const NAV_LINKS = [
 
 function LandingNav({ loggedIn }: { loggedIn: boolean }) {
   const [scrolled, setScrolled] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string>(NAV_LINKS[0].id);
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
@@ -277,29 +277,63 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Scrollspy: section yang melintasi pita di bawah pill dianggap aktif
+  // Scrollspy deterministik berbasis posisi section terhadap ambang batas bawah pill
   useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
-    const visible = new Set<string>();
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) visible.add(e.target.id);
-          else visible.delete(e.target.id);
+    let rafId = 0;
+    const updateActive = () => {
+      rafId = 0;
+      if (window.scrollY <= 8) {
+        setActiveId(NAV_LINKS[0].id);
+        return;
+      }
+      if (
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 24
+      ) {
+        setActiveId(NAV_LINKS[NAV_LINKS.length - 1].id);
+        return;
+      }
+
+      const navBottom = navRef.current?.getBoundingClientRect().bottom ?? 80;
+      const threshold = navBottom + 48;
+      let current: string = NAV_LINKS[0].id;
+      for (const l of NAV_LINKS) {
+        const el = document.getElementById(l.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= threshold) {
+          current = l.id;
         }
-        setActiveId(NAV_LINKS.find((l) => visible.has(l.id))?.id ?? null);
-      },
-      { rootMargin: "-96px 0px -60% 0px" },
-    );
-    for (const l of NAV_LINKS) {
-      const el = document.getElementById(l.id);
-      if (el) io.observe(el);
-    }
-    return () => io.disconnect();
+      }
+      setActiveId(current);
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(updateActive);
+    };
+
+    updateActive();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
   }, []);
 
-  // Tutup menu saat halaman berpindah
+  // Tutup menu saat halaman berpindah atau viewport melebar ke desktop
   useEffect(() => setMenuOpen(false), [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(min-width: 900px)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setMenuOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // Tutup menu: Escape (fokus kembali ke tombol menu) dan klik di luar
   useEffect(() => {
@@ -324,7 +358,10 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
   const linkProps = (id: string) => ({
     href: `#${id}`,
     "aria-current": activeId === id ? ("true" as const) : undefined,
-    onClick: () => setMenuOpen(false),
+    onClick: () => {
+      setActiveId(id);
+      setMenuOpen(false);
+    },
   });
 
   return (
@@ -357,7 +394,7 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
           ref={menuBtnRef}
           type="button"
           className="lnav-menu-btn"
-          aria-label="Menu"
+          aria-label={menuOpen ? "Tutup menu" : "Menu"}
           aria-expanded={menuOpen}
           aria-controls="lnav-panel"
           onClick={() => setMenuOpen((o) => !o)}
@@ -370,9 +407,9 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
         </Link>
       </div>
 
-      <div id="lnav-panel" className="lnav-panel" data-open={menuOpen}>
+      <div id="lnav-panel" className="lnav-panel" data-open={menuOpen} aria-hidden={!menuOpen}>
         {NAV_LINKS.map((l) => (
-          <a key={l.id} {...linkProps(l.id)}>
+          <a key={l.id} {...linkProps(l.id)} tabIndex={menuOpen ? undefined : -1}>
             {l.label}
           </a>
         ))}
