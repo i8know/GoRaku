@@ -1,0 +1,3233 @@
+[
+  {
+    "width": 1440,
+    "slug": "01-landing",
+    "route": "/",
+    "shuCount": 14,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "lnav-seal",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "lnav-cta",
+        "text": "Buka DashboardDashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10.5px]",
+        "text": "語楽之印",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Lanjutkan di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Koleksi Deck",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10px]",
+        "text": "N5–N1",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Fitur di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "壱",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "弐",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "参",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "肆",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Buka Dashboard 語楽",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "brand-mark",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[9.5px]",
+        "text": "純国産ローカル",
+        "reasons": "border+text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1024,
+    "slug": "01-landing",
+    "route": "/",
+    "shuCount": 14,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "lnav-seal",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "lnav-cta",
+        "text": "Buka DashboardDashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10.5px]",
+        "text": "語楽之印",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Lanjutkan di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Koleksi Deck",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10px]",
+        "text": "N5–N1",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Fitur di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "壱",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "弐",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "参",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "肆",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Buka Dashboard 語楽",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "brand-mark",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[9.5px]",
+        "text": "純国産ローカル",
+        "reasons": "border+text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 768,
+    "slug": "01-landing",
+    "route": "/",
+    "shuCount": 14,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "lnav-seal",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "lnav-cta",
+        "text": "Buka DashboardDashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10.5px]",
+        "text": "語楽之印",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Lanjutkan di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Koleksi Deck",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10px]",
+        "text": "N5–N1",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Fitur di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "壱",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "弐",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "参",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "肆",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Buka Dashboard 語楽",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "brand-mark",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[9.5px]",
+        "text": "純国産ローカル",
+        "reasons": "border+text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 390,
+    "slug": "01-landing",
+    "route": "/",
+    "shuCount": 14,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "lnav-seal",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "lnav-cta",
+        "text": "Buka DashboardDashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10.5px]",
+        "text": "語楽之印",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Lanjutkan di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Koleksi Deck",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10px]",
+        "text": "N5–N1",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Fitur di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "壱",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "弐",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "参",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "肆",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Buka Dashboard 語楽",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "brand-mark",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[9.5px]",
+        "text": "純国産ローカル",
+        "reasons": "border+text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 320,
+    "slug": "01-landing",
+    "route": "/",
+    "shuCount": 14,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "lnav-seal",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "lnav-cta",
+        "text": "Buka DashboardDashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10.5px]",
+        "text": "語楽之印",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Lanjutkan di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Koleksi Deck",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[10px]",
+        "text": "N5–N1",
+        "reasons": "border+text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buka Fitur di Dashboard",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "壱",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "弐",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "参",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "step-num",
+        "text": "肆",
+        "reasons": "bg"
+      },
+      {
+        "tag": "a",
+        "className": "primary-light no-underline",
+        "text": "Buka Dashboard 語楽",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "brand-mark",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "jp-hanko text-[9.5px]",
+        "text": "純国産ローカル",
+        "reasons": "border+text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 1440,
+    "slug": "02-beranda",
+    "route": "/beranda",
+    "shuCount": 15,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "beranda-seal-cta",
+        "text": "復Mulai sesi review",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "44 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "bar",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "土",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "03-deck",
+    "route": "/deck",
+    "shuCount": 12,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "text": "80",
+        "reasons": "text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar Semua",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "04-library",
+    "route": "/library",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Tambah Novel / Manga",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Unggah Novel / Manga",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "05-mining",
+    "route": "/mining",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "modal-submit",
+        "text": "Tambah ke antrean",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "06-exam",
+    "route": "/exam",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 1",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 3",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "07-progress",
+    "route": "/progress",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "today",
+        "text": "",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "08-settings",
+    "route": "/settings",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "80",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "80jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Simpan perubahan",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "outline-button warn",
+        "text": "Reset progres review",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1440,
+    "slug": "09-review-complete",
+    "route": "/deck/ps-ankidrone/review (complete)",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "primary-light",
+        "text": "Ke Beranda",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1440,
+    "innerWidth": 1440
+  },
+  {
+    "width": 1024,
+    "slug": "02-beranda",
+    "route": "/beranda",
+    "shuCount": 15,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "beranda-seal-cta",
+        "text": "復Mulai sesi review",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "34 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "bar",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "土",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "03-deck",
+    "route": "/deck",
+    "shuCount": 12,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "text": "70",
+        "reasons": "text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar Semua",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "04-library",
+    "route": "/library",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Tambah Novel / Manga",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Unggah Novel / Manga",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "05-mining",
+    "route": "/mining",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "modal-submit",
+        "text": "Tambah ke antrean",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "06-exam",
+    "route": "/exam",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 1",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 3",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "07-progress",
+    "route": "/progress",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "today",
+        "text": "",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "08-settings",
+    "route": "/settings",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Simpan perubahan",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "outline-button warn",
+        "text": "Reset progres review",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 1024,
+    "slug": "09-review-complete",
+    "route": "/deck/ps-ankidrone/review (complete)",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "primary-light",
+        "text": "Ke Beranda",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024
+  },
+  {
+    "width": 768,
+    "slug": "02-beranda",
+    "route": "/beranda",
+    "shuCount": 15,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "beranda-seal-cta",
+        "text": "復Mulai sesi review",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "34 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "bar",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "土",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "03-deck",
+    "route": "/deck",
+    "shuCount": 12,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "text": "70",
+        "reasons": "text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar Semua",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "04-library",
+    "route": "/library",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Tambah Novel / Manga",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Unggah Novel / Manga",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "05-mining",
+    "route": "/mining",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "modal-submit",
+        "text": "Tambah ke antrean",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "06-exam",
+    "route": "/exam",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 1",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 3",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "07-progress",
+    "route": "/progress",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "today",
+        "text": "",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "08-settings",
+    "route": "/settings",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Simpan perubahan",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "outline-button warn",
+        "text": "Reset progres review",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 768,
+    "slug": "09-review-complete",
+    "route": "/deck/ps-ankidrone/review (complete)",
+    "shuCount": 7,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "primary-light",
+        "text": "Ke Beranda",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768
+  },
+  {
+    "width": 390,
+    "slug": "02-beranda",
+    "route": "/beranda",
+    "shuCount": 16,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "beranda-seal-cta",
+        "text": "復Mulai sesi review",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "34 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "bar",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "土",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "03-deck",
+    "route": "/deck",
+    "shuCount": 13,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "text": "70",
+        "reasons": "text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar Semua",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "04-library",
+    "route": "/library",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Tambah Novel / Manga",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Unggah Novel / Manga",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "05-mining",
+    "route": "/mining",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "modal-submit",
+        "text": "Tambah ke antrean",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "06-exam",
+    "route": "/exam",
+    "shuCount": 10,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 1",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 3",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "07-progress",
+    "route": "/progress",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "today",
+        "text": "",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "08-settings",
+    "route": "/settings",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Simpan perubahan",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "outline-button warn",
+        "text": "Reset progres review",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 390,
+    "slug": "09-review-complete",
+    "route": "/deck/ps-ankidrone/review (complete)",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "primary-light",
+        "text": "Ke Beranda",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  {
+    "width": 320,
+    "slug": "02-beranda",
+    "route": "/beranda",
+    "shuCount": 16,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "beranda-seal-cta",
+        "text": "復Mulai sesi review",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "34 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "is-due",
+        "text": "0 ulasan",
+        "reasons": "text"
+      },
+      {
+        "tag": "span",
+        "className": "bar",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "土",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "03-deck",
+    "route": "/deck",
+    "shuCount": 13,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Buat deck baru",
+        "reasons": "bg"
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "text": "70",
+        "reasons": "text"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar Semua",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary dk-list-btn",
+        "text": "Belajar",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "04-library",
+    "route": "/library",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Tambah Novel / Manga",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Unggah Novel / Manga",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "05-mining",
+    "route": "/mining",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "modal-submit",
+        "text": "Tambah ke antrean",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "06-exam",
+    "route": "/exam",
+    "shuCount": 10,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 1",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--sh",
+        "text": "Mulai Bagian 3",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "07-progress",
+    "route": "/progress",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "text": "",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "today",
+        "text": "",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "08-settings",
+    "route": "/settings",
+    "shuCount": 9,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "pg-primary",
+        "text": "Simpan perubahan",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "outline-button warn",
+        "text": "Reset progres review",
+        "reasons": "text"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  },
+  {
+    "width": 320,
+    "slug": "09-review-complete",
+    "route": "/deck/ps-ankidrone/review (complete)",
+    "shuCount": 8,
+    "shuElements": [
+      {
+        "tag": "span",
+        "className": "brand-mark group-hover:scale-105 transition-transform",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--sh",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "70",
+        "reasons": "bg"
+      },
+      {
+        "tag": "b",
+        "className": "nav-collapsed-badge",
+        "text": "2",
+        "reasons": "bg"
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "text": "語",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "streak hover:opacity-80 transition-opacity",
+        "text": "70jatuh tempo",
+        "reasons": "text"
+      },
+      {
+        "tag": "i",
+        "className": "",
+        "text": "",
+        "reasons": "bg"
+      },
+      {
+        "tag": "button",
+        "className": "primary-light",
+        "text": "Ke Beranda",
+        "reasons": "bg"
+      }
+    ],
+    "overflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320
+  }
+]

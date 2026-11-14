@@ -1,15 +1,51 @@
-import { chromium, devices } from "playwright";
-import { mkdirSync } from "node:fs";
+import { chromium } from "playwright";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import path from "node:path";
 
+function resolveChromiumLaunchOptions() {
+  const localAppData = process.env.LOCALAPPDATA;
+  if (!localAppData) return {};
+  const msPlaywright = path.join(localAppData, "ms-playwright");
+  if (!existsSync(msPlaywright)) return {};
+  try {
+    const dirs = readdirSync(msPlaywright);
+    for (const d of dirs) {
+      if (d.startsWith("chromium_headless_shell-")) {
+        const candidate = path.join(
+          msPlaywright,
+          d,
+          "chrome-headless-shell-win64",
+          "chrome-headless-shell.exe",
+        );
+        if (existsSync(candidate)) return { executablePath: candidate };
+      }
+      if (d.startsWith("chromium-")) {
+        const candidate = path.join(msPlaywright, d, "chrome-win64", "chrome.exe");
+        if (existsSync(candidate)) return { executablePath: candidate };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
 const args = process.argv.slice(2);
 const outIdx = args.indexOf("--out");
-const outDir = path.resolve(outIdx !== -1 && args[outIdx + 1] ? args[outIdx + 1] : "docs/redesign/before");
+const outDir = path.resolve(
+  outIdx !== -1 && args[outIdx + 1] ? args[outIdx + 1] : "docs/aizome-v2/before",
+);
+const jsonIdx = args.indexOf("--report");
+const reportPath =
+  jsonIdx !== -1 && args[jsonIdx + 1] ? path.resolve(args[jsonIdx + 1]) : null;
 const urlIdx = args.indexOf("--url");
-const BASE_URL = urlIdx !== -1 && args[urlIdx + 1] ? args[urlIdx + 1] : "http://127.0.0.1:8443";
+const BASE_URL =
+  urlIdx !== -1 && args[urlIdx + 1] ? args[urlIdx + 1] : "http://127.0.0.1:8443";
 
 mkdirSync(outDir, { recursive: true });
+
+const WIDTHS = [1440, 1024, 768, 390, 320];
 
 async function isServerUp(url) {
   try {
@@ -22,10 +58,14 @@ async function isServerUp(url) {
 
 async function ensureServer() {
   if (await isServerUp(BASE_URL)) return null;
-  const proc = spawn("node", ["node_modules/vite/bin/vite.js", "--port", "8443", "--strictPort"], {
-    stdio: "ignore",
-    detached: false,
-  });
+  const proc = spawn(
+    "node",
+    ["node_modules/vite/bin/vite.js", "--port", "8443", "--strictPort"],
+    {
+      stdio: "ignore",
+      detached: false,
+    },
+  );
   for (let i = 0; i < 40; i++) {
     if (await isServerUp(BASE_URL)) return proc;
     await new Promise((r) => setTimeout(r, 250));
@@ -34,188 +74,255 @@ async function ensureServer() {
   throw new Error(`Vite server failed to start at ${BASE_URL}`);
 }
 
-async function prepareData(page) {
-  // Public routes first
+async function prepareSession(page) {
   await page.goto(`${BASE_URL}/login`, { waitUntil: "networkidle" });
   await page.fill('input[type="email"]', "akira@immersion.jp");
   await page.click('button[type="submit"]');
   await page.waitForURL("**/beranda", { timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(450);
 
-  // Get first deck ID from /deck
   await page.goto(`${BASE_URL}/deck`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(450);
+
   const deckId = await page.evaluate(() => {
-    const links = Array.from(document.querySelectorAll('a[href^="/deck/"]'));
-    for (const a of links) {
-      const m = a.getAttribute("href")?.match(/^\/deck\/([^/]+)$/);
-      if (m) return m[1];
-    }
-    return null;
-  });
-
-  // Ensure sample novel & manga exist in /library
-  await page.goto(`${BASE_URL}/library`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(400);
-
-  const hasNovel = await page.locator('a[href^="/library/"], [data-book-kind="novel"]').count();
-  if (hasNovel === 0) {
-    const novelBtn = page.getByRole("button", { name: /Novel Contoh/i }).first();
-    if (await novelBtn.isVisible().catch(() => false)) {
-      await novelBtn.click();
-      await page.waitForTimeout(800);
-    }
-  }
-
-  const hasManga = await page.locator('a[href^="/manga/"]').count();
-  if (hasManga === 0) {
-    const mangaBtn = page.getByRole("button", { name: /Manga Contoh/i }).first();
-    if (await mangaBtn.isVisible().catch(() => false)) {
-      await mangaBtn.click();
-      await page.waitForTimeout(1200);
-    }
-  }
-
-  // Extract bookId & mangaId from links or IndexedDB
-  await page.goto(`${BASE_URL}/library`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(500);
-  const ids = await page.evaluate(async () => {
-    let novelId = null;
-    let mangaId = null;
-    for (const a of document.querySelectorAll('a[href^="/library/"]')) {
-      const m = a.getAttribute("href")?.match(/^\/library\/([^/]+)$/);
-      if (m) { novelId = m[1]; break; }
-    }
-    for (const a of document.querySelectorAll('a[href^="/manga/"]')) {
-      const m = a.getAttribute("href")?.match(/^\/manga\/([^/]+)$/);
-      if (m) { mangaId = m[1]; break; }
-    }
-    return { novelId, mangaId };
-  });
-
-  // Fallback: if Library cards use onClick navigate instead of <a>, query IndexedDB
-  let finalNovelId = ids.novelId;
-  let finalMangaId = ids.mangaId;
-  let finalDeckId = deckId;
-
-  if (!finalNovelId || !finalMangaId || !finalDeckId) {
-    const dbIds = await page.evaluate(async () => {
-      const openDb = (name) =>
-        new Promise((resolve) => {
-          const req = indexedDB.open(name);
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => resolve(null);
-        });
-      const readAll = (db, storeName) =>
-        new Promise((resolve) => {
-          if (!db || !db.objectStoreNames.contains(storeName)) return resolve([]);
-          const tx = db.transaction(storeName, "readonly");
-          const req = tx.objectStore(storeName).getAll();
-          req.onsuccess = () => resolve(req.result || []);
-          req.onerror = () => resolve([]);
-        });
-
-      const lexDb = await openDb("ma-immersion-lexicon");
-      const books = await readAll(lexDb, "books");
-      const novel = books.find((b) => b.format !== "cbz" && b.type !== "manga");
-      const manga = books.find((b) => b.format === "cbz" || b.type === "manga");
-
-      let deck = null;
-      const storeRaw = localStorage.getItem("japanese-learning-storage");
-      if (storeRaw) {
-        try {
-          const parsed = JSON.parse(storeRaw);
-          deck = parsed?.state?.decks?.[0]?.id ?? null;
-        } catch {}
+    const raw = localStorage.getItem("japanese-learning-storage");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        const decks = parsed?.state?.decks ?? [];
+        const leaf = decks.find(
+          (d) => !decks.some((other) => other.parentId === d.id) && d.total > 0,
+        );
+        if (leaf) return leaf.id;
+        if (decks[0]) return decks[0].id;
+      } catch {
+        // ignore
       }
-      return { novelId: novel?.id ?? null, mangaId: manga?.id ?? null, deckId: deck };
-    });
-    finalNovelId = finalNovelId || dbIds.novelId;
-    finalMangaId = finalMangaId || dbIds.mangaId;
-    finalDeckId = finalDeckId || dbIds.deckId;
-  }
+    }
+    return "1";
+  });
 
-  return {
-    deckId: finalDeckId || "n5",
-    novelId: finalNovelId || "sample-novel",
-    mangaId: finalMangaId || "sample-manga",
-  };
+  return { deckId };
 }
 
-async function captureViewport(browser, label, contextOptions) {
-  const ctx = await browser.newContext(contextOptions);
-  const page = await ctx.newPage();
-
-  const publicRoutes = [
-    ["01-landing", "/"],
-    ["02-login", "/login"],
-  ];
-
-  const report = [];
-  for (const [slug, route] of publicRoutes) {
-    try {
-      await page.goto(`${BASE_URL}${route}`, { waitUntil: "networkidle", timeout: 15000 });
-    } catch {
-      await page.goto(`${BASE_URL}${route}`, { waitUntil: "domcontentloaded", timeout: 15000 });
+async function navigateToReviewComplete(page, deckId) {
+  // Set newIntroduced so only 1 new card is left today for deckId, then grade that 1 card
+  await page.evaluate((targetDeckId) => {
+    const learnRaw = localStorage.getItem("japanese-learning-storage");
+    let limit = 15;
+    let dayStartHour = 4;
+    if (learnRaw) {
+      try {
+        const parsed = JSON.parse(learnRaw);
+        limit = parsed?.state?.settings?.newCards ?? 15;
+        dayStartHour = parsed?.state?.settings?.dayStartHour ?? 4;
+      } catch {
+        // ignore
+      }
     }
-    await page.waitForTimeout(450);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    await page.screenshot({ path: path.join(outDir, `${label}__${slug}.png`), fullPage: false });
-    report.push({ label, slug, route, overflow });
+    const shifted = new Date(Date.now() - dayStartHour * 3600_000);
+    const y = shifted.getFullYear();
+    const m = String(shifted.getMonth() + 1).padStart(2, "0");
+    const d = String(shifted.getDate()).padStart(2, "0");
+    const dayKey = `${y}-${m}-${d}`;
+
+    const revRaw = localStorage.getItem("japanese-review-storage");
+    const revObj = revRaw
+      ? JSON.parse(revRaw)
+      : { state: { srsCards: {}, newIntroduced: {}, activity: {} }, version: 1 };
+    revObj.state = revObj.state || { srsCards: {}, newIntroduced: {}, activity: {} };
+    revObj.state.srsCards = revObj.state.srsCards || {};
+    delete revObj.state.srsCards[targetDeckId];
+    revObj.state.newIntroduced = {
+      ...(revObj.state.newIntroduced || {}),
+      [targetDeckId]: { date: dayKey, count: Math.max(0, limit - 1) },
+    };
+    localStorage.setItem("japanese-review-storage", JSON.stringify(revObj));
+  }, deckId);
+
+  await page.goto(`${BASE_URL}/deck/${deckId}/review`, {
+    waitUntil: "networkidle",
+    timeout: 15000,
+  });
+  await page.waitForTimeout(500);
+
+  // Reveal answer and grade "Baik" (key '3') so session completes with reviewed = 1
+  const isAlreadyComplete = await page
+    .locator(".review-complete")
+    .isVisible()
+    .catch(() => false);
+  if (!isAlreadyComplete) {
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(250);
+    await page.keyboard.press("3");
+    await page.waitForTimeout(350);
   }
+}
 
-  const ids = await prepareData(page);
-  const protectedRoutes = [
-    ["03-beranda", "/beranda"],
-    ["04-deck", "/deck"],
-    ["05-deck-detail", `/deck/${ids.deckId}`],
-    ["06-review", `/deck/${ids.deckId}/review`],
-    ["07-mining", "/mining"],
-    ["08-library", "/library"],
-    ["09-reader", `/library/${ids.novelId}`],
-    ["10-manga", `/manga/${ids.mangaId}`],
-    ["11-progress", "/progress"],
-    ["12-exam", "/exam"],
-    ["13-license", "/license"],
-    ["14-profile", "/profile"],
-    ["15-settings", "/settings"],
-  ];
+async function auditPage(page) {
+  return page.evaluate(() => {
+    const TARGET_RGB = "rgb(185, 60, 34)";
+    const TARGET_HEX = "#b93c22";
 
-  for (const [slug, route] of protectedRoutes) {
-    try {
-      await page.goto(`${BASE_URL}${route}`, { waitUntil: "networkidle", timeout: 15000 });
-    } catch {
-      await page.goto(`${BASE_URL}${route}`, { waitUntil: "domcontentloaded", timeout: 15000 });
+    const matchesShu = (val) => {
+      if (!val || typeof val !== "string") return false;
+      const lower = val.toLowerCase();
+      return lower.includes(TARGET_RGB) || lower.includes(TARGET_HEX);
+    };
+
+    const isVisible = (el) => {
+      const style = window.getComputedStyle(el);
+      if (
+        style.display === "none" ||
+        style.visibility === "hidden" ||
+        parseFloat(style.opacity || "1") === 0
+      ) {
+        return false;
+      }
+      const rect = el.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    };
+
+    const shuElements = [];
+    const all = document.querySelectorAll("*");
+    for (const el of all) {
+      if (!isVisible(el)) continue;
+      const cs = window.getComputedStyle(el);
+      const bgHit =
+        matchesShu(cs.backgroundColor) || matchesShu(cs.backgroundImage);
+      const borderHit =
+        matchesShu(cs.borderTopColor) && parseFloat(cs.borderTopWidth) > 0;
+      // Avoid double-counting child text nodes if parent already has text color #B93C22
+      const parentColor = el.parentElement
+        ? window.getComputedStyle(el.parentElement).color
+        : "";
+      const textHit =
+        matchesShu(cs.color) &&
+        !matchesShu(parentColor) &&
+        (el.childNodes.length > 0 || el.tagName === "SVG");
+
+      if (bgHit || borderHit || textHit) {
+        shuElements.push({
+          tag: el.tagName.toLowerCase(),
+          className:
+            typeof el.className === "string"
+              ? el.className.trim().slice(0, 60)
+              : "",
+          text: (el.textContent || "").trim().slice(0, 40),
+          reasons: [
+            bgHit ? "bg" : null,
+            borderHit ? "border" : null,
+            textHit ? "text" : null,
+          ]
+            .filter(Boolean)
+            .join("+"),
+        });
+      }
     }
-    await page.waitForTimeout(450);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    await page.screenshot({ path: path.join(outDir, `${label}__${slug}.png`), fullPage: false });
-    report.push({ label, slug, route, overflow });
-  }
 
-  await ctx.close();
-  return { report, ids };
+    const overflow =
+      document.documentElement.scrollWidth > window.innerWidth + 1;
+
+    return {
+      shuCount: shuElements.length,
+      shuElements,
+      overflow,
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    };
+  });
 }
 
 const serverProc = await ensureServer();
-const browser = await chromium.launch();
+let browser;
+try {
+  browser = await chromium.launch();
+} catch {
+  browser = await chromium.launch(resolveChromiumLaunchOptions());
+}
 
 try {
-  const desktopOpts = { viewport: { width: 1440, height: 900 } };
-  const iphoneOpts = { ...devices["iPhone 14"] };
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
 
-  const d = await captureViewport(browser, "desktop", desktopOpts);
-  const m = await captureViewport(browser, "iphone14", iphoneOpts);
-  const results = [...d.report, ...m.report];
+  // 1. Capture public Landing route across all 5 widths first
+  const allResults = [];
 
-  const overflows = results.filter((r) => r.overflow);
-  console.log(`Captured ${results.length} screenshots in ${outDir}`);
-  console.log(`IDs used: deck=${d.ids.deckId}, novel=${d.ids.novelId}, manga=${d.ids.mangaId}`);
+  for (const w of WIDTHS) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto(`${BASE_URL}/`, { waitUntil: "networkidle", timeout: 15000 });
+    await page.waitForTimeout(350);
+    const audit = await auditPage(page);
+    const file = `w${w}__01-landing.png`;
+    await page.screenshot({ path: path.join(outDir, file), fullPage: false });
+    allResults.push({ width: w, slug: "01-landing", route: "/", ...audit });
+  }
+
+  // 2. Log in and prepare session
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const { deckId } = await prepareSession(page);
+
+  const appRoutes = [
+    ["02-beranda", "/beranda"],
+    ["03-deck", "/deck"],
+    ["04-library", "/library"],
+    ["05-mining", "/mining"],
+    ["06-exam", "/exam"],
+    ["07-progress", "/progress"],
+    ["08-settings", "/settings"],
+  ];
+
+  for (const w of WIDTHS) {
+    await page.setViewportSize({ width: w, height: 900 });
+    for (const [slug, route] of appRoutes) {
+      await page.goto(`${BASE_URL}${route}`, {
+        waitUntil: "networkidle",
+        timeout: 15000,
+      });
+      await page.waitForTimeout(350);
+      const audit = await auditPage(page);
+      const file = `w${w}__${slug}.png`;
+      await page.screenshot({ path: path.join(outDir, file), fullPage: false });
+      allResults.push({ width: w, slug, route, ...audit });
+    }
+
+    // 09-review-complete
+    await navigateToReviewComplete(page, deckId);
+    const revAudit = await auditPage(page);
+    const revFile = `w${w}__09-review-complete.png`;
+    await page.screenshot({ path: path.join(outDir, revFile), fullPage: false });
+    allResults.push({
+      width: w,
+      slug: "09-review-complete",
+      route: `/deck/${deckId}/review (complete)`,
+      ...revAudit,
+    });
+  }
+
+  await ctx.close();
+
+  if (reportPath) {
+    mkdirSync(path.dirname(reportPath), { recursive: true });
+    writeFileSync(reportPath, JSON.stringify(allResults, null, 2), "utf8");
+  }
+
+  console.log(`Captured ${allResults.length} screenshots in ${outDir}`);
+  console.log("\n=== #B93C22 (--shu) Accent Audit at 1440px ===");
+  for (const r of allResults.filter((x) => x.width === 1440)) {
+    console.log(
+      `  ${r.slug.padEnd(20)} (${r.route}): ${r.shuCount} elements`,
+      r.shuElements.map((e) => `${e.tag}.${e.className}[${e.reasons}]`).join(", "),
+    );
+  }
+
+  const overflows = allResults.filter((x) => x.overflow);
   if (overflows.length > 0) {
-    console.log("Horizontal overflow detected on:");
-    for (const o of overflows) console.log(`  - ${o.label} ${o.route}`);
+    console.log("\nHorizontal overflow detected on:");
+    for (const o of overflows) {
+      console.log(`  - w${o.width} ${o.slug}: ${o.scrollWidth}px > ${o.innerWidth}px`);
+    }
   } else {
-    console.log("No horizontal overflow detected.");
+    console.log("\nNo horizontal overflow detected across all widths.");
   }
 } finally {
   await browser.close();
