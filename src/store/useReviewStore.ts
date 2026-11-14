@@ -1,6 +1,43 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { SRSCard, initCard, reviewCard, isDue, getDueCards } from "../lib/srs";
+
+const fallbackMemoryStorage = new Map<string, string>();
+
+const safeStateStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
+        return localStorage.getItem(name);
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    return fallbackMemoryStorage.get(name) ?? null;
+  },
+  setItem: (name, value) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
+        localStorage.setItem(name, value);
+        return;
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    fallbackMemoryStorage.set(name, value);
+  },
+  removeItem: (name) => {
+    try {
+      if (typeof localStorage !== "undefined" && typeof localStorage.removeItem === "function") {
+        localStorage.removeItem(name);
+        return;
+      }
+    } catch {
+      /* fallback to memory */
+    }
+    fallbackMemoryStorage.delete(name);
+  },
+};
 
 const today = () => new Date().toDateString();
 
@@ -144,6 +181,9 @@ export const useReviewStore = create<ReviewStore>()(
     }),
     {
       name: "japanese-review-storage",
+      version: 1,
+      storage: createJSONStorage(() => safeStateStorage),
+      migrate: (persistedState) => persistedState as ReviewStore,
     }
   )
 );
