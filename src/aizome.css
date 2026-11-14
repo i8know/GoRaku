@@ -717,3 +717,42 @@ progress {
     padding: 6px 0;
   }
 }
+
+
+/* =========================================================
+   Aizome v2 — Tahap 5: Layar Selesai Review (Bokashi + Hanko)
+   ========================================================= */
+
+.review-complete-v2 {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.review-complete-v2__banner {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    #12284A 0%,
+    #17406A 48%,
+    #1F5C85 100%
+  );
+  color: #fff;
+  padding: 28px 24px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--garis);
+}
+
+.review-complete-v2__seigaiha {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --seigaiha-opacity: 0.09;
+}
+
+.review-complete-v2__body {
+  padding: 28px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
