@@ -15,6 +15,19 @@
   --font-serif: "Shippori Mincho", "Noto Serif JP", serif;
   --font-sans: "Zen Kaku Gothic New", system-ui, -apple-system, sans-serif;
 
+  /* Skala celupan: makin pekat = makin dikuasai / makin sulit */
+  --celup-0: #D9E8EF; /* kamenozoki */
+  --celup-1: #93BBD0; /* asagi */
+  --celup-2: #3C7AA3; /* hanada (disesuaikan agar kontras >= 4,7:1) */
+  --celup-3: #1F5C85; /* ai  */
+  --celup-4: #12284A; /* kon */
+  --teks-redup: #5A6C80;
+
+  /* Motif SVG Data URI statis (tanpa berkas eksternal) */
+  --seigaiha-putih: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-width='1'%3E%3Cpath d='M-18 24a18 18 0 0 1 36 0M-12 24a12 12 0 0 1 24 0M-6 24a6 6 0 0 1 12 0M30 24a18 18 0 0 1 36 0M36 24a12 12 0 0 1 24 0M42 24a6 6 0 0 1 12 0'/%3E%3Cpath d='M6 12a18 18 0 0 1 36 0M12 12a12 12 0 0 1 24 0M18 12a6 6 0 0 1 12 0'/%3E%3Cpath d='M-18 0a18 18 0 0 1 36 0M-12 0a12 12 0 0 1 24 0M-6 0a6 6 0 0 1 12 0M30 0a18 18 0 0 1 36 0M36 0a12 12 0 0 1 24 0M42 0a6 6 0 0 1 12 0'/%3E%3C/g%3E%3C/svg%3E");
+  --seigaiha-tinta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cg fill='none' stroke='%2312284A' stroke-width='1'%3E%3Cpath d='M-18 24a18 18 0 0 1 36 0M-12 24a12 12 0 0 1 24 0M-6 24a6 6 0 0 1 12 0M30 24a18 18 0 0 1 36 0M36 24a12 12 0 0 1 24 0M42 24a6 6 0 0 1 12 0'/%3E%3Cpath d='M6 12a18 18 0 0 1 36 0M12 12a12 12 0 0 1 24 0M18 12a6 6 0 0 1 12 0'/%3E%3Cpath d='M-18 0a18 18 0 0 1 36 0M-12 0a12 12 0 0 1 24 0M-6 0a6 6 0 0 1 12 0M30 0a18 18 0 0 1 36 0M36 0a12 12 0 0 1 24 0M42 0a6 6 0 0 1 12 0'/%3E%3C/g%3E%3C/svg%3E");
+  --washi-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.07 0 0 0 0 0.157 0 0 0 0 0.29 0 0 0 0.065 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23w)'/%3E%3C/svg%3E");
+
   font-family: var(--font-sans);
   color: var(--tinta);
   background: var(--tsuki);
@@ -90,4 +103,185 @@ progress {
 .kpi strong,
 .sb-goal-mini span {
   font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   AIZOME V2 — SKALA CELUPAN (DYE STEPS), MOTIF SEIGAIHA, WASHI, DAN HANKO
+   ============================================================================ */
+
+.dye-0 {
+  background-color: var(--celup-0);
+  color: var(--kon);
+}
+
+.dye-1 {
+  background-color: var(--celup-1);
+  color: var(--kon);
+}
+
+.dye-2 {
+  background-color: var(--celup-2);
+  color: #FFFFFF;
+}
+
+.dye-3 {
+  background-color: var(--celup-3);
+  color: #FFFFFF;
+}
+
+.dye-4 {
+  background-color: var(--celup-4);
+  color: #FFFFFF;
+}
+
+.dye-bar {
+  position: relative;
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background-color: var(--celup-0);
+  overflow: hidden;
+}
+
+.dye-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--celup-0), var(--celup-1));
+}
+
+.dye-bar[data-step="0"] > i {
+  background: linear-gradient(90deg, var(--celup-0), var(--celup-1));
+}
+
+.dye-bar[data-step="1"] > i {
+  background: linear-gradient(90deg, var(--celup-0), var(--celup-1));
+}
+
+.dye-bar[data-step="2"] > i {
+  background: linear-gradient(90deg, var(--celup-1), var(--celup-2));
+}
+
+.dye-bar[data-step="3"] > i {
+  background: linear-gradient(90deg, var(--celup-2), var(--celup-3));
+}
+
+.dye-bar[data-step="4"] > i {
+  background: linear-gradient(90deg, var(--celup-3), var(--celup-4));
+}
+
+.dye-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 112px;
+}
+
+.dye-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--teks-redup);
+  font-variant-numeric: tabular-nums;
+}
+
+.dye-progress-meta strong {
+  color: var(--kon);
+  font-weight: 700;
+}
+
+.dye-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+  border: 1px solid rgba(18, 40, 74, 0.12);
+  user-select: none;
+}
+
+/* Motif Seigaiha (lapisan ::before absolut, tidak pernah di belakang teks isi/tabel/form) */
+.motif-seigaiha {
+  position: relative;
+  isolation: isolate;
+}
+
+.motif-seigaiha::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--seigaiha-putih);
+  background-size: 48px 24px;
+  background-repeat: repeat;
+  opacity: var(--seigaiha-opacity, 0.08);
+  mask-image: linear-gradient(115deg, #000 0%, rgba(0, 0, 0, 0.55) 58%, transparent 96%);
+  -webkit-mask-image: linear-gradient(115deg, #000 0%, rgba(0, 0, 0, 0.55) 58%, transparent 96%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.motif-seigaiha > * {
+  position: relative;
+  z-index: 1;
+}
+
+.motif-seigaiha--tinta::before {
+  background-image: var(--seigaiha-tinta);
+}
+
+/* Tekstur kertas Washi berlapis pada background-image (bukan overlay fixed).
+   Dimatikan di bawah 720px agar kinerja gulir ponsel tetap ringan. */
+@media (min-width: 720px) {
+  .washi,
+  .app-shell,
+  .landing-v2 {
+    background-color: var(--tsuki);
+    background-image: var(--washi-uri);
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+}
+
+/* Cap Hanko (merah --shu, hanya muncul saat sesuatu selesai) */
+.hanko-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 3.5px solid var(--shu);
+  border-radius: 6px;
+  color: var(--shu);
+  background: rgba(185, 60, 34, 0.04);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  box-shadow: inset 0 0 0 1px rgba(185, 60, 34, 0.18);
+  user-select: none;
+  flex-shrink: 0;
+  transform: rotate(var(--hanko-tilt, -6deg));
+}
+
+@keyframes hanko-stamp-in {
+  0% {
+    transform: rotate(var(--hanko-tilt, -6deg)) scale(1.12);
+    opacity: 0.72;
+  }
+  100% {
+    transform: rotate(var(--hanko-tilt, -6deg)) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hanko-stamp {
+    animation: hanko-stamp-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }

@@ -1,4 +1,5 @@
-import type { MouseEvent, ReactNode } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
+import { dyeStep, type DyeStep } from "./lib/dye";
 
 export type IconName =
   | "home" | "cards" | "mine" | "book" | "chart" | "settings" | "search" | "bell" | "plus"
@@ -89,4 +90,107 @@ export function Tabs<T extends string>({ items, value, onChange }: { items: read
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
   return <button type="button" role="switch" aria-checked={on} aria-label={label} className={`pg-toggle ${on ? "on" : ""}`} onClick={() => onChange(!on)}><i /></button>;
+}
+
+/**
+ * Cap hanko merah (`--shu`) yang muncul saat sesuatu selesai (mis. sesi selesai atau deck 100% dikuasai).
+ * Selalu dekoratif (`aria-hidden="true"`); makna aksesibel wajib disampaikan lewat teks di sebelahnya.
+ */
+export function Hanko({
+  char = "済",
+  tilt = -6,
+  size = 52,
+  className = "",
+}: {
+  char?: string;
+  tilt?: number;
+  size?: number;
+  className?: string;
+}) {
+  const borderW = size >= 84 ? 4.5 : size <= 40 ? 3 : 3.5;
+  const radius = size >= 84 ? 8 : 5;
+  const fontSize = Math.round(size * 0.56);
+  const style = {
+    width: `${size}px`,
+    height: `${size}px`,
+    borderWidth: `${borderW}px`,
+    borderRadius: `${radius}px`,
+    fontSize: `${fontSize}px`,
+    "--hanko-tilt": `${tilt}deg`,
+  } as CSSProperties;
+
+  return (
+    <span className={`hanko-stamp ${className}`.trim()} style={style} lang="ja" aria-hidden="true">
+      {char}
+    </span>
+  );
+}
+
+/**
+ * Bilah penguasaan berbasis skala celupan indigo (`dyeStep` 0–4) dengan atribut ARIA progressbar.
+ */
+export function DyeProgress({
+  percent,
+  label,
+  showLabel = true,
+  className = "",
+}: {
+  percent: number;
+  label?: string;
+  showLabel?: boolean;
+  className?: string;
+}) {
+  const clamped = Number.isFinite(percent) ? Math.max(0, Math.min(100, Math.round(percent))) : 0;
+  const step = dyeStep(clamped);
+  const ariaLabel = label ?? `Penguasaan ${clamped}%`;
+
+  return (
+    <div className={`dye-progress-wrap ${className}`.trim()}>
+      <div
+        className="dye-bar"
+        data-step={step}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={clamped}
+        aria-label={ariaLabel}
+      >
+        <i style={{ width: `${clamped}%` }} />
+      </div>
+      {showLabel && (
+        <div className="dye-progress-meta">
+          <strong>{clamped}%</strong>
+          <span>dikuasai</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Ubin kanji 48–56px dengan warna langkah celupan indigo (`.dye-0` .. `.dye-4`)
+ * dan tipografi Shippori Mincho 700.
+ */
+export function DyeTile({
+  glyph,
+  step = 2,
+  size = 52,
+  className = "",
+}: {
+  glyph: string;
+  step?: DyeStep;
+  size?: number;
+  className?: string;
+}) {
+  const fontSize = Math.max(24, Math.round(size * 0.48));
+  return (
+    <span
+      className={`dye-tile dye-${step} ${className}`.trim()}
+      style={{ width: `${size}px`, height: `${size}px`, fontSize: `${fontSize}px` }}
+      lang="ja"
+      aria-hidden="true"
+    >
+      {glyph}
+    </span>
+  );
 }
