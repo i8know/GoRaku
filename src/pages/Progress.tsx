@@ -29,7 +29,7 @@ const jlpt = [
   { lv: "N2", p: 9, n: "140 / 1.600" }, { lv: "N1", p: 0, n: "0 / 2.600" },
 ];
 const sourcesMix = [
-  { n: "Novel", p: 58, c: "#233c35" }, { n: "Manga", p: 42, c: "#52667b" },
+  { n: "Novel", p: 58, c: "var(--kon)" }, { n: "Manga", p: 42, c: "var(--ai)" },
 ];
 const forecast = [44, 31, 52, 27, 38, 60, 22];
 const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
@@ -72,7 +72,7 @@ function Line({
         x2={selPt[0]}
         y1={pad}
         y2={H - pad}
-        stroke="#d95b43"
+        stroke="var(--ai)"
         strokeWidth="1.2"
         strokeDasharray="3 3"
       />
@@ -161,24 +161,24 @@ export default function ProgressPage() {
         ))}
       </section>
 
-      <section className="mb-5 rounded-2xl border border-[#e1ddd4] bg-[#fffdfa] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
+      <section className="mb-5 rounded-2xl border border-[var(--garis)] bg-[var(--panel)] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
         <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-lg bg-[#233c35] text-white grid place-items-center">
+          <span className="w-7 h-7 rounded-lg bg-[var(--kon)] text-white grid place-items-center">
             <Icon name="check" size={15} />
           </span>
           <div>
-            <strong className="text-[#25231f]">Status Koleksi &amp; SRS Aktif:</strong>{" "}
-            <span className="text-[#6f6b63]">
+            <strong className="text-[var(--tinta)]">Status Koleksi &amp; SRS Aktif:</strong>{" "}
+            <span className="text-[var(--tinta-2)]">
               {realStats.totalDecks} deck • {realStats.totalCardsInDecks.toLocaleString("id-ID")} total kartu
             </span>
           </div>
         </div>
         <div className="flex items-center gap-4 text-[11px]">
           <span>
-            Sudah dipelajari: <strong className="text-[#233c35]">{realStats.totalStudiedCards} kartu</strong>
+            Sudah dipelajari: <strong className="text-[var(--kon)]">{realStats.totalStudiedCards} kartu</strong>
           </span>
           <span>
-            Dikuasai (≥3x): <strong className="text-[#c4543f]">{realStats.totalMasteredCards} kartu</strong>
+            Dikuasai (≥3x): <strong className="text-[var(--ai)]">{realStats.totalMasteredCards} kartu</strong>
           </span>
         </div>
       </section>
@@ -188,7 +188,7 @@ export default function ProgressPage() {
           <div className="section-heading compact">
             <div>
               <p className="eyebrow">PERTUMBUHAN (ARAHKAN KURSOR KE TITIK)</p>
-              <h3>Kosakata yang kamu kuasai</h3>
+              <h2>Kosakata yang kamu kuasai</h2>
             </div>
             <span className="goal">
               Titik #{selectedPtIndex + 1}: {selectedPtValue.toLocaleString("id-ID")} kata
@@ -199,7 +199,7 @@ export default function ProgressPage() {
         </section>
 
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">TARGET JLPT</p><h3>Kemajuan level</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">TARGET JLPT</p><h2>Kemajuan level</h2></div></div>
           <ul className="pr-jlpt">
             {jlpt.map((j) => (
               <li key={j.lv}><b>{j.lv}</b><div className="progress"><i style={{ width: `${j.p}%` }} /></div><small>{j.n}</small></li>
@@ -212,11 +212,11 @@ export default function ProgressPage() {
         <div className="section-heading compact">
           <div>
             <p className="eyebrow">KONSISTENSI</p>
-            <h3>16 minggu terakhir</h3>
+            <h2>16 minggu terakhir</h2>
           </div>
           <div className="pr-streaks items-center">
             {activeHeatInfo && (
-              <span className="rounded-lg bg-[#f1e6df] px-2.5 py-1 text-[10px] font-bold text-[#bf5b46]">
+              <span className="rounded-lg bg-[var(--mizu-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--ai)]">
                 {activeHeatInfo}
               </span>
             )}
@@ -226,17 +226,27 @@ export default function ProgressPage() {
         </div>
         <div
           className="pr-heat"
-          role="img"
-          aria-label="Peta aktivitas belajar"
+          role="region"
+          aria-label={activeHeatInfo ? `Peta aktivitas belajar (${activeHeatInfo})` : "Peta aktivitas belajar (arahkan kursor atau gunakan tombol panah untuk menelusuri hari)"}
+          tabIndex={0}
           onMouseLeave={() => setHoverHeatIdx(null)}
+          onBlur={() => setHoverHeatIdx(null)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              setHoverHeatIdx((prev) => (prev === null ? 0 : Math.min(heat.length - 1, prev + 1)));
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              setHoverHeatIdx((prev) => (prev === null ? heat.length - 1 : Math.max(0, prev - 1)));
+            }
+          }}
         >
           {heat.map((v, i) => (
             <i
               key={i}
-              className={`l${v} cursor-pointer transition-transform hover:scale-125`}
+              className={`l${v} transition-transform hover:scale-125${hoverHeatIdx === i ? " ring-2 ring-[var(--shu)]" : ""}`}
               onMouseEnter={() => setHoverHeatIdx(i)}
-              onClick={() => setHoverHeatIdx(i)}
-              title={`Level aktivitas ${v}`}
+              title={`Hari ke-${i + 1}: level aktivitas ${v}`}
             />
           ))}
         </div>
@@ -245,7 +255,7 @@ export default function ProgressPage() {
 
       <div className="pr-row pr-row-b">
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">PRAKIRAAN</p><h3>Review 7 hari ke depan</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">PRAKIRAAN</p><h2>Review 7 hari ke depan</h2></div></div>
           <div className="pr-forecast">
             {forecast.map((v, i) => (
               <div key={i} title={`${i === 0 ? "Hari ini" : days[i]}: ${v} kartu`}>
@@ -258,7 +268,7 @@ export default function ProgressPage() {
         </section>
 
         <section className="pr-panel">
-          <div className="section-heading compact"><div><p className="eyebrow">SUMBER BELAJAR</p><h3>Dari mana kata-katamu</h3></div></div>
+          <div className="section-heading compact"><div><p className="eyebrow">SUMBER BELAJAR</p><h2>Dari mana kata-katamu</h2></div></div>
           <div className="pr-stack">{sourcesMix.map((s) => <i key={s.n} style={{ width: `${s.p}%`, background: s.c }} title={`${s.n} ${s.p}%`} />)}</div>
           <ul className="pr-mix">{sourcesMix.map((s) => <li key={s.n}><i style={{ background: s.c }} />{s.n}<b>{s.p}%</b></li>)}</ul>
         </section>

@@ -49,11 +49,11 @@ const THEME_CONFIG: Record<
 > = {
   light: {
     label: "Terang",
-    bg: "#faf7f2",
-    surface: "#ffffff",
-    fg: "#1d1b18",
-    muted: "#6e685f",
-    border: "#e6e0d6",
+    bg: "#F6F8FB",
+    surface: "#FFFFFF",
+    fg: "#141D2B",
+    muted: "#5B677B",
+    border: "#E3E9F2",
   },
   sepia: {
     label: "Sepia",
@@ -90,7 +90,7 @@ function buildEpubStyles(
     html, body {
       background: ${palette.bg} !important;
       color: ${palette.fg} !important;
-      font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif !important;
+      font-family: "Shippori Mincho", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif !important;
       font-size: ${fontSize}px !important;
       line-height: 1.9 !important;
       cursor: text;
@@ -107,7 +107,9 @@ function buildEpubStyles(
       user-select: none;
     }
     ::selection {
-      background: rgba(194, 78, 52, 0.30) !important;
+      background: rgba(38, 72, 122, 0.22) !important;
+      text-decoration: underline;
+      text-decoration-color: #26487A;
     }
     ${wmRule}
     ${rtRule}
@@ -670,10 +672,10 @@ export default function ReaderPage({
             <Icon name="list" size={15} /> Daftar Isi ({tocItems.length})
           </button>
 
-          <div className="min-w-0 hidden md:block pl-1">
-            <div className="text-[13.5px] font-semibold truncate max-w-xs lg:max-w-md">
+          <div className="min-w-0 sr-only md:not-sr-only md:pl-1">
+            <h1 className="m-0 text-[13.5px] font-semibold truncate max-w-xs lg:max-w-md">
               {book?.title ?? "Memuat..."}
-            </div>
+            </h1>
             <div
               className="text-[11px] truncate max-w-xs lg:max-w-md"
               style={{ color: palette.muted }}
@@ -697,7 +699,7 @@ export default function ReaderPage({
             {sessionMinedCount > 0 && (
               <strong
                 className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] text-white"
-                style={{ background: "var(--accent, #c24e34)" }}
+                style={{ background: "var(--ai)" }}
               >
                 +{sessionMinedCount} sesi ini
               </strong>
@@ -748,10 +750,11 @@ export default function ReaderPage({
             }}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[13.5px] font-semibold">Daftar Isi</h3>
+              <h2 className="text-[13.5px] font-semibold">Daftar Isi</h2>
               <button
                 type="button"
                 onClick={() => setTocOpen(false)}
+                aria-label="Tutup daftar isi"
                 className="p-1 rounded"
               >
                 <Icon name="close" size={15} />
@@ -820,9 +823,9 @@ export default function ReaderPage({
                       background: THEME_CONFIG[t].bg,
                       color: THEME_CONFIG[t].fg,
                       borderColor:
-                        theme === t ? "#c24e34" : THEME_CONFIG[t].border,
+                        theme === t ? "var(--ai)" : THEME_CONFIG[t].border,
                       boxShadow:
-                        theme === t ? "0 0 0 2px rgba(194,78,52,0.3)" : "none",
+                        theme === t ? "0 0 0 2px rgba(38,72,122,0.28)" : "none",
                     }}
                   >
                     {THEME_CONFIG[t].label}
@@ -875,10 +878,10 @@ export default function ReaderPage({
                   className="py-1.5 px-2.5 rounded-lg border font-medium cursor-pointer"
                   style={{
                     borderColor:
-                      flow === "paginated" ? "#c24e34" : palette.border,
+                      flow === "paginated" ? "var(--ai)" : palette.border,
                     background:
                       flow === "paginated"
-                        ? "rgba(194, 78, 52, 0.12)"
+                        ? "rgba(38, 72, 122, 0.12)"
                         : palette.bg,
                   }}
                 >
@@ -890,10 +893,10 @@ export default function ReaderPage({
                   className="py-1.5 px-2.5 rounded-lg border font-medium cursor-pointer"
                   style={{
                     borderColor:
-                      flow === "scrolled" ? "#c24e34" : palette.border,
+                      flow === "scrolled" ? "var(--ai)" : palette.border,
                     background:
                       flow === "scrolled"
-                        ? "rgba(194, 78, 52, 0.12)"
+                        ? "rgba(38, 72, 122, 0.12)"
                         : palette.bg,
                   }}
                 >
@@ -922,10 +925,10 @@ export default function ReaderPage({
                     className="py-1.5 px-2 rounded-lg border font-medium cursor-pointer"
                     style={{
                       borderColor:
-                        writingMode === wm.id ? "#c24e34" : palette.border,
+                        writingMode === wm.id ? "var(--ai)" : palette.border,
                       background:
                         writingMode === wm.id
-                          ? "rgba(194, 78, 52, 0.12)"
+                          ? "rgba(38, 72, 122, 0.12)"
                           : palette.bg,
                     }}
                   >
@@ -995,7 +998,7 @@ export default function ReaderPage({
                 fontSize: `${fontSize}px`,
                 lineHeight: 1.95,
                 fontFamily:
-                  '"Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif',
+                  '"Shippori Mincho", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif',
                 writingMode:
                   writingMode === "vertical-rl"
                     ? "vertical-rl"
@@ -1015,7 +1018,9 @@ export default function ReaderPage({
                   text-align: justify;
                 }
                 .txt-reader-content ::selection {
-                  background: rgba(194, 78, 52, 0.30);
+                  background: rgba(38, 72, 122, 0.22);
+                  text-decoration: underline;
+                  text-decoration-color: #26487A;
                 }
               `}</style>
               <div className="txt-reader-content">
@@ -1081,7 +1086,7 @@ export default function ReaderPage({
               className="h-full rounded-full transition-all"
               style={{
                 width: `${progressPercent}%`,
-                background: "var(--accent, #c24e34)",
+                background: "var(--ai)",
               }}
             />
           </div>

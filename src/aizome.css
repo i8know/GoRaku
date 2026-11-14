@@ -1,0 +1,93 @@
+:root {
+  --kon: #12284A;
+  --ai-tua: #17406A;
+  --ai: #1F5C85;
+  --mizu: #BCD6E2;
+  --mizu-soft: #DCE8F0;
+  --tsuki: #EDF2F5;
+  --panel: #F8FAFB;
+  --garis: #C5D3DB;
+  --tinta: #14202B;
+  --tinta-2: #44566A;
+  --shu: #B93C22;
+  --ok: #2A6F5B;
+  --bokashi: linear-gradient(180deg, #0E1F3B 0%, #12284A 38%, #17406A 74%, #1F5C85 100%);
+  --font-serif: "Shippori Mincho", "Noto Serif JP", serif;
+  --font-sans: "Zen Kaku Gothic New", system-ui, -apple-system, sans-serif;
+
+  font-family: var(--font-sans);
+  color: var(--tinta);
+  background: var(--tsuki);
+  font-synthesis: none;
+  accent-color: var(--ai);
+}
+
+::selection {
+  background: rgba(31, 92, 133, 0.18);
+  color: var(--kon);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--ai);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ai);
+  outline-offset: 2px;
+}
+
+html,
+body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 64, 106, 0.28) transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--ai);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 64, 106, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 64, 106, 0.38);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.beranda-hero-stats strong,
+.pr-kpis strong,
+.prof-stat strong,
+.st-range b,
+.kpi strong,
+.sb-goal-mini span {
+  font-variant-numeric: tabular-nums;
+}

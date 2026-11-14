@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import { useAppStore } from "../store/useAppStore";
-import DictionaryManagerModal from "../components/DictionaryManagerModal";
+import { useReviewStore } from "../store/useReviewStore";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
+import { clearAllReviewLogs } from "../lib/deckDb";
 import {
   exportScheduleBackupJson,
   importScheduleBackup,
 } from "../lib/scheduleBackup";
+
+const DictionaryManagerModal = lazy(() => import("../components/DictionaryManagerModal"));
 
 export default function SettingsPage({ notify }: { notify: (m: string) => void }) {
   const navigate = useNavigate();
@@ -32,6 +35,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const [size, setSize] = useState(settings.size);
   const [dictModalOpen, setDictModalOpen] = useState(false);
   const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const [confirmReset, setConfirmReset] = useState(false);
   const importFileRef = useRef<HTMLInputElement | null>(null);
 
   const handleExportSchedule = async () => {
@@ -71,7 +75,13 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   }, []);
 
   const handleSave = () => {
-    updateUser(name, level);
+    const cleanName = name.trim();
+    if (!cleanName) {
+      notify("Nama panggilan tidak boleh kosong");
+      return;
+    }
+    setName(cleanName);
+    updateUser(cleanName, level);
     updateSettings({
       newCards,
       maxReview,
@@ -97,27 +107,27 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
 
       <div className="st-grid">
         <section className="st-card">
-          <div className="st-title"><span><Icon name="user" size={18} /></span><div><h3>Profil</h3><p>Identitas dan target belajarmu</p></div></div>
-          <div className="st-profile"><div className="avatar st-avatar">{name.charAt(0).toUpperCase()}</div><div><strong>{name || "Pelajar"}</strong><small>Level 14 • bergabung Januari 2026</small></div></div>
-          <label className="field"><span>Nama panggilan</span><input value={name} onChange={(e) => setName(e.target.value)} /></label>
+          <div className="st-title"><span><Icon name="user" size={18} /></span><div><h2>Profil</h2><p>Identitas dan target belajarmu</p></div></div>
+          <div className="st-profile"><div className="avatar st-avatar">{(name.trim() || "P").charAt(0).toUpperCase()}</div><div><strong>{name.trim() || "Pelajar"}</strong><small>Level 14 • bergabung Januari 2026</small></div></div>
+          <label className="field"><span>Nama panggilan</span><input value={name} maxLength={40} required onChange={(e) => setName(e.target.value)} /></label>
           <label className="field"><span>Target level JLPT</span>
             <select value={level} onChange={(e) => setLevel(e.target.value)}>{["N5", "N4", "N3", "N2", "N1"].map((l) => <option key={l}>{l}</option>)}</select>
           </label>
         </section>
 
         <section className="st-card">
-          <div className="st-title"><span><Icon name="target" size={18} /></span><div><h3>Ritme belajar</h3><p>Batas harian agar tetap konsisten</p></div></div>
+          <div className="st-title"><span><Icon name="target" size={18} /></span><div><h2>Ritme belajar</h2><p>Batas harian agar tetap konsisten</p></div></div>
           <div className="st-range"><div><span>Kartu baru per hari</span><b>{newCards}</b></div><input type="range" min={1} max={50} step={1} value={newCards} onChange={(e) => setNewCards(+e.target.value)} aria-label="Kartu baru per hari" /></div>
           <div className="st-range"><div><span>Maksimum review per hari</span><b>{maxReview}</b></div><input type="range" min={40} max={300} step={20} value={maxReview} onChange={(e) => setMaxReview(+e.target.value)} aria-label="Maksimum review per hari" /></div>
           <div className="st-range"><div><span>Pergantian hari belajar</span><b>{String(dayStartHour).padStart(2, "0")}:00</b></div><input type="range" min={0} max={8} step={1} value={dayStartHour} onChange={(e) => setDayStartHour(+e.target.value)} aria-label="Pergantian hari belajar" /></div>
           <div className="st-range"><div><span>Target ingatan (FSRS)</span><b>{Math.round(desiredRetention * 100)}%</b></div><input type="range" min={0.8} max={0.97} step={0.01} value={desiredRetention} onChange={(e) => setDesiredRetention(+e.target.value)} aria-label="Target ingatan (FSRS)" /></div>
           <div className="st-row"><div><strong>Urutan kartu baru</strong><small>Sesuai urutan deck atau diacak per hari</small></div>
-            <div className="st-seg">
+            <div className="st-seg" role="group" aria-label="Urutan kartu baru">
               {([
                 { id: "urutan", label: "Urutan" },
                 { id: "acak", label: "Acak" },
               ] as const).map((opt) => (
-                <button key={opt.id} type="button" className={newOrder === opt.id ? "on" : ""} onClick={() => setNewOrder(opt.id)}>
+                <button key={opt.id} type="button" aria-pressed={newOrder === opt.id} className={newOrder === opt.id ? "on" : ""} onClick={() => setNewOrder(opt.id)}>
                   {opt.label}
                 </button>
               ))}
@@ -128,24 +138,28 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
         </section>
 
         <section className="st-card">
-          <div className="st-title"><span><Icon name="cards" size={18} /></span><div><h3>Tampilan kartu</h3><p>Bagaimana kartu ditampilkan</p></div></div>
+          <div className="st-title"><span><Icon name="cards" size={18} /></span><div><h2>Tampilan kartu</h2><p>Bagaimana kartu ditampilkan</p></div></div>
           <div className="st-row"><div><strong>Tampilkan furigana</strong><small>Bacaan hiragana di atas kanji</small></div><Toggle on={furi} onChange={setFuri} label="Furigana" /></div>
           <div className="st-row"><div><strong>Putar audio otomatis</strong><small>Saat kartu dibalik</small></div><Toggle on={audio} onChange={setAudio} label="Audio otomatis" /></div>
           <div className="st-row"><div><strong>Tampilkan romaji</strong><small>Untuk pemula</small></div><Toggle on={romaji} onChange={setRomaji} label="Romaji" /></div>
           <div className="st-row"><div><strong>Ukuran teks Jepang</strong></div>
-            <div className="st-seg">{["Kecil", "Sedang", "Besar"].map((s) => <button key={s} className={size === s ? "on" : ""} onClick={() => setSize(s)}>{s}</button>)}</div>
+            <div className="st-seg" role="group" aria-label="Ukuran teks Jepang">
+              {["Kecil", "Sedang", "Besar"].map((s) => (
+                <button key={s} type="button" aria-pressed={size === s} className={size === s ? "on" : ""} onClick={() => setSize(s)}>{s}</button>
+              ))}
+            </div>
           </div>
         </section>
 
         <section className="st-card">
-          <div className="st-title"><span><Icon name="bell" size={18} /></span><div><h3>Pengingat</h3><p>Jaga streak tetap menyala</p></div></div>
+          <div className="st-title"><span><Icon name="bell" size={18} /></span><div><h2>Pengingat</h2><p>Jaga streak tetap menyala</p></div></div>
           <div className="st-row"><div><strong>Pengingat harian</strong><small>Notifikasi jika belum review</small></div><Toggle on={remind} onChange={setRemind} label="Pengingat harian" /></div>
           <div className="st-row"><div><strong>Waktu pengingat</strong></div><input className="st-time" type="time" value={time} disabled={!remind} onChange={(e) => setTime(e.target.value)} aria-label="Waktu pengingat" /></div>
           <div className="st-row"><div><strong>Ringkasan mingguan</strong><small>Dikirim setiap hari Minggu</small></div><Toggle on={weekly} onChange={setWeekly} label="Ringkasan mingguan" /></div>
         </section>
 
         <section className="st-card st-danger">
-          <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h3>Data &amp; Kamus</h3><p>Kelola kamus Yomitan dan cadangkan koleksimu</p></div></div>
+          <div className="st-title"><span><Icon name="upload" size={18} /></span><div><h2>Data &amp; Kamus</h2><p>Kelola kamus lokal, koleksi deck, dan riwayat belajarmu</p></div></div>
           <p className="st-note">Data belajar disimpan di peramban ini (localStorage &amp; IndexedDB). Ekspor jadwal secara berkala agar progres tidak hilang saat data situs dibersihkan.</p>
           <input
             ref={importFileRef}
@@ -162,20 +176,53 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
             <Button className="outline-button" onClick={() => setDictModalOpen(true)}>
               <Icon name="book" size={16} /> Kelola Kamus Yomitan ({dictionaries.filter((d) => d.enabled).length})
             </Button>
-            <Button className="outline-button" onClick={() => void handleExportSchedule()}><Icon name="download" size={16} /> Ekspor jadwal belajar (JSON)</Button>
-            <Button className="outline-button" onClick={() => importFileRef.current?.click()}><Icon name="upload" size={16} /> Impor jadwal belajar (JSON)</Button>
-            <Button className="outline-button" onClick={() => notify("Deck diekspor sebagai .apkg")}><Icon name="upload" size={16} /> Ekspor deck</Button>
-            <Button className="outline-button" onClick={() => notify("Pilih berkas untuk diimpor")}><Icon name="plus" size={16} /> Impor deck</Button>
-            <Button className="outline-button warn" onClick={() => notify("Progres belum dihapus — konfirmasi diperlukan")}><Icon name="trash" size={16} /> Reset progres</Button>
+            <Button className="outline-button" onClick={() => void handleExportSchedule()}>
+              <Icon name="download" size={16} /> Ekspor jadwal belajar (JSON)
+            </Button>
+            <Button className="outline-button" onClick={() => importFileRef.current?.click()}>
+              <Icon name="upload" size={16} /> Impor jadwal belajar (JSON)
+            </Button>
+            <Button className="outline-button" onClick={() => navigate("/deck")}>
+              <Icon name="upload" size={16} /> Ekspor / Kelola Deck
+            </Button>
+            <Button className="outline-button" onClick={() => navigate("/deck")}>
+              <Icon name="plus" size={16} /> Impor Deck (.apkg)
+            </Button>
+            {!confirmReset ? (
+              <Button className="outline-button warn" onClick={() => setConfirmReset(true)}>
+                <Icon name="trash" size={16} /> Reset progres review
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="outline-button warn"
+                  onClick={() => {
+                    useReviewStore.setState({ srsCards: {}, newIntroduced: {}, activity: {} });
+                    void clearAllReviewLogs();
+                    setConfirmReset(false);
+                    notify("Semua progres ulasan kartu berhasil direset");
+                  }}
+                >
+                  <Icon name="trash" size={16} /> Konfirmasi Reset Progres
+                </Button>
+                <Button className="outline-button" onClick={() => setConfirmReset(false)}>
+                  Batal
+                </Button>
+              </>
+            )}
           </div>
         </section>
       </div>
 
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

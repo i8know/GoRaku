@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon, Button, type IconName } from "../ui";
 import { speakJapanese } from "../lib/tts";
@@ -253,6 +253,247 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
+const NAV_LINKS = [
+  { id: "simulasi", label: "Simulasi" },
+  { id: "subdeck-jlpt", label: "Sub-Deck & JLPT" },
+  { id: "eksplorer", label: "4 Modul Inti" },
+  { id: "fitur", label: "Arsitektur" },
+  { id: "faq", label: "FAQ" },
+] as const;
+
+const NAV_PILL_SPRING = {
+  type: "spring" as const,
+  stiffness: 420,
+  damping: 34,
+  mass: 0.78,
+};
+
+function LandingNav({ loggedIn }: { loggedIn: boolean }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [activeId, setActiveId] = useState<string>(NAV_LINKS[0].id);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const targetLockRef = useRef<{ id: string; until: number } | null>(null);
+  const location = useLocation();
+
+  // Keadaan "scrolled" setelah > 24px
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Scrollspy deterministik dengan lock singkat saat loncat anchor agar pill meluncur mulus sekali jalan
+  useEffect(() => {
+    let rafId = 0;
+
+    const clearLockIfManual = () => {
+      targetLockRef.current = null;
+    };
+
+    const updateActive = () => {
+      rafId = 0;
+      const lock = targetLockRef.current;
+      if (lock) {
+        const now = performance.now();
+        const targetEl = document.getElementById(lock.id);
+        const atBottom =
+          lock.id === NAV_LINKS[NAV_LINKS.length - 1].id &&
+          window.scrollY + window.innerHeight >=
+            document.documentElement.scrollHeight - 24;
+        const settledAtTarget =
+          lock.id === NAV_LINKS[0].id
+            ? window.scrollY <= 12
+            : atBottom ||
+              (targetEl !== null &&
+                Math.abs(targetEl.getBoundingClientRect().top - 96) <= 14);
+
+        if (settledAtTarget || now >= lock.until) {
+          targetLockRef.current = null;
+        } else {
+          setActiveId(lock.id);
+          return;
+        }
+      }
+
+      if (window.scrollY <= 8) {
+        setActiveId(NAV_LINKS[0].id);
+        return;
+      }
+      if (
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 24
+      ) {
+        setActiveId(NAV_LINKS[NAV_LINKS.length - 1].id);
+        return;
+      }
+
+      const navBottom = navRef.current?.getBoundingClientRect().bottom ?? 80;
+      const threshold = navBottom + 48;
+      let current: string = NAV_LINKS[0].id;
+      for (const l of NAV_LINKS) {
+        const el = document.getElementById(l.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= threshold) {
+          current = l.id;
+        }
+      }
+      setActiveId(current);
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(updateActive);
+    };
+
+    updateActive();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+    window.addEventListener("wheel", clearLockIfManual, { passive: true });
+    window.addEventListener("touchmove", clearLockIfManual, { passive: true });
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("wheel", clearLockIfManual);
+      window.removeEventListener("touchmove", clearLockIfManual);
+    };
+  }, []);
+
+  // Tutup menu saat halaman berpindah atau viewport melebar ke desktop
+  useEffect(() => setMenuOpen(false), [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(min-width: 900px)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setMenuOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Tutup menu: Escape (fokus kembali ke tombol menu) dan klik di luar
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        menuBtnRef.current?.focus();
+      }
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (!navRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [menuOpen]);
+
+  const linkProps = (id: string) => ({
+    href: `#${id}`,
+    "aria-current": activeId === id ? ("true" as const) : undefined,
+    onClick: () => {
+      targetLockRef.current = { id, until: performance.now() + 900 };
+      setActiveId(id);
+      setMenuOpen(false);
+    },
+  });
+
+  return (
+    <nav
+      ref={navRef}
+      className={`landing-nav${scrolled ? " is-scrolled" : ""}`}
+      aria-label="Navigasi utama"
+    >
+      <a
+        href="#simulasi"
+        className="lnav-brand"
+        aria-label="GoRaku, kembali ke atas"
+        onClick={() => {
+          targetLockRef.current = {
+            id: NAV_LINKS[0].id,
+            until: performance.now() + 900,
+          };
+          setActiveId(NAV_LINKS[0].id);
+          setMenuOpen(false);
+        }}
+      >
+        <span className="lnav-seal" lang="ja" aria-hidden="true">語</span>
+        <span className="lnav-brand-copy" aria-hidden="true">
+          <strong lang="ja">語楽</strong>
+          <small>GoRaku</small>
+        </span>
+        <span className="lnav-tagline" lang="ja" aria-hidden="true">
+          日本語没入型学習環境
+        </span>
+      </a>
+
+      <div className="lnav-links">
+        {NAV_LINKS.map((l) => (
+          <a key={l.id} {...linkProps(l.id)}>
+            {activeId === l.id && (
+              <motion.span
+                layoutId="lnav-desktop-pill"
+                className="lnav-active-bg"
+                style={{ borderRadius: 999 }}
+                transition={NAV_PILL_SPRING}
+                aria-hidden="true"
+              />
+            )}
+            <span className="lnav-link-text">{l.label}</span>
+          </a>
+        ))}
+      </div>
+
+      <div className="lnav-actions">
+        <button
+          ref={menuBtnRef}
+          type="button"
+          className="lnav-menu-btn"
+          aria-label={menuOpen ? "Tutup menu" : "Menu"}
+          aria-expanded={menuOpen}
+          aria-controls="lnav-panel"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span className="lnav-menu-lines" aria-hidden="true" />
+        </button>
+        <Link to={loggedIn ? "/beranda" : "/login"} className="lnav-cta">
+          <span className="lnav-cta-long">{loggedIn ? "Buka Dashboard" : "Masuk / Mulai"}</span>
+          <span className="lnav-cta-short">{loggedIn ? "Dashboard" : "Masuk"}</span>
+        </Link>
+      </div>
+
+      <div id="lnav-panel" className="lnav-panel" data-open={menuOpen} aria-hidden={!menuOpen}>
+        {NAV_LINKS.map((l, idx) => (
+          <a
+            key={l.id}
+            {...linkProps(l.id)}
+            tabIndex={menuOpen ? undefined : -1}
+            style={{ "--lnav-i": idx } as React.CSSProperties}
+          >
+            {activeId === l.id && (
+              <motion.span
+                layoutId="lnav-mobile-pill"
+                className="lnav-active-bg"
+                style={{ borderRadius: 999 }}
+                transition={NAV_PILL_SPRING}
+                aria-hidden="true"
+              />
+            )}
+            <span className="lnav-link-text">{l.label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const user = useAppStore((s) => s.user);
@@ -286,56 +527,17 @@ export default function LandingPage() {
 
   const readerThemeStyle =
     heroTheme === "dark"
-      ? { bg: "#171a18", fg: "#ebe7df", border: "#2c322e", sub: "#98a09b", badgeBg: "#24302b" }
+      ? { bg: "#171a18", fg: "#ebe7df", border: "#353d38", sub: "#c0ced5", badgeBg: "#24302b", accent: "#8EC2DC" }
       : heroTheme === "sepia"
-        ? { bg: "#f3ead6", fg: "#2b231a", border: "#d9c8ad", sub: "#6e5d4a", badgeBg: "#e7dac1" }
-        : { bg: "#fffdf9", fg: "#1f1e1b", border: "#dfd9cc", sub: "#7a756c", badgeBg: "#f4efe4" };
+        ? { bg: "#f3ead6", fg: "#2b231a", border: "#d9c8ad", sub: "#5e4e3d", badgeBg: "#e7dac1", accent: "var(--ai-tua)" }
+        : { bg: "var(--panel)", fg: "var(--tinta)", border: "var(--garis)", sub: "var(--tinta-2)", badgeBg: "var(--tsuki)", accent: "var(--ai)" };
 
   return (
     <div className="landing">
-      {/* NAVIGASI ATAS — Minimalist Wa-Modern Editorial Bar */}
-      <nav className="landing-nav">
-        <div className="flex items-center gap-3.5">
-          <div className="brand" style={{ padding: 0 }}>
-            <span className="brand-mark">語</span>
-            <span className="brand-copy">
-              <strong>語楽</strong>
-              <small>GORAKU</small>
-            </span>
-          </div>
-          <span className="hidden sm:inline-block h-4 w-[1px] bg-[#d8d2c5]" />
-          <span
-            lang="ja"
-            className="hidden sm:inline-block text-[11px] font-serif text-[#787268] tracking-widest"
-          >
-            日本語没入型学習環境
-          </span>
-        </div>
+      {/* NAVIGASI ATAS — Floating Pill (Aizome) */}
+      <LandingNav loggedIn={!!user} />
 
-        <div className="landing-nav-links">
-          <a href="#simulasi" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">壱</span> Simulasi
-          </a>
-          <a href="#subdeck-jlpt" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">弐</span> Sub-Deck &amp; JLPT
-          </a>
-          <a href="#eksplorer" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">参</span> 4 Modul Inti
-          </a>
-          <a href="#fitur" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">肆</span> Arsitektur
-          </a>
-          <a href="#faq" className="nav-hide-mobile">
-            <span lang="ja" className="text-[#c4543f] font-serif mr-1">伍</span> FAQ
-          </a>
-          <Link to={user ? "/beranda" : "/login"}>
-            <Button className="pg-primary" style={{ padding: "9px 16px" }}>
-              <Icon name="arrow" size={15} /> {user ? "Buka Dashboard" : "Masuk / Mulai"}
-            </Button>
-          </Link>
-        </div>
-      </nav>
-
+      <main id="main-content">
       {/* 壱 • HERO SECTION — Editorial Split + Bunkobon Live Simulator */}
       <section id="simulasi" className="landing-hero">
         <div className="landing-hero-copy">
@@ -344,14 +546,14 @@ export default function LandingPage() {
             <span lang="ja" className="jp-hanko text-[10.5px]">
               語楽之印
             </span>
-            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#6e695f]">
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[var(--tinta-2)]">
               IMMERSION • REVOLUSI ANKI • SIMULASI JLPT N5–N1
             </span>
           </div>
 
           <p
             lang="ja"
-            className="text-xs sm:text-sm font-serif text-[#8c5a4c] tracking-[0.18em] mb-1.5"
+            className="text-xs sm:text-sm font-serif text-[var(--ai)] tracking-[0.18em] mb-1.5"
           >
             言葉に出会い、文脈ごと記憶する。
           </p>
@@ -379,15 +581,15 @@ export default function LandingPage() {
             ].map((item) => (
               <div
                 key={item.jp}
-                className="flex items-center gap-2 rounded-lg border border-[#dcd5c7] bg-[#fffdf9] px-2.5 py-2"
+                className="flex items-center gap-2 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-2"
               >
                 <span
                   lang="ja"
-                  className="w-6 h-6 rounded bg-[#233c35] text-[#f6f3ec] font-serif text-[11px] font-bold grid place-items-center shrink-0"
+                  className="w-6 h-6 rounded bg-[var(--kon)] text-white font-serif text-[11px] font-bold grid place-items-center shrink-0"
                 >
                   {item.jp}
                 </span>
-                <span className="text-[11px] font-semibold text-[#3a3731] leading-tight">
+                <span className="text-[11px] font-semibold text-[var(--tinta)] leading-tight">
                   {item.label}
                 </span>
               </div>
@@ -395,41 +597,57 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-cta">
-            <Link to={user ? "/beranda" : "/login"}>
-              <Button className="pg-primary" style={{ padding: "12px 22px", fontSize: "12.5px" }}>
-                <Icon name="arrow" size={17} /> {user ? "Lanjutkan di Dashboard" : "Mulai Belajar Sekarang"}
-              </Button>
+            <Link
+              to={user ? "/beranda" : "/login"}
+              className="primary-light no-underline"
+              style={{ padding: "12px 22px", fontSize: "13px" }}
+            >
+              {user ? "Lanjutkan di Dashboard" : "Mulai Belajar Sekarang"}
             </Link>
-            <Link to="/exam" style={{ textDecoration: "none" }}>
-              <Button className="outline-button" style={{ padding: "12px 18px", fontSize: "12.5px" }}>
+            {user ? (
+              <Link
+                to="/exam"
+                className="outline-button no-underline"
+                style={{ padding: "12px 18px", fontSize: "12.5px" }}
+              >
+                <Icon name="sparkle" size={16} /> Buka Ujian JLPT
+              </Link>
+            ) : (
+              <a
+                href="#subdeck-jlpt"
+                className="outline-button no-underline"
+                style={{ padding: "12px 18px", fontSize: "12.5px" }}
+              >
                 <Icon name="sparkle" size={16} /> Coba Simulasi JLPT
-              </Button>
-            </Link>
-            <a href="#subdeck-jlpt" style={{ textDecoration: "none" }}>
-              <Button className="outline-button" style={{ padding: "12px 16px", fontSize: "12.5px" }}>
-                <Icon name="cards" size={16} /> Lihat Hierarki Sub-Deck
-              </Button>
+              </a>
+            )}
+            <a
+              href="#subdeck-jlpt"
+              className="outline-button no-underline"
+              style={{ padding: "12px 16px", fontSize: "12.5px" }}
+            >
+              <Icon name="cards" size={16} /> Lihat Hierarki Sub-Deck
             </a>
           </div>
 
           {/* Koushi 3-Column Technical Specification Strip */}
           <div className="landing-stats max-w-[560px]">
             <div>
-              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[#a06658] uppercase">
+              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[var(--ai)] uppercase">
                 検索速度 • LOOKUP
               </small>
               <strong>~1,00 ms</strong>
               <span>200.000+ entri JMdict &amp; 4 lapis deinflection</span>
             </div>
             <div>
-              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[#a06658] uppercase">
+              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[var(--ai)] uppercase">
                 階層構造 • SUB-DECK
               </small>
               <strong>N5 → N1</strong>
               <span>Partisi otomatis deck Anki .apkg per level</span>
             </div>
             <div>
-              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[#a06658] uppercase">
+              <small lang="ja" className="text-[9.5px] font-bold tracking-widest text-[var(--ai)] uppercase">
                 保存設計 • PRIVASI
               </small>
               <strong>100% Lokal</strong>
@@ -450,13 +668,18 @@ export default function LandingPage() {
           >
             {/* Bunkobon Header Bar */}
             <div
-              className="flex items-center justify-between gap-2 px-4 py-2.5 border-b text-xs"
+              className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b text-xs"
               style={{ borderColor: readerThemeStyle.border }}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span
                   lang="ja"
-                  className="rounded border border-[#c4543f]/40 bg-[#c4543f]/10 px-2 py-0.5 text-[10px] font-serif font-bold text-[#c4543f] shrink-0"
+                  className="rounded border px-2 py-0.5 text-[10px] font-serif font-bold shrink-0"
+                  style={{
+                    color: readerThemeStyle.accent,
+                    borderColor: readerThemeStyle.border,
+                    backgroundColor: readerThemeStyle.badgeBg,
+                  }}
                 >
                   文庫判 • 四十二頁
                 </span>
@@ -465,15 +688,24 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setHeroFurigana((v) => !v)}
-                  className={`rounded border px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
+                  aria-pressed={heroFurigana}
+                  className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-[10.5px] font-bold transition-colors cursor-pointer"
+                  style={
                     heroFurigana
-                      ? "border-[#c4543f] bg-[#f1e6df] text-[#c4543f]"
-                      : "border-current/20 opacity-70"
-                  }`}
+                      ? {
+                          borderColor: readerThemeStyle.accent,
+                          backgroundColor: readerThemeStyle.badgeBg,
+                          color: readerThemeStyle.accent,
+                        }
+                      : {
+                          borderColor: readerThemeStyle.border,
+                          color: readerThemeStyle.sub,
+                        }
+                  }
                   title="Tampilkan/sembunyikan Furigana"
                 >
                   あ ルビ
@@ -484,20 +716,34 @@ export default function LandingPage() {
                     { id: "sepia", label: "琥珀" },
                     { id: "dark", label: "墨" },
                   ] as const
-                ).map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setHeroTheme(t.id)}
-                    className={`rounded border px-2 py-0.5 text-[10px] font-serif font-semibold cursor-pointer ${
-                      heroTheme === t.id
-                        ? "border-[#c4543f] text-[#c4543f] font-bold"
-                        : "border-transparent opacity-65"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+                ).map((t) => {
+                  const active = heroTheme === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setHeroTheme(t.id)}
+                      aria-pressed={active}
+                      className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-[10.5px] font-serif transition-colors cursor-pointer"
+                      style={
+                        active
+                          ? {
+                              borderColor: readerThemeStyle.accent,
+                              backgroundColor: readerThemeStyle.badgeBg,
+                              color: readerThemeStyle.accent,
+                              fontWeight: 700,
+                            }
+                          : {
+                              borderColor: "transparent",
+                              color: readerThemeStyle.sub,
+                              fontWeight: 600,
+                            }
+                      }
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -507,12 +753,15 @@ export default function LandingPage() {
               style={{ borderColor: readerThemeStyle.border }}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#c4543f]">
+                <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider"
+                    style={{ color: readerThemeStyle.accent }}
+                  >
                     Ketuk kata bergaris bawah untuk membedah morfologi:
                   </span>
                   <span
-                    className="text-[10px] font-semibold px-2 py-0.5 rounded"
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1"
                     style={{ background: readerThemeStyle.badgeBg, color: readerThemeStyle.sub }}
                   >
                     <Icon name="mine" size={11} /> {minedCount} kartu ditambang
@@ -524,10 +773,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("oishikatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-colors cursor-pointer ${
                       selectedTokenId === "oishikatta"
-                        ? "bg-[#c4543f] text-white border-[#c4543f] font-bold"
-                        : "border-dashed border-[#c4543f]/70 hover:bg-[#c4543f]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -542,10 +791,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("tabesaserarenakatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-colors cursor-pointer ${
                       selectedTokenId === "tabesaserarenakatta"
-                        ? "bg-[#c4543f] text-white border-[#c4543f] font-bold"
-                        : "border-dashed border-[#c4543f]/70 hover:bg-[#c4543f]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -560,10 +809,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("benkyoushiteiru")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-colors cursor-pointer ${
                       selectedTokenId === "benkyoushiteiru"
-                        ? "bg-[#c4543f] text-white border-[#c4543f] font-bold"
-                        : "border-dashed border-[#c4543f]/70 hover:bg-[#c4543f]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -578,10 +827,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTokenId("ikanakatta")}
-                    className={`mx-0.5 rounded px-1.5 py-0.5 transition-all cursor-pointer border-b-2 ${
+                    className={`mx-0.5 px-1.5 py-0.5 transition-colors cursor-pointer ${
                       selectedTokenId === "ikanakatta"
-                        ? "bg-[#c4543f] text-white border-[#c4543f] font-bold"
-                        : "border-dashed border-[#c4543f]/70 hover:bg-[#c4543f]/15"
+                        ? "rounded-md bg-[var(--ai)] text-white font-bold no-underline shadow-xs"
+                        : "underline decoration-2 decoration-dashed decoration-[var(--ai)]/70 underline-offset-4 hover:bg-[var(--ai)]/12 rounded-sm"
                     }`}
                   >
                     {heroFurigana ? (
@@ -597,82 +846,89 @@ export default function LandingPage() {
               </div>
 
               {/* Traditional Tategaki Book Margin */}
-              <div className="jp-tategaki-tag hidden sm:block">
+              <div
+                className="jp-tategaki-tag hidden sm:block"
+                style={{
+                  color: readerThemeStyle.sub,
+                  borderLeftColor: readerThemeStyle.border,
+                }}
+              >
                 第一章・文脈採掘の実演
               </div>
             </div>
 
             {/* Yomitan + Deinflection + Sub-deck Mining Inspector */}
-            <div className="p-4 bg-[#faf7f0] text-[#22201c]">
+            <div className="p-4 bg-[var(--tsuki)] text-[var(--tinta)]">
               <div className="flex items-start justify-between gap-2 mb-2.5">
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span lang="ja" className="text-xs font-bold text-[#c4543f]">
+                    <span lang="ja" className="text-xs font-bold text-[var(--ai)]">
                       {activeToken.reading}
                     </span>
-                    <span className="rounded bg-[#233c35]/10 px-2 py-0.5 text-[10px] font-bold text-[#233c35]">
+                    <span className="rounded bg-[var(--kon)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--kon)]">
                       {activeToken.pos} • {activeToken.jlpt}
                     </span>
                     <span
                       lang="ja"
-                      className="rounded border border-[#dcd5c7] bg-white px-1.5 py-0.5 text-[9.5px] font-mono text-[#6a655c]"
+                      className="rounded border border-[var(--garis)] bg-[var(--panel)] px-1.5 py-0.5 text-[9.5px] font-mono text-[var(--tinta-2)]"
                       title="Pola Pitch Accent Bahasa Jepang"
                     >
                       高低: {activeToken.pitch}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <strong lang="ja" className="text-2xl font-serif font-bold text-[#1c1f1d]">
+                    <strong lang="ja" className="text-2xl font-serif font-bold text-[var(--tinta)]">
                       {activeToken.dictionaryForm}
                     </strong>
                     <button
                       type="button"
                       onClick={() => speakJapanese(activeToken.reading)}
                       title="Dengarkan pengucapan kata"
-                      className="rounded-lg border border-[#dcd6ca] bg-white p-1.5 text-[#c4543f] hover:bg-[#f1e6df] cursor-pointer"
+                      aria-label={`Dengarkan pengucapan ${activeToken.dictionaryForm}`}
+                      className="min-w-[32px] min-h-[32px] grid place-items-center rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-1.5 text-[var(--ai)] hover:bg-[var(--tsuki)] transition-colors cursor-pointer"
                     >
                       <Icon name="volume" size={14} />
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-[#e6d5cd] bg-[#f7ece7] px-2.5 py-1.5 text-right">
-                  <div lang="ja" className="text-[11px] font-bold text-[#b84b37]">
+                <div className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] px-2.5 py-1.5 text-right">
+                  <div lang="ja" className="text-[11px] font-bold text-[var(--kon)]">
                     {activeToken.surface} → {activeToken.dictionaryForm}
                   </div>
-                  <small className="block text-[9.5px] text-[#7c5349] mt-0.5">
+                  <small className="block text-[9.5px] text-[var(--tinta-2)] mt-0.5">
                     {activeToken.reasons.join(" ← ")}
                   </small>
                 </div>
               </div>
 
-              <p className="text-xs text-[#45423b] mb-2.5 font-medium">
+              <p className="text-xs text-[var(--tinta)] mb-2.5 font-medium">
                 <strong>JMdict (CC BY-SA 4.0):</strong> {activeToken.meaning}
               </p>
 
               {/* Extracted Context Sentence Box */}
-              <div className="rounded-xl border border-[#e2ded5] bg-white p-2.5 mb-3">
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#868178] mb-1">
+              <div className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-2.5 mb-3">
+                <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-[var(--tinta-2)] mb-1">
                   <span>Kalimat Konteks Otomatis (Tag &lt;b&gt; Utuh)</span>
                   <button
                     type="button"
                     onClick={() => speakJapanese(activeToken.sentencePlain)}
-                    className="text-[#c4543f] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="min-h-[32px] px-2 -my-1 rounded-md text-[var(--ai)] hover:bg-[var(--tsuki)] hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer shrink-0"
                   >
                     <Icon name="volume" size={12} /> Putar Kalimat
                   </button>
                 </div>
                 <p
                   lang="ja"
-                  className="text-xs leading-relaxed text-[#25231f] m-0 font-serif"
+                  className="text-xs leading-relaxed text-[var(--tinta)] m-0 font-serif"
                   dangerouslySetInnerHTML={{ __html: activeToken.sentenceHtml }}
                 />
               </div>
 
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-[10.5px] text-[#68635a] flex items-center gap-1.5">
+                <span className="text-[10.5px] text-[var(--tinta-2)] flex items-center gap-1.5">
                   <Icon name="cards" size={13} /> Sub-deck Tujuan:{" "}
-                  <strong className="text-[#233c35]">{activeToken.targetSubdeck}</strong>
+                  <strong className="text-[var(--kon)]">{activeToken.targetSubdeck}</strong>
                 </span>
                 <button
                   type="button"
@@ -682,10 +938,10 @@ export default function LandingPage() {
                       [activeToken.id]: true,
                     }))
                   }
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 min-h-[36px] text-xs font-bold text-white transition-colors cursor-pointer ${
                     minedMap[activeToken.id]
-                      ? "bg-[#2f6b4f]"
-                      : "bg-[#233c35] hover:bg-[#192c27]"
+                      ? "bg-[var(--ok)]"
+                      : "bg-[var(--kon)] hover:bg-[var(--ai-tua)]"
                   }`}
                 >
                   <Icon name={minedMap[activeToken.id] ? "check" : "plus"} size={14} />
@@ -699,17 +955,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 弐 • REVOLUSI SUB-DECK ANKI & SIMULASI UJIAN JLPT (INTERACTIVE SHOWCASE) */}
+      {/* REVOLUSI SUB-DECK ANKI & SIMULASI UJIAN JLPT (INTERACTIVE SHOWCASE) */}
       <section id="subdeck-jlpt" className="landing-section" style={{ paddingTop: "32px", paddingBottom: "56px" }}>
         <div className="section-heading" style={{ marginBottom: "24px" }}>
           <div>
-            <div className="jp-section-index">
-              <span lang="ja" className="jp-section-index-kanji">弐</span>
-              <p className="eyebrow" style={{ margin: 0 }}>HIERARKI DECK &amp; EVALUASI STANDAR</p>
-            </div>
+            <p className="eyebrow" style={{ margin: "0 0 6px" }}>HIERARKI DECK &amp; EVALUASI STANDAR</p>
             <h2>Revolusi Sub-Deck Anki &amp; Simulasi Ujian JLPT N5–N1</h2>
           </div>
-          <p className="text-xs text-[#6f6a61] max-w-md">
+          <p className="text-xs text-[var(--tinta-2)] max-w-md">
             Tidak perlu bingung mengurutkan ribuan kartu. Buka deck untuk memunculkan sub-deck per level JLPT, lalu uji kesiapanmu lewat simulasi 3 bagian resmi.
           </p>
         </div>
@@ -717,12 +970,12 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT CARD: Interactive Anki Sub-Deck Hierarchy Demo */}
           <div className="lg:col-span-7 jp-koushi-frame p-6">
-            <div className="flex items-center justify-between gap-2 flex-wrap mb-4 pb-3 border-b border-[#ebe5d8]">
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-4 pb-3 border-b border-[var(--garis)]">
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[#c4543f]">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)]">
                   階層デッキ • MULTI-LEVEL ANKI TREE
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[#1e201d] m-0 mt-0.5">
+                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
                   Tekan Deck Induk → Muncul Sub-Deck (N5–N1)
                 </h3>
               </div>
@@ -734,11 +987,13 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Parent Deck Row */}
-            <div className="rounded-xl border border-[#dcd5c7] bg-[#faf7f0] overflow-hidden">
+            <div className="rounded-xl border border-[var(--garis)] bg-[var(--tsuki)] overflow-hidden">
               <button
                 type="button"
+                aria-expanded={demoParentOpen}
+                aria-controls="demo-subdeck-rows"
                 onClick={() => setDemoParentOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left bg-[#233c35] text-white cursor-pointer transition-colors hover:bg-[#1b302a]"
+                className="w-full flex items-center justify-between px-4 py-3 text-left bg-[var(--kon)] text-white cursor-pointer transition-colors hover:bg-[var(--ai-tua)]"
               >
                 <div className="flex items-center gap-2.5">
                   <Icon name={demoParentOpen ? "chevron-up" : "chevron-down"} size={15} />
@@ -749,7 +1004,7 @@ export default function LandingPage() {
                     <strong className="text-xs sm:text-sm font-serif block">
                       Philia Space ▸ Bahasa Indonesia
                     </strong>
-                    <small className="text-[10px] text-white/75">
+                    <small className="text-[10px] text-white/80">
                       {demoParentOpen ? "Tekan untuk menutup cabang sub-deck" : "Tekan untuk membuka 6 sub-deck (N5–N1 & Core 10K)"}
                     </small>
                   </div>
@@ -762,57 +1017,59 @@ export default function LandingPage() {
               </button>
 
               {demoParentOpen ? (
-                <div className="divide-y divide-[#ebe5d8] bg-[#fffdf9]">
+                <div id="demo-subdeck-rows" className="divide-y divide-[var(--garis)] bg-[var(--panel)]">
                   {SUBDECK_DEMO_TREE.map((sub, i) => {
                     const isSelected = sub.id === selectedSubdeckId;
                     return (
-                      <div
+                      <button
                         key={sub.id}
+                        type="button"
+                        aria-pressed={isSelected}
                         onClick={() => setSelectedSubdeckId(sub.id)}
-                        className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors text-xs ${
-                          isSelected ? "bg-[#f3ede1] font-semibold" : "hover:bg-[#faf6ee]"
+                        className={`w-full text-left flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors text-xs ${
+                          isSelected ? "bg-[var(--tsuki)] font-semibold" : "hover:bg-[var(--tsuki)]"
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0 pl-3">
-                          <span className="font-mono text-[#9c9589] text-xs">
+                          <span className="font-mono text-[var(--tinta-2)] text-xs">
                             {i === SUBDECK_DEMO_TREE.length - 1 ? "└─" : "├─"}
                           </span>
                           <span
                             lang="ja"
                             className={`w-6 h-6 rounded text-[11px] font-serif font-bold grid place-items-center shrink-0 ${
-                              isSelected ? "bg-[#c4543f] text-white" : "bg-[#eae4d7] text-[#3b3730]"
+                              isSelected ? "bg-[var(--ai)] text-white" : "bg-[var(--garis)] text-[var(--tinta)]"
                             }`}
                           >
                             {sub.kanji}
                           </span>
-                          <span className="truncate text-[#22201c]">{sub.title}</span>
-                          <span className="rounded bg-[#ede8dd] px-1.5 py-0.5 text-[9.5px] font-bold text-[#5e594f]">
+                          <span className="truncate text-[var(--tinta)]">{sub.title}</span>
+                          <span className="rounded bg-[var(--garis)] px-1.5 py-0.5 text-[9.5px] font-bold text-[var(--tinta)]">
                             {sub.code}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
                           <div className="flex items-center gap-2 font-mono text-xs font-bold">
-                            <span className="text-[#2563eb] w-5 text-right">{sub.newCount}</span>
-                            <span className={sub.learnCount > 0 ? "text-[#dc2626] w-5 text-right" : "text-[#b5b0a6] w-5 text-right"}>
+                            <span className="text-[#1d4ed8] w-5 text-right">{sub.newCount}</span>
+                            <span className={sub.learnCount > 0 ? "text-[#b91c1c] w-5 text-right" : "text-[var(--tinta-2)] w-5 text-right"}>
                               {sub.learnCount}
                             </span>
-                            <span className={sub.dueCount > 0 ? "text-[#16a34a] w-7 text-right" : "text-[#b5b0a6] w-7 text-right"}>
+                            <span className={sub.dueCount > 0 ? "text-[#166534] w-7 text-right" : "text-[var(--tinta-2)] w-7 text-right"}>
                               {sub.dueCount}
                             </span>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
               ) : (
-                <div className="px-4 py-3 text-xs text-[#6f6a61] bg-[#fffdf9] flex items-center justify-between">
+                <div id="demo-subdeck-rows" className="px-4 py-3 text-xs text-[var(--tinta-2)] bg-[var(--panel)] flex items-center justify-between gap-2">
                   <span>Sub-deck disembunyikan — ukuran kartu tetap ringkas dan tidak menarik deck lain.</span>
                   <button
                     type="button"
                     onClick={() => setDemoParentOpen(true)}
-                    className="font-bold text-[#c4543f] hover:underline cursor-pointer"
+                    className="min-h-[32px] px-2 font-bold text-[var(--ai)] hover:underline inline-flex items-center shrink-0 cursor-pointer"
                   >
                     Buka Sub-deck ▾
                   </button>
@@ -821,33 +1078,33 @@ export default function LandingPage() {
             </div>
 
             {/* Selected Subdeck Quick Detail */}
-            <div className="mt-3.5 rounded-xl border border-[#e5dfd3] bg-[#f7f3ea] p-3.5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="mt-3.5 rounded-xl border border-[var(--garis)] bg-[var(--tsuki)] p-3.5 flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7a7469] block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--tinta-2)] block">
                   Sub-Deck Terpilih: {activeSubdeck.title} ({activeSubdeck.total} kartu)
                 </span>
-                <p lang="ja" className="text-xs font-serif text-[#25231f] m-0 mt-0.5">
+                <p lang="ja" className="text-xs font-serif text-[var(--tinta)] m-0 mt-0.5">
                   Contoh kosakata: <strong>{activeSubdeck.sample}</strong>
                 </p>
               </div>
               <Button
                 className="pg-primary"
                 style={{ padding: "8px 14px", fontSize: "11px" }}
-                onClick={() => navigate("/deck")}
+                onClick={() => navigate(user ? "/deck" : "/login")}
               >
-                Buka Koleksi Deck <Icon name="arrow" size={14} />
+                {user ? "Buka Koleksi Deck" : "Masuk untuk Buka Deck"} <Icon name="arrow" size={14} />
               </Button>
             </div>
           </div>
 
           {/* RIGHT CARD: Authentic JLPT Practice Exam Preview */}
           <div className="lg:col-span-5 jp-koushi-frame p-6">
-            <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[#ebe5d8]">
+            <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[var(--garis)]">
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[#233c35]">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--kon)]">
                   模擬試験 • SIMULASI UJIAN JLPT
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[#1e201d] m-0 mt-0.5">
+                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
                   Struktur 3 Bagian &amp; Mondai Interaktif
                 </h3>
               </div>
@@ -865,26 +1122,26 @@ export default function LandingPage() {
               ].map((part) => (
                 <div
                   key={part.sec}
-                  className="rounded-lg border border-[#dfd9cc] bg-[#faf7f0] p-2"
+                  className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-2"
                 >
-                  <small className="block text-[9px] font-bold uppercase text-[#888277]">
+                  <small className="block text-[9px] font-bold uppercase text-[var(--tinta-2)]">
                     {part.sec}
                   </small>
-                  <strong lang="ja" className="font-serif text-xs text-[#233c35] block">
+                  <strong lang="ja" className="font-serif text-xs text-[var(--kon)] block">
                     {part.jp}
                   </strong>
-                  <span className="text-[9.5px] text-[#6d685f]">{part.sub}</span>
+                  <span className="text-[9.5px] text-[var(--tinta-2)]">{part.sub}</span>
                 </div>
               ))}
             </div>
 
             {/* Interactive Mini Mondai Question */}
-            <div className="rounded-xl border border-[#dcd5c7] bg-[#fffdf9] p-4">
-              <div className="flex items-center justify-between text-[10px] font-bold text-[#7c766b] mb-2">
+            <div className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-4">
+              <div className="flex items-center justify-between text-[10px] font-bold text-[var(--tinta-2)] mb-2">
                 <span>CONTOH SOAL • JLPT N5 (G3 PARTIKEL)</span>
-                <span lang="ja" className="text-[#c4543f]">問題 1</span>
+                <span lang="ja" className="text-[var(--ai)]">問題 1</span>
               </div>
-              <p lang="ja" className="text-base font-serif font-semibold text-[#1e201d] mb-3">
+              <p lang="ja" className="text-base font-serif font-semibold text-[var(--tinta)] mb-3">
                 毎朝、新鮮な水（　★　）飲みます。
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -895,13 +1152,14 @@ export default function LandingPage() {
                     <button
                       key={opt}
                       type="button"
+                      aria-pressed={isPicked}
                       onClick={() => setDemoExamChoice(idx)}
-                      className={`rounded-lg border py-2 font-serif font-bold text-sm transition-all cursor-pointer ${
+                      className={`rounded-lg border py-2 min-h-[36px] font-serif font-bold text-sm transition-colors cursor-pointer ${
                         isPicked
                           ? isRight
-                            ? "border-[#2f6b4f] bg-[#e6f3ec] text-[#1f5139]"
-                            : "border-[#c4543f] bg-[#fbeae6] text-[#9e3422]"
-                          : "border-[#dcd5c7] bg-[#faf7f0] text-[#25231f] hover:border-[#233c35]"
+                            ? "border-[var(--ok)] bg-[var(--ok)]/10 text-[var(--ok)]"
+                            : "border-[var(--shu)] bg-[var(--shu)]/10 text-[var(--shu)]"
+                          : "border-[var(--garis)] bg-[var(--tsuki)] text-[var(--tinta)] hover:border-[var(--kon)]"
                       }`}
                     >
                       {idx + 1}. {opt}
@@ -911,80 +1169,86 @@ export default function LandingPage() {
               </div>
 
               {demoExamChoice !== null && (
-                <div className="mt-3 pt-2.5 border-t border-[#ebe5d8] text-[11px] text-[#45423b]">
+                <div className="mt-3 pt-2.5 border-t border-[var(--garis)] text-[11px] text-[var(--tinta)]">
                   {demoExamChoice === 0 ? (
-                    <span className="text-[#2f6b4f] font-bold">
-                      ✓ Benar! Partikel 「を」 menandai objek langsung dari kata kerja transitif 飲みます.
+                    <span className="text-[var(--ok)] font-bold inline-flex items-center gap-1.5">
+                      <Icon name="check" size={13} className="shrink-0" />
+                      <span>Benar! Partikel 「を」 menandai objek langsung dari kata kerja transitif 飲みます.</span>
                     </span>
                   ) : (
-                    <span className="text-[#b84b37] font-bold">
-                      ✕ Kurang tepat. Jawaban yang benar adalah 1 (を) sebagai penanda objek langsung.
+                    <span className="text-[var(--kon)] font-bold inline-flex items-center gap-1.5">
+                      <Icon name="close" size={13} className="shrink-0 text-[var(--shu)]" />
+                      <span>Kurang tepat. Jawaban yang benar adalah 1 (を) sebagai penanda objek langsung.</span>
                     </span>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-[11px] text-[#6f6a61]">
+            <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-[11px] text-[var(--tinta-2)]">
                 15 paket ujian lengkap (N5–N1) dengan timer per bagian.
               </span>
               <Button
                 className="outline-button"
                 style={{ padding: "8px 14px", fontSize: "11px" }}
-                onClick={() => navigate("/exam")}
+                onClick={() => navigate(user ? "/exam" : "/login")}
               >
-                Halaman Ujian <Icon name="arrow" size={14} />
+                {user ? "Halaman Ujian" : "Masuk untuk Ujian Penuh"} <Icon name="arrow" size={14} />
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 参 • INTERACTIVE FEATURE EXPLORER (4 TAB MENDALAM) */}
+      {/* INTERACTIVE FEATURE EXPLORER (4 TAB MENDALAM) */}
       <section id="eksplorer" className="landing-section" style={{ paddingTop: "32px", paddingBottom: "56px" }}>
         <div className="section-heading" style={{ marginBottom: "24px" }}>
           <div>
-            <div className="jp-section-index">
-              <span lang="ja" className="jp-section-index-kanji">参</span>
-              <p className="eyebrow" style={{ margin: 0 }}>BEDAH FITUR INTERAKTIF</p>
-            </div>
+            <p className="eyebrow" style={{ margin: "0 0 6px" }}>BEDAH FITUR INTERAKTIF</p>
             <h2>Bagaimana setiap modul 語楽 bekerja untukmu?</h2>
           </div>
-          <p className="text-xs text-[#77746c] max-w-md">
+          <p className="text-xs text-[var(--tinta-2)] max-w-md">
             Pilih salah satu dari empat modul inti di bawah untuk melihat spesifikasi teknis dan simulasi interaktifnya.
           </p>
         </div>
 
-        {/* Tab Buttons with Kanji Numerals */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-6">
+        {/* Tab Buttons */}
+        <div
+          role="tablist"
+          aria-label="4 Modul Inti GoRaku"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-6"
+        >
           {FEATURE_TABS.map((tab) => {
             const isOn = tab.id === activeTabId;
             return (
               <button
                 key={tab.id}
+                id={`tab-${tab.id}`}
                 type="button"
+                role="tab"
+                aria-selected={isOn}
+                aria-controls="explorer-tabpanel"
                 onClick={() => setActiveTabId(tab.id)}
-                className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
+                className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition-colors cursor-pointer ${
                   isOn
-                    ? "border-[#233c35] bg-[#233c35] text-white shadow-md"
-                    : "border-[#dfd9cc] bg-[#fffdf9] text-[#25231f] hover:border-[#c4543f]"
+                    ? "border-[var(--kon)] bg-[var(--kon)] text-white shadow-md"
+                    : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta)] hover:border-[var(--ai)]"
                 }`}
               >
                 <span
-                  lang="ja"
-                  className={`w-9 h-9 rounded-lg grid place-items-center font-serif font-bold text-sm shrink-0 ${
-                    isOn ? "bg-white/15 text-white" : "bg-[#f1e6df] text-[#c4543f]"
+                  className={`w-9 h-9 rounded-lg grid place-items-center shrink-0 ${
+                    isOn ? "bg-white/15 text-white" : "bg-[var(--tsuki)] text-[var(--ai)]"
                   }`}
                 >
-                  {tab.kanjiNum}
+                  <Icon name={tab.icon} size={18} />
                 </span>
                 <div className="min-w-0">
                   <strong className="block text-xs truncate">{tab.label}</strong>
                   <small
                     lang="ja"
                     className={`block text-[10px] truncate mt-0.5 ${
-                      isOn ? "text-white/75" : "text-[#8e8a82]"
+                      isOn ? "text-[var(--mizu)]" : "text-[var(--tinta-2)]"
                     }`}
                   >
                     {tab.jpSub} • {tab.badge}
@@ -999,6 +1263,9 @@ export default function LandingPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab.id}
+            id="explorer-tabpanel"
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab.id}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -1007,23 +1274,23 @@ export default function LandingPage() {
           >
             <div className="lg:col-span-7 space-y-4">
               <div className="flex items-center gap-2">
-                <span className="inline-block rounded-full bg-[#f1e6df] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#bf5b46]">
+                <span className="inline-block rounded-full bg-[var(--tsuki)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ai)]">
                   {activeTab.badge}
                 </span>
-                <span lang="ja" className="text-xs font-serif text-[#867f73]">
+                <span lang="ja" className="text-xs font-serif text-[var(--tinta-2)]">
                   〔 {activeTab.jpSub} 〕
                 </span>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-[#25231f] leading-snug">
+              <h3 className="text-2xl font-serif font-bold text-[var(--tinta)] leading-snug">
                 {activeTab.title}
               </h3>
-              <p className="text-xs sm:text-sm text-[#5c5851] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--tinta-2)] leading-relaxed">
                 {activeTab.description}
               </p>
               <ul className="space-y-2.5 pt-1">
                 {activeTab.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs text-[#3b3832]">
-                    <span className="w-5 h-5 rounded-full bg-[#233c35] text-white grid place-items-center shrink-0 mt-0.5">
+                  <li key={i} className="flex items-start gap-2.5 text-xs text-[var(--tinta)]">
+                    <span className="w-5 h-5 rounded-full bg-[var(--kon)] text-white grid place-items-center shrink-0 mt-0.5">
                       <Icon name="check" size={12} />
                     </span>
                     <span className="leading-relaxed">{b}</span>
@@ -1035,38 +1302,40 @@ export default function LandingPage() {
                   className="pg-primary"
                   onClick={() => navigate(user ? "/beranda" : "/login")}
                 >
-                  Coba Fitur Ini Sekarang <Icon name="arrow" size={16} />
+                  {user ? "Buka Fitur di Dashboard" : "Masuk untuk Mencoba Fitur"} <Icon name="arrow" size={16} />
                 </Button>
               </div>
             </div>
 
             {/* Interactive Visual Preview per Tab */}
-            <div className="lg:col-span-5 rounded-2xl border border-[#e6e1d6] bg-[#f7f4ec] p-5">
+            <div className="lg:col-span-5 rounded-2xl border border-[var(--garis)] bg-[var(--tsuki)] p-5">
               {activeTab.id === "reader" && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#233c35]">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-[11px] font-bold text-[var(--kon)]">
                       Pratinjau Mode Teks Pembaca
                     </span>
                     <div className="flex gap-1.5">
                       <button
                         type="button"
+                        aria-pressed={previewWritingMode === "horizontal-tb"}
                         onClick={() => setPreviewWritingMode("horizontal-tb")}
-                        className={`rounded px-2 py-1 text-[10px] font-bold cursor-pointer ${
+                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-[10px] font-bold transition-colors cursor-pointer ${
                           previewWritingMode === "horizontal-tb"
-                            ? "bg-[#233c35] text-white"
-                            : "bg-white text-[#5c5851]"
+                            ? "bg-[var(--kon)] text-white"
+                            : "bg-[var(--panel)] text-[var(--tinta)] border border-[var(--garis)]"
                         }`}
                       >
                         横書き (Yokogaki)
                       </button>
                       <button
                         type="button"
+                        aria-pressed={previewWritingMode === "vertical-rl"}
                         onClick={() => setPreviewWritingMode("vertical-rl")}
-                        className={`rounded px-2 py-1 text-[10px] font-bold cursor-pointer ${
+                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-[10px] font-bold transition-colors cursor-pointer ${
                           previewWritingMode === "vertical-rl"
-                            ? "bg-[#233c35] text-white"
-                            : "bg-white text-[#5c5851]"
+                            ? "bg-[var(--kon)] text-white"
+                            : "bg-[var(--panel)] text-[var(--tinta)] border border-[var(--garis)]"
                         }`}
                       >
                         縦書き (Tategaki)
@@ -1075,7 +1344,7 @@ export default function LandingPage() {
                   </div>
                   <div
                     lang="ja"
-                    className="rounded-xl border border-[#dfd9ce] bg-[#fffdfa] p-4 font-serif text-base leading-loose min-h-[160px] flex items-center justify-center"
+                    className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-4 font-serif text-base leading-loose min-h-[160px] flex items-center justify-center"
                     style={{
                       writingMode: previewWritingMode,
                       maxHeight: "200px",
@@ -1108,7 +1377,7 @@ export default function LandingPage() {
                       がつかぬ。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[#6f6b63]">
+                  <p className="text-[11px] text-[var(--tinta-2)]">
                     Tag <code>&lt;rt&gt;</code> furigana otomatis diabaikan saat pemindaian kamus agar kata dasar kanji tetap ditemukan secara presisi.
                   </p>
                 </div>
@@ -1116,7 +1385,7 @@ export default function LandingPage() {
 
               {activeTab.id === "dictionary" && (
                 <div className="space-y-3">
-                  <div className="text-[11px] font-bold text-[#233c35]">
+                  <div className="text-[11px] font-bold text-[var(--kon)]">
                     Alur Deinflection &amp; Lookup Tunggal
                   </div>
                   <div className="space-y-2 text-xs">
@@ -1128,15 +1397,15 @@ export default function LandingPage() {
                     ].map((row, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded-xl border border-[#e1ddd4] bg-white px-3 py-2"
+                        className="flex items-center justify-between rounded-xl border border-[var(--garis)] bg-[var(--panel)] px-3 py-2"
                       >
                         <div>
-                          <span className="text-[10px] text-[#8e8a82] block">{row.step}</span>
-                          <strong lang="ja" className="font-serif text-sm text-[#25231f]">
+                          <span className="text-[10px] text-[var(--tinta-2)] block">{row.step}</span>
+                          <strong lang="ja" className="font-serif text-sm text-[var(--tinta)]">
                             {row.val}
                           </strong>
                         </div>
-                        <span className="rounded bg-[#f1e6df] px-2 py-0.5 text-[10px] font-bold text-[#bf5b46]">
+                        <span className="rounded bg-[var(--tsuki)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)]">
                           {row.note}
                         </span>
                       </div>
@@ -1147,26 +1416,26 @@ export default function LandingPage() {
 
               {activeTab.id === "mining" && (
                 <div className="space-y-3 text-xs">
-                  <div className="text-[11px] font-bold text-[#233c35]">
+                  <div className="text-[11px] font-bold text-[var(--kon)]">
                     Perbandingan Ekstraksi Kalimat Dialog
                   </div>
-                  <div className="rounded-xl border border-red-200 bg-red-50/70 p-3">
-                    <span className="text-[10px] font-bold text-red-700 uppercase block mb-1">
-                      ❌ Pemisah Titik/Tanda Seru Biasa (Terpotong)
+                  <div className="rounded-xl border border-[var(--shu)]/30 bg-[var(--shu)]/10 p-3">
+                    <span className="text-[10px] font-bold text-[var(--shu)] uppercase inline-flex items-center gap-1 mb-1">
+                      <Icon name="close" size={12} /> Pemisah Titik/Tanda Seru Biasa (Terpotong)
                     </span>
-                    <p lang="ja" className="text-xs text-red-900">
+                    <p lang="ja" className="text-xs text-[var(--tinta)] m-0">
                       「本当に<b>信じられない</b>！
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#2f6b4f]/30 bg-[#e9f5ee] p-3">
-                    <span className="text-[10px] font-bold text-[#2f6b4f] uppercase block mb-1">
-                      ✓ Ekstraktor Kontekstual 語楽 (Utuh dengan Atribusi)
+                  <div className="rounded-xl border border-[var(--ok)]/30 bg-[var(--ok)]/10 p-3">
+                    <span className="text-[10px] font-bold text-[var(--ok)] uppercase inline-flex items-center gap-1 mb-1">
+                      <Icon name="check" size={12} /> Ekstraktor Kontekstual 語楽 (Utuh dengan Atribusi)
                     </span>
-                    <p lang="ja" className="text-xs text-[#1c3b2c]">
+                    <p lang="ja" className="text-xs text-[var(--tinta)] m-0">
                       「本当に<b>信じられない</b>！」と彼女は驚いた声で言った。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[#6f6b63]">
+                  <p className="text-[11px] text-[var(--tinta-2)]">
                     Pelacak kedalaman tanda kutip <code>「」</code> dan <code>『』</code> memastikan kalimat dialog beserta klausa penutupnya tidak terpotong di tengah.
                   </p>
                 </div>
@@ -1174,42 +1443,44 @@ export default function LandingPage() {
 
               {activeTab.id === "srs" && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#233c35]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-[var(--kon)]">
                       Simulasi Kartu Review SRS
                     </span>
                     <button
                       type="button"
                       onClick={() => setDemoCardFlipped((v) => !v)}
-                      className="rounded-lg bg-[#233c35] px-2.5 py-1 text-[10px] font-bold text-white cursor-pointer"
+                      className="rounded-lg bg-[var(--kon)] px-3 min-h-[32px] inline-flex items-center text-[10.5px] font-bold text-white hover:bg-[var(--ai-tua)] transition-colors cursor-pointer"
                     >
                       {demoCardFlipped ? "Lihat Depan" : "Balik Kartu (Spasi)"}
                     </button>
                   </div>
-                  <div
+                  <button
+                    type="button"
+                    aria-pressed={demoCardFlipped}
                     onClick={() => setDemoCardFlipped((v) => !v)}
-                    className="rounded-xl border border-[#dfd9ce] bg-white p-5 text-center cursor-pointer shadow-xs min-h-[165px] flex flex-col justify-center"
+                    className="w-full rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-5 text-center cursor-pointer shadow-xs min-h-[165px] flex flex-col justify-center items-center hover:border-[var(--ai)] transition-colors"
                   >
-                    <small lang="ja" className="text-xs text-[#c4543f] font-bold">
+                    <small lang="ja" className="text-xs text-[var(--ai)] font-bold">
                       {demoCardFlipped ? "じゅみょう • Sub-deck N3" : "Klik untuk membuka jawaban"}
                     </small>
-                    <strong lang="ja" className="text-3xl font-serif my-1 text-[#25231f]">
+                    <strong lang="ja" className="text-3xl font-serif my-1 text-[var(--tinta)]">
                       寿命
                     </strong>
                     {demoCardFlipped && (
-                      <div className="mt-2 pt-2 border-t border-[#ebe6dc] text-xs space-y-1">
-                        <p className="font-bold text-[#233c35]">umur; masa hidup (lifespan)</p>
-                        <p lang="ja" className="text-[#5c5851]">
+                      <div className="mt-2 pt-2 border-t border-[var(--garis)] text-xs space-y-1 w-full">
+                        <p className="font-bold text-[var(--kon)]">umur; masa hidup (lifespan)</p>
+                        <p lang="ja" className="text-[var(--tinta-2)]">
                           人間の<b>寿命</b>は短いんだね。
                         </p>
                       </div>
                     )}
-                  </div>
+                  </button>
                   <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-bold">
-                    <div className="rounded-lg bg-[#f9e5e1] py-1.5 text-[#b53d2a]">1 • Lupa</div>
-                    <div className="rounded-lg bg-[#f6ebd8] py-1.5 text-[#9a6312]">2 • Sulit</div>
-                    <div className="rounded-lg bg-[#e3f1e8] py-1.5 text-[#2f6b4f]">3 • Baik</div>
-                    <div className="rounded-lg bg-[#e1ecf7] py-1.5 text-[#2b5b84]">4 • Mudah</div>
+                    <div className="rounded-lg bg-[var(--shu)]/10 py-1.5 text-[var(--shu)]">1 • Lupa</div>
+                    <div className="rounded-lg bg-[#D49B27]/15 py-1.5 text-[#7c4d09]">2 • Sulit</div>
+                    <div className="rounded-lg bg-[var(--ok)]/10 py-1.5 text-[var(--ok)]">3 • Baik</div>
+                    <div className="rounded-lg bg-[var(--tsuki)] py-1.5 text-[var(--ai)]">4 • Mudah</div>
                   </div>
                 </div>
               )}
@@ -1218,14 +1489,11 @@ export default function LandingPage() {
         </AnimatePresence>
       </section>
 
-      {/* 肆 • 6 PILAR KEUNGGULAN SISTEM */}
+      {/* 6 PILAR KEUNGGULAN SISTEM */}
       <section id="fitur" className="landing-section" style={{ paddingTop: "28px" }}>
         <div className="section-heading">
           <div>
-            <div className="jp-section-index">
-              <span lang="ja" className="jp-section-index-kanji">肆</span>
-              <p className="eyebrow" style={{ margin: 0 }}>ARSITEKTUR &amp; FILOSOFI DESAIN</p>
-            </div>
+            <p className="eyebrow" style={{ margin: "0 0 6px" }}>ARSITEKTUR &amp; FILOSOFI DESAIN</p>
             <h2>6 Pilar Utama 語楽 (GORAKU)</h2>
           </div>
         </div>
@@ -1236,34 +1504,35 @@ export default function LandingPage() {
               <span
                 lang="ja"
                 aria-hidden="true"
-                className="pointer-events-none select-none absolute -right-2 -top-3 font-serif text-[72px] font-bold leading-none text-[#233c35]/[0.045]"
+                className="pointer-events-none select-none absolute -right-2 -top-3 font-serif text-[72px] font-bold leading-none text-[var(--kon)]/[0.045]"
               >
                 {card.kanjiWatermark}
               </span>
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="w-10 h-10 rounded-xl bg-[#f1e6df] text-[#c4543f] grid place-items-center">
+                  <span className="w-10 h-10 rounded-xl bg-[var(--tsuki)] text-[var(--ai)] grid place-items-center">
                     <Icon name={card.icon} size={20} />
                   </span>
                   <div className="text-right">
-                    <span className="block text-[9.5px] font-bold tracking-wider uppercase text-[#a06658]">
+                    <span className="block text-[9.5px] font-bold tracking-wider uppercase text-[var(--ai)]">
                       {card.tag}
                     </span>
-                    <small lang="ja" className="text-[10px] font-serif text-[#8c8579]">
+                    <small lang="ja" className="text-[10px] font-serif text-[var(--tinta-2)]">
                       {card.jpTag}
                     </small>
                   </div>
                 </div>
                 <h3 className="text-base font-serif font-bold mb-2">{card.title}</h3>
-                <p className="text-xs text-[#69655d] leading-relaxed mb-4">{card.desc}</p>
+                <p className="text-xs text-[var(--tinta-2)] leading-relaxed mb-4">{card.desc}</p>
               </div>
-              <div className="relative z-10 flex flex-wrap gap-1.5 pt-3 border-t border-[#ebe6dc]">
+              <div className="relative z-10 flex flex-wrap gap-1.5 pt-3 border-t border-[var(--garis)]">
                 {card.highlights.map((h) => (
                   <span
                     key={h}
-                    className="rounded-md bg-[#f5f1e8] px-2 py-0.5 text-[10px] font-semibold text-[#494740]"
+                    className="inline-flex items-center gap-1 rounded-md bg-[var(--tsuki)] px-2 py-0.5 text-[10px] font-semibold text-[var(--tinta-2)]"
                   >
-                    ✓ {h}
+                    <Icon name="check" size={11} className="text-[var(--ai)] shrink-0" />
+                    <span>{h}</span>
                   </span>
                 ))}
               </div>
@@ -1315,14 +1584,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 陸 • FAQ INTERAKTIF (ACCORDION) */}
+      {/* FAQ INTERAKTIF (ACCORDION) */}
       <section id="faq" className="landing-section">
         <div className="section-heading">
           <div>
-            <div className="jp-section-index">
-              <span lang="ja" className="jp-section-index-kanji">陸</span>
-              <p className="eyebrow" style={{ margin: 0 }}>PERTANYAAN UMUM</p>
-            </div>
+            <p className="eyebrow" style={{ margin: "0 0 6px" }}>PERTANYAAN UMUM</p>
             <h2>Tanya Jawab Seputar 語楽</h2>
           </div>
         </div>
@@ -1332,20 +1598,25 @@ export default function LandingPage() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-[#dfd9cc] bg-[#fffdf9] overflow-hidden"
+                className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] overflow-hidden"
               >
                 <button
                   type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${idx}`}
                   onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-serif font-bold text-sm text-[#25231f] hover:bg-[#f7f3ea] transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-serif font-bold text-sm text-[var(--tinta)] hover:bg-[var(--tsuki)] transition-colors cursor-pointer"
                 >
                   <span>{item.q}</span>
-                  <span className="text-[#c4543f] text-base font-sans">
+                  <span className="text-[var(--ai)] text-base font-sans shrink-0" aria-hidden="true">
                     {isOpen ? "−" : "+"}
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-4 text-xs text-[#5c5851] leading-relaxed border-t border-[#f0ece3] pt-3">
+                  <div
+                    id={`faq-answer-${idx}`}
+                    className="px-5 pb-4 text-xs text-[var(--tinta-2)] leading-relaxed border-t border-[var(--garis)] pt-3"
+                  >
                     {item.a}
                   </div>
                 )}
@@ -1355,37 +1626,55 @@ export default function LandingPage() {
         </div>
 
         {/* Bottom CTA Banner */}
-        <div className="mt-14 rounded-2xl border border-[#2b443c] bg-[#1e312b] p-8 sm:p-10 text-center text-white shadow-xl relative overflow-hidden">
+        <div className="mt-14 rounded-2xl border border-[var(--ai)] bg-[var(--kon)] p-8 sm:p-10 text-center text-white shadow-xl relative overflow-hidden">
           <p className="eyebrow light">一歩ずつ、確実に • MULAI PERJALANAN IMMERSION-MU</p>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold mt-1 mb-3">
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold mt-1 mb-3 text-white">
             Siap membangun ruang belajar bahasa Jepang pribadimu di 語楽?
           </h2>
-          <p className="text-xs sm:text-sm text-white/80 max-w-xl mx-auto mb-6">
+          <p className="text-xs sm:text-sm text-[var(--mizu)] max-w-xl mx-auto mb-6">
             Langsung masuk ke dashboard, pilih sub-deck N5–N1 pada <em>Philia Space</em>, baca novel contoh <em>吾輩は猫である</em>, atau mulai simulasi ujian JLPT sekarang.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Link to={user ? "/beranda" : "/login"}>
-              <Button className="primary-light" style={{ padding: "12px 22px", fontSize: "12.5px" }}>
-                <Icon name="arrow" size={18} /> {user ? "Buka Dashboard 語楽" : "Masuk & Mulai Belajar"}
-              </Button>
+            <Link
+              to={user ? "/beranda" : "/login"}
+              className="primary-light no-underline"
+              style={{ padding: "12px 22px", fontSize: "13px" }}
+            >
+              {user ? "Buka Dashboard 語楽" : "Masuk & Mulai Belajar"}
             </Link>
-            <Link to="/deck" style={{ textDecoration: "none" }}>
-              <Button
-                className="outline-button"
+            {user ? (
+              <Link
+                to="/deck"
+                className="outline-button no-underline"
                 style={{
                   padding: "12px 18px",
                   fontSize: "12.5px",
                   background: "rgba(255,255,255,0.08)",
                   color: "#fff",
-                  borderColor: "rgba(255,255,255,0.22)",
+                  borderColor: "rgba(188,214,226,0.35)",
                 }}
               >
                 <Icon name="cards" size={16} /> Jelajahi Sub-Deck
-              </Button>
-            </Link>
+              </Link>
+            ) : (
+              <a
+                href="#subdeck-jlpt"
+                className="outline-button no-underline"
+                style={{
+                  padding: "12px 18px",
+                  fontSize: "12.5px",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "#fff",
+                  borderColor: "rgba(188,214,226,0.35)",
+                }}
+              >
+                <Icon name="cards" size={16} /> Lihat Hierarki Sub-Deck
+              </a>
+            )}
           </div>
         </div>
       </section>
+      </main>
 
       {/* FOOTER — Minimalist Japanese Editorial Colophon */}
       <footer className="landing-footer">
@@ -1401,16 +1690,16 @@ export default function LandingPage() {
             <span className="jp-hanko text-[9.5px]">純国産ローカル</span>
           </div>
 
-          <div className="flex items-center gap-5 flex-wrap justify-center text-xs">
-            <Link to="/beranda" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Dashboard</Link>
-            <Link to="/deck" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Koleksi Deck</Link>
-            <Link to="/library" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Perpustakaan</Link>
-            <Link to="/mining" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Sentence Mining</Link>
-            <Link to="/exam" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Ujian JLPT</Link>
-            <Link to="/license" className="text-[#5c5851] hover:text-[#c4543f] no-underline">Atribusi &amp; Lisensi</Link>
+          <div className="flex items-center gap-x-2 gap-y-1 flex-wrap justify-center text-xs">
+            <Link to="/beranda" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Dashboard</Link>
+            <Link to="/deck" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Koleksi Deck</Link>
+            <Link to="/library" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Perpustakaan</Link>
+            <Link to="/mining" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Sentence Mining</Link>
+            <Link to="/exam" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Ujian JLPT</Link>
+            <Link to="/license" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Atribusi &amp; Lisensi</Link>
           </div>
 
-          <p className="m-0 text-[11px] text-[#787268]">
+          <p className="m-0 text-[11px] text-[var(--tinta-2)]">
             © 2026 語楽 (GORAKU) —千里の道も一歩から。
           </p>
         </div>

@@ -92,6 +92,18 @@ export default function ReaderPopup({
   const [collapsedDicts, setCollapsedDicts] = useState<Record<number, boolean>>(
     {},
   );
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window === "undefined" ? 1024 : window.innerWidth,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobileSheet = viewportWidth <= 720;
 
   // State edit kalimat & arti sebelum disimpan
   const [editingFields, setEditingFields] = useState(false);
@@ -233,18 +245,19 @@ export default function ReaderPopup({
     }
   };
 
-  // Hitung posisi popup di layar desktop agar tidak keluar dari viewport
+  // Hitung posisi popup: bottom sheet di mobile (<= 720px), popover di desktop
   const desktopPositionStyle = useMemo<React.CSSProperties>(() => {
     if (typeof window === "undefined") return {};
-    const vw = window.innerWidth;
+    const vw = viewportWidth;
     const vh = window.innerHeight;
-    if (vw < 640) {
-      // Pada layar ponsel, gunakan bottom-sheet penuh
+    if (vw <= 720) {
       return {
-        left: "8px",
-        right: "8px",
-        bottom: "8px",
-        maxHeight: "76vh",
+        left: "0px",
+        right: "0px",
+        bottom: "0px",
+        maxHeight: "76dvh",
+        borderRadius: "18px 18px 0 0",
+        paddingBottom: "env(safe-area-inset-bottom)",
       };
     }
 
@@ -259,11 +272,11 @@ export default function ReaderPopup({
 
     return {
       left: `${left}px`,
-      top: `${ Math.max(12, top) }px`,
+      top: `${Math.max(12, top)}px`,
       width: `${popupWidth}px`,
       maxHeight: "460px",
     };
-  }, [anchorRect]);
+  }, [anchorRect, viewportWidth]);
 
   const toggleDictCollapse = (dictId: number) => {
     setCollapsedDicts((prev) => ({
@@ -277,34 +290,36 @@ export default function ReaderPopup({
       ref={popupRef}
       role="dialog"
       aria-label="Popup Kamus & Sentence Mining"
-      className="fixed z-50 rounded-2xl border shadow-2xl flex flex-col overflow-hidden"
+      className={`fixed z-50 border shadow-2xl flex flex-col overflow-hidden ${
+        isMobileSheet ? "rounded-t-2xl" : "rounded-2xl"
+      }`}
       style={{
         ...desktopPositionStyle,
-        background: "var(--bg-canvas, #faf7f2)",
-        borderColor: "var(--line-strong, #d5cec2)",
-        color: "var(--ink, #1d1b18)",
+        background: "var(--panel)",
+        borderColor: "var(--garis)",
+        color: "var(--tinta)",
       }}
     >
       {/* Header Popup */}
       <div
         className="px-4 py-2.5 border-b flex items-center justify-between gap-2 shrink-0"
         style={{
-          background: "var(--surface, #ffffff)",
-          borderColor: "var(--line, #e6e0d6)",
+          background: "var(--tsuki)",
+          borderColor: "var(--garis)",
         }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span
             className="text-[11px] font-mono px-2 py-0.5 rounded font-semibold"
             style={{
-              background: "rgba(194, 78, 52, 0.12)",
-              color: "var(--accent, #c24e34)",
+              background: "rgba(38, 72, 122, 0.12)",
+              color: "var(--ai)",
             }}
           >
             {matchedText}
           </span>
           {rubyHint && (
-            <span className="text-[11px]" style={{ color: "var(--ink-3)" }}>
+            <span className="text-[11px]" style={{ color: "var(--tinta-2)" }}>
               (furigana teks: {rubyHint})
             </span>
           )}
@@ -329,7 +344,7 @@ export default function ReaderPopup({
                 ? "Belum ada kamus aktif"
                 : `Kata "${matchedText}" tidak ditemukan di kamus`}
             </div>
-            <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+            <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
               {activeDictCount === 0
                 ? "Impor kamus ZIP berformat Yomitan (mis. JMdict_english.zip) terlebih dahulu agar arti kata dapat ditampilkan."
                 : "Coba klik tepat pada awal kata kerja, kata benda, atau sifat berbahasa Jepang."}
@@ -342,7 +357,7 @@ export default function ReaderPopup({
                   onOpenDictManager();
                 }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12.5px] font-medium text-white cursor-pointer"
-                style={{ background: "var(--accent, #c24e34)" }}
+                style={{ background: "var(--shu)" }}
               >
                 <Icon name="book" size={15} /> Buka Kelola Kamus
               </button>
@@ -365,20 +380,20 @@ export default function ReaderPopup({
                       className="px-2.5 py-1 rounded-lg border text-[12px] font-medium shrink-0 flex items-center gap-1 cursor-pointer"
                       style={{
                         borderColor:
-                          selectedIndex === idx
-                            ? "var(--accent, #c24e34)"
-                            : "var(--line, #e6e0d6)",
+                          selectedIndex === idx ? "var(--ai)" : "var(--garis)",
                         background:
                           selectedIndex === idx
-                            ? "rgba(194, 78, 52, 0.12)"
-                            : "var(--surface, #fff)",
+                            ? "rgba(38, 72, 122, 0.12)"
+                            : "var(--panel)",
+                        color:
+                          selectedIndex === idx ? "var(--kon)" : "var(--tinta)",
                       }}
                     >
                       <span lang="ja">{item.expression}</span>
                       {dup && (
                         <span
                           className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: "var(--sage, #2f6b4f)" }}
+                          style={{ background: "var(--ok)" }}
                           title="Sudah ada di deck"
                         />
                       )}
@@ -398,12 +413,15 @@ export default function ReaderPopup({
                         activeItem.reading !== activeItem.expression && (
                           <div
                             className="text-[12px] font-medium mb-0.5"
-                            style={{ color: "var(--accent, #c24e34)" }}
+                            style={{ color: "var(--ai)" }}
                           >
                             {activeItem.reading}
                           </div>
                         )}
-                      <span className="text-[22px] font-bold leading-tight">
+                      <span
+                        className="text-[24px] font-bold leading-tight"
+                        style={{ fontFamily: "var(--font-serif)" }}
+                      >
                         {activeItem.expression}
                       </span>
                     </div>
@@ -417,8 +435,8 @@ export default function ReaderPopup({
                       title="Dengarkan pengucapan kata"
                       className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-black/5 cursor-pointer"
                       style={{
-                        borderColor: "var(--line, #e6e0d6)",
-                        color: "var(--accent, #c24e34)",
+                        borderColor: "var(--garis)",
+                        color: "var(--ai)",
                       }}
                     >
                       <Icon name="volume" size={14} />
@@ -430,8 +448,8 @@ export default function ReaderPopup({
                     <span
                       className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
                       style={{
-                        background: "rgba(47, 107, 79, 0.15)",
-                        color: "var(--sage, #2f6b4f)",
+                        background: "rgba(42, 111, 91, 0.15)",
+                        color: "var(--ok)",
                       }}
                     >
                       ✓ Sudah ditambahkan
@@ -440,8 +458,8 @@ export default function ReaderPopup({
                     <span
                       className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
                       style={{
-                        background: "rgba(181, 121, 31, 0.16)",
-                        color: "#9a6312",
+                        background: "rgba(38, 72, 122, 0.12)",
+                        color: "var(--kon)",
                       }}
                     >
                       Sudah ada di deck
@@ -455,8 +473,8 @@ export default function ReaderPopup({
                     <span
                       className="px-2 py-0.5 rounded text-[11px] font-medium"
                       style={{
-                        background: "rgba(194, 78, 52, 0.1)",
-                        color: "var(--accent, #c24e34)",
+                        background: "rgba(38, 72, 122, 0.1)",
+                        color: "var(--ai)",
                       }}
                     >
                       {matchedText} ← {activeItem.deinflectReasons.join(" ← ")}
@@ -467,8 +485,8 @@ export default function ReaderPopup({
                       key={t}
                       className="px-1.5 py-0.5 rounded text-[10.5px] font-mono"
                       style={{
-                        background: "rgba(0,0,0,0.06)",
-                        color: "var(--ink-2)",
+                        background: "rgba(16, 33, 58, 0.06)",
+                        color: "var(--tinta-2)",
                       }}
                     >
                       {t}
@@ -485,8 +503,8 @@ export default function ReaderPopup({
                         key={`${sense.dictId}-${sIdx}`}
                         className="rounded-xl border overflow-hidden"
                         style={{
-                          background: "var(--surface, #fff)",
-                          borderColor: "var(--line, #e6e0d6)",
+                          background: "var(--panel)",
+                          borderColor: "var(--garis)",
                         }}
                       >
                         <button
@@ -494,8 +512,8 @@ export default function ReaderPopup({
                           onClick={() => toggleDictCollapse(sense.dictId)}
                           className="w-full px-3 py-1.5 flex items-center justify-between text-left text-[11.5px] font-semibold cursor-pointer"
                           style={{
-                            background: "rgba(0,0,0,0.025)",
-                            color: "var(--ink-2)",
+                            background: "var(--tsuki)",
+                            color: "var(--tinta-2)",
                           }}
                         >
                           <span>{sense.dictTitle}</span>
@@ -517,15 +535,15 @@ export default function ReaderPopup({
                 <div
                   className="mt-3 rounded-xl border p-3 space-y-2"
                   style={{
-                    background: "var(--surface, #fff)",
-                    borderColor: "var(--line, #e6e0d6)",
+                    background: "var(--panel)",
+                    borderColor: "var(--garis)",
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <span
                         className="text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: "var(--ink-3)" }}
+                        style={{ color: "var(--tinta-2)" }}
                       >
                         Kalimat Sumber (Kata Target Ditandai)
                       </span>
@@ -534,7 +552,7 @@ export default function ReaderPopup({
                         onClick={() => speakJapanese(customSentenceHtml)}
                         title="Dengarkan kalimat sumber"
                         className="p-1 rounded hover:bg-black/5 cursor-pointer"
-                        style={{ color: "var(--accent, #c24e34)" }}
+                        style={{ color: "var(--ai)" }}
                       >
                         <Icon name="volume" size={13} />
                       </button>
@@ -543,7 +561,7 @@ export default function ReaderPopup({
                       type="button"
                       onClick={() => setEditingFields((v) => !v)}
                       className="text-[11.5px] underline font-medium cursor-pointer"
-                      style={{ color: "var(--accent, #c24e34)" }}
+                      style={{ color: "var(--ai)" }}
                     >
                       {editingFields ? "Selesai Edit" : "Edit Kartu"}
                     </button>
@@ -554,7 +572,7 @@ export default function ReaderPopup({
                     <div className="space-y-1.5 pt-1 border-t border-black/5">
                       <span
                         className="text-[11px] font-semibold block"
-                        style={{ color: "var(--ink-3)" }}
+                        style={{ color: "var(--tinta-2)" }}
                       >
                         Pilih Kalimat dari Gelembung Dialog:
                       </span>
@@ -574,14 +592,14 @@ export default function ReaderPopup({
                               className="px-2.5 py-1 rounded-lg border text-[11.5px] text-left transition cursor-pointer max-w-full truncate"
                               style={{
                                 borderColor: isSelected
-                                  ? "var(--accent, #c24e34)"
-                                  : "var(--line, #e6e0d6)",
+                                  ? "var(--ai)"
+                                  : "var(--garis)",
                                 background: isSelected
-                                  ? "rgba(194, 78, 52, 0.12)"
-                                  : "var(--bg-canvas, #faf7f2)",
+                                  ? "rgba(38, 72, 122, 0.12)"
+                                  : "var(--tsuki)",
                                 color: isSelected
-                                  ? "var(--accent, #c24e34)"
-                                  : "var(--ink)",
+                                  ? "var(--kon)"
+                                  : "var(--tinta)",
                                 fontWeight: isSelected ? 600 : 400,
                               }}
                               title={c.label}
@@ -605,7 +623,7 @@ export default function ReaderPopup({
                       <label className="block">
                         <span
                           className="text-[11px] font-medium block mb-0.5"
-                          style={{ color: "var(--ink-3)" }}
+                          style={{ color: "var(--tinta-2)" }}
                         >
                           Arti Kartu (bisa diubah ke Bahasa Indonesia/Inggris):
                         </span>
@@ -615,8 +633,8 @@ export default function ReaderPopup({
                           onChange={(e) => setCustomMeaning(e.target.value)}
                           className="w-full px-2.5 py-1.5 rounded-lg border text-[12.5px]"
                           style={{
-                            borderColor: "var(--line-strong)",
-                            background: "var(--bg-canvas)",
+                            borderColor: "var(--garis)",
+                            background: "var(--tsuki)",
                           }}
                         />
                       </label>
@@ -624,7 +642,7 @@ export default function ReaderPopup({
                       <label className="block">
                         <span
                           className="text-[11px] font-medium block mb-0.5"
-                          style={{ color: "var(--ink-3)" }}
+                          style={{ color: "var(--tinta-2)" }}
                         >
                           Kalimat Sumber (gunakan <code>&lt;b&gt;...&lt;/b&gt;</code> untuk menandai kata):
                         </span>
@@ -636,8 +654,8 @@ export default function ReaderPopup({
                           }
                           className="w-full px-2.5 py-1.5 rounded-lg border text-[12.5px]"
                           style={{
-                            borderColor: "var(--line-strong)",
-                            background: "var(--bg-canvas)",
+                            borderColor: "var(--garis)",
+                            background: "var(--tsuki)",
                           }}
                         />
                       </label>
@@ -645,7 +663,7 @@ export default function ReaderPopup({
                       <label className="block">
                         <span
                           className="text-[11px] font-medium block mb-0.5"
-                          style={{ color: "var(--ink-3)" }}
+                          style={{ color: "var(--tinta-2)" }}
                         >
                           Sumber (Judul Buku &amp; Bab):
                         </span>
@@ -655,8 +673,8 @@ export default function ReaderPopup({
                           onChange={(e) => setCustomNote(e.target.value)}
                           className="w-full px-2.5 py-1.5 rounded-lg border text-[12px]"
                           style={{
-                            borderColor: "var(--line-strong)",
-                            background: "var(--bg-canvas)",
+                            borderColor: "var(--garis)",
+                            background: "var(--tsuki)",
                           }}
                         />
                       </label>
@@ -669,8 +687,8 @@ export default function ReaderPopup({
                   <div
                     className="mt-3 rounded-xl border p-3 space-y-2"
                     style={{
-                      background: "var(--surface, #fff)",
-                      borderColor: "var(--line, #e6e0d6)",
+                      background: "var(--panel)",
+                      borderColor: "var(--garis)",
                     }}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -681,13 +699,13 @@ export default function ReaderPopup({
                           onChange={(e) =>
                             setIncludeBubbleImage(e.target.checked)
                           }
-                          className="rounded accent-[#c24e34] cursor-pointer"
+                          className="rounded accent-[var(--ai)] cursor-pointer"
                         />
                         <span>Sertakan gambar gelembung dialog pada kartu</span>
                       </label>
                       <span
                         className="text-[11px] font-mono"
-                        style={{ color: "var(--ink-3)" }}
+                        style={{ color: "var(--tinta-2)" }}
                       >
                         WebP ~800px
                       </span>
@@ -715,8 +733,8 @@ export default function ReaderPopup({
         <div
           className="px-4 py-2.5 border-t flex items-center justify-between gap-2.5 shrink-0"
           style={{
-            background: "var(--surface, #fff)",
-            borderColor: "var(--line, #e6e0d6)",
+            background: "var(--tsuki)",
+            borderColor: "var(--garis)",
           }}
         >
           <select
@@ -725,9 +743,9 @@ export default function ReaderPopup({
             aria-label="Pilih deck tujuan"
             className="px-2.5 py-1.5 rounded-xl border text-[12px] font-medium max-w-[180px] truncate"
             style={{
-              borderColor: "var(--line-strong, #d5cec2)",
-              background: "var(--bg-canvas, #faf7f2)",
-              color: "var(--ink)",
+              borderColor: "var(--garis)",
+              background: "var(--panel)",
+              color: "var(--tinta)",
             }}
           >
             {decks.map((d) => (
@@ -743,9 +761,7 @@ export default function ReaderPopup({
             onClick={() => void handleAddToDeck()}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-65 cursor-pointer shrink-0"
             style={{
-              background: isJustAdded
-                ? "var(--sage, #2f6b4f)"
-                : "var(--accent, #c24e34)",
+              background: isJustAdded ? "var(--ok)" : "var(--shu)",
             }}
           >
             <Icon name={isJustAdded ? "check" : "plus"} size={15} />

@@ -1,27 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import PageTransition, { FrozenOutlet } from "./PageTransition";
-import CommandPaletteModal from "./CommandPaletteModal";
-import DictionaryManagerModal from "./DictionaryManagerModal";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { reviewedToday, useReviewStore } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
-import { isMangaBook } from "../pages/Library";
+import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+
+const CommandPaletteModal = lazy(() => import("./CommandPaletteModal"));
+const DictionaryManagerModal = lazy(() => import("./DictionaryManagerModal"));
 
 const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
 
 const navItems = [
-  { label: "Beranda", shortLabel: "Beranda", jp: "学習・概要", path: "/beranda", icon: "home" as const },
-  { label: "Deck Saya", shortLabel: "Deck", jp: "階層・単語帳", path: "/deck", icon: "cards" as const },
-  { label: "Sentence Mining", shortLabel: "Mining", jp: "文脈・採掘", path: "/mining", icon: "mine" as const },
-  { label: "Perpustakaan", shortLabel: "Pustaka", jp: "小説・漫画", path: "/library", icon: "book" as const },
-  { label: "Ujian JLPT", shortLabel: "JLPT", jp: "模擬試験", path: "/exam", icon: "target" as const },
-  { label: "Progres", shortLabel: "Progres", jp: "統計・分析", path: "/progress", icon: "chart" as const },
+  { label: "Beranda", shortLabel: "Beranda", kanji: "家", jp: "学習・概要", path: "/beranda", icon: "home" as const },
+  { label: "Deck Saya", shortLabel: "Deck", kanji: "札", jp: "階層・単語帳", path: "/deck", icon: "cards" as const },
+  { label: "Sentence Mining", shortLabel: "Mining", kanji: "採", jp: "文脈・採掘", path: "/mining", icon: "mine" as const },
+  { label: "Perpustakaan", shortLabel: "Pustaka", kanji: "本", jp: "小説・漫画", path: "/library", icon: "book" as const },
+  { label: "Ujian JLPT", shortLabel: "JLPT", kanji: "試", jp: "模擬試験", path: "/exam", icon: "target" as const },
+  { label: "Progres", shortLabel: "Progres", kanji: "進", jp: "統計・分析", path: "/progress", icon: "chart" as const },
 ];
 
 const DAILY_QUOTES = [
@@ -304,7 +305,7 @@ export default function ProtectedLayout() {
 
   return (
     <div
-      className={`app-shell ${effectiveCollapsed ? "is-collapsed" : ""} ${
+      className={`app-shell is-rail ${effectiveCollapsed ? "is-collapsed" : ""} ${
         mobileDrawerOpen ? "mobile-drawer-open" : ""
       }`}
     >
@@ -352,7 +353,7 @@ export default function ProtectedLayout() {
           <button
             type="button"
             onClick={() => setStreakCalendarOpen((v) => !v)}
-            className="flex items-center gap-1.5 rounded-lg border border-[#2b332e] bg-[#1a201c] px-2 py-1 font-bold text-[#e87f67] hover:border-[#df674d] hover:bg-[#202722] transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-2 py-1 font-bold text-[#FCE2DC] hover:border-[var(--mizu)] hover:bg-white/10 transition-colors"
             title="Klik untuk melihat ritme belajar 7 hari"
           >
             <Icon name="flame" size={13} />
@@ -365,60 +366,58 @@ export default function ProtectedLayout() {
             onClick={() => setDictModalOpen(true)}
             className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[9.5px] font-semibold transition-colors ${
               activeDictCount > 0
-                ? "border-[#2c4438] bg-[#16271e] text-[#78cf9f] hover:border-[#385e4c]"
-                : "border-[#4a3424] bg-[#291b12] text-[#e89d60] hover:border-[#664731]"
+                ? "border-[var(--ok)]/60 bg-[var(--ok)]/20 text-[#b7e4d6] hover:border-[var(--mizu)]"
+                : "border-white/15 bg-white/5 text-[var(--mizu)] hover:border-[var(--mizu)]"
             }`}
             title="Klik untuk membuka Pengelola Kamus Yomitan"
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                activeDictCount > 0 ? "bg-[#3ec47d] animate-pulse" : "bg-[#df8a45]"
+                activeDictCount > 0 ? "bg-[#52d1a2] animate-pulse" : "bg-[var(--shu)]"
               }`}
             />
             <span>{activeDictCount > 0 ? `${activeDictCount} Kamus` : "Kamus Kosong"}</span>
           </button>
         </div>
 
-        {/* Status Dock (Collapsed Mode): Mini Streak + Mini Kamus Yomitan */}
-        {effectiveCollapsed && (
-          <div className="relative mb-2.5 pb-2 border-b border-[#252b27] grid grid-cols-2 gap-1">
-            <button
-              type="button"
-              onClick={() => setStreakCalendarOpen((v) => !v)}
-              title={`Streak ${streakDays} Hari — Klik untuk lihat ritme 7 hari`}
-              className="rounded-lg border border-[#2b332e] bg-[#1c221e] hover:border-[#df674d] py-1.5 flex flex-col items-center justify-center gap-0.5 text-[#e87f67] transition-colors"
-            >
-              <Icon name="flame" size={13} />
-              <span className="text-[8.5px] font-bold leading-none">{streakDays}h</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setDictModalOpen(true)}
-              title={
-                activeDictCount > 0
-                  ? `${activeDictCount} Kamus Yomitan Aktif — Klik untuk kelola`
-                  : "Kamus Yomitan Kosong — Klik untuk impor ZIP"
-              }
-              className={`rounded-lg border py-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                activeDictCount > 0
-                  ? "border-[#2c4438] bg-[#16271e] text-[#78cf9f] hover:border-[#3ec47d]"
-                  : "border-[#4a3424] bg-[#291b12] text-[#e89d60] hover:border-[#df8a45]"
+        {/* Status Dock (Rail Mode): Mini Streak + Mini Kamus Yomitan */}
+        <div className="sb-status-rail relative mb-2.5 pb-2 border-b border-white/10 grid grid-cols-2 gap-1">
+          <button
+            type="button"
+            onClick={() => setStreakCalendarOpen((v) => !v)}
+            title={`Streak ${streakDays} Hari — Klik untuk lihat ritme 7 hari`}
+            className="rounded-lg border border-white/15 bg-white/5 hover:border-[var(--mizu)] py-1.5 flex flex-col items-center justify-center gap-0.5 text-[var(--mizu)] transition-colors"
+          >
+            <Icon name="flame" size={13} />
+            <span className="text-[9px] font-bold leading-none">{streakDays}h</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDictModalOpen(true)}
+            title={
+              activeDictCount > 0
+                ? `${activeDictCount} Kamus Yomitan Aktif — Klik untuk kelola`
+                : "Kamus Yomitan Kosong — Klik untuk impor ZIP"
+            }
+            className={`rounded-lg border py-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
+              activeDictCount > 0
+                ? "border-[var(--ok)]/60 bg-[var(--ok)]/25 text-[#b7e4d6] hover:border-[var(--mizu)]"
+                : "border-white/15 bg-white/5 text-[var(--mizu)] hover:border-[var(--mizu)]"
+            }`}
+          >
+            <span
+              className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
+                activeDictCount > 0 ? "bg-[#52d1a2]" : "bg-[var(--shu)]"
               }`}
-            >
-              <span
-                className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
-                  activeDictCount > 0 ? "bg-[#3ec47d] animate-pulse" : "bg-[#df8a45]"
-                }`}
-              />
-              <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
-                辞
-              </span>
-              <span className="text-[8.5px] font-bold leading-none">
-                {activeDictCount > 0 ? `${activeDictCount}` : "0"}
-              </span>
-            </button>
-          </div>
-        )}
+            />
+            <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
+              辞
+            </span>
+            <span className="text-[9px] font-bold leading-none">
+              {activeDictCount > 0 ? `${activeDictCount}` : "0"}
+            </span>
+          </button>
+        </div>
 
         {/* Mini 7-Day Habit Tracker Dropdown (Works in BOTH Expanded & Collapsed Mode) */}
         {streakCalendarOpen && (
@@ -427,11 +426,11 @@ export default function ProtectedLayout() {
               effectiveCollapsed
                 ? "fixed left-[92px] top-[76px] z-50 w-[236px] shadow-2xl"
                 : "mb-3"
-            } rounded-xl border border-[#2b332e] bg-[#171c19] p-2.5 text-xs animate-[modal-in_0.14s_ease]`}
+            } rounded-xl border border-white/15 bg-[#0D1B30] p-2.5 text-xs animate-[modal-in_0.14s_ease]`}
           >
-            <div className="flex items-center justify-between text-[10px] text-[#8c918d] mb-1.5 font-medium">
+            <div className="flex items-center justify-between text-[10px] text-[var(--mizu)] mb-1.5 font-medium">
               <span>Ritme Belajar Mingguan</span>
-              <span className="font-bold text-[#df674d]">{todayReviewedCount} kartu hari ini</span>
+              <span className="font-bold text-white">{todayReviewedCount} kartu hari ini</span>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center">
               {["S", "S", "R", "K", "J", "S", "M"].map((d, idx) => {
@@ -439,16 +438,16 @@ export default function ProtectedLayout() {
                 const isToday = idx === todayDayOfWeek;
                 return (
                   <div key={idx} className="flex flex-col items-center gap-1">
-                    <span className="text-[9px] text-[#6d746f]">{d}</span>
+                    <span className="text-[9px] text-white/55">{d}</span>
                     <span
                       className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold ${
                         isToday
                           ? todayReviewedCount > 0
-                            ? "bg-[#df674d] text-white shadow-sm"
-                            : "border border-[#df674d] text-[#e6a18f]"
+                            ? "bg-[var(--ai)] text-white shadow-sm"
+                            : "border border-[var(--mizu)] text-[var(--mizu)]"
                           : isPast
-                          ? "bg-[#273830] text-[#7ec69e]"
-                          : "bg-[#202522] text-[#555d57]"
+                          ? "bg-[var(--ok)]/25 text-[#9FE6C8]"
+                          : "bg-white/10 text-white/45"
                       }`}
                       title={`${d}: ${
                         isToday
@@ -478,24 +477,29 @@ export default function ProtectedLayout() {
             return (
               <div
                 key={item.label}
-                className="relative group"
+                className="relative group flex items-center gap-1"
                 onMouseEnter={() => setHoveredNav(item.label)}
                 onMouseLeave={() => setHoveredNav(null)}
               >
                 <Link
                   to={item.path}
-                  className={`nav-item ${isActive ? "active" : ""}`}
+                  className={`nav-item flex-1 min-w-0 ${isActive ? "active" : ""}`}
                   aria-label={item.label}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="sidebar-active-pill"
-                      className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] rounded-r-full bg-[#df674d]"
+                      className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] rounded-r-full bg-[var(--mizu)]"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
                   <div className="nav-item-icon">
-                    <Icon name={item.icon} size={19} />
+                    <span className="nav-rail-kanji" lang="ja" aria-hidden="true">
+                      {item.kanji}
+                    </span>
+                    <span className="nav-drawer-icon">
+                      <Icon name={item.icon} size={19} />
+                    </span>
                     {badge && (
                       <b className={`nav-collapsed-badge ${badge.cls ?? ""}`}>
                         {badge.text}
@@ -510,7 +514,7 @@ export default function ProtectedLayout() {
                   {badge && <em className={badge.cls ?? ""}>{badge.text}</em>}
                 </Link>
 
-                {/* Micro-Action Quick Add (+) on Hover (Expanded Mode) */}
+                {/* Micro-Action Quick Add (+) saat Drawer Seluler Terbuka */}
                 {!effectiveCollapsed &&
                   (item.label === "Deck Saya" ||
                     item.label === "Perpustakaan" ||
@@ -531,35 +535,42 @@ export default function ProtectedLayout() {
                           ? "Tambah Novel / Manga"
                           : "Buka Studio Teks"
                       }
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md bg-[#2d3430] hover:bg-[#df674d] hover:text-white text-[#8e9590] opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-xs"
+                      aria-label={
+                        item.label === "Deck Saya"
+                          ? "Tambah Deck Baru"
+                          : item.label === "Perpustakaan"
+                          ? "Tambah Novel / Manga"
+                          : "Buka Studio Teks"
+                      }
+                      className="sb-quick-add w-7 h-7 min-w-[28px] min-h-[28px] max-md:w-9 max-md:h-9 shrink-0 rounded-md bg-white/10 hover:bg-[var(--ai)] hover:text-white text-white/80 opacity-85 lg:opacity-0 lg:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-xs"
                     >
-                      <Icon name="plus" size={12} />
+                      <Icon name="plus" size={13} />
                     </button>
                   )}
 
-                {/* Floating Interactive Flyout Card saat Sidebar Dilipat (Hover Bridge pl-2.5 agar kursor bisa masuk ke dalam flyout) */}
-                {effectiveCollapsed && hoveredNav === item.label && (
+                {/* Floating Interactive Flyout Card saat Sidebar Rail Desktop Di-hover */}
+                {!mobileDrawerOpen && hoveredNav === item.label && (
                   <div className="absolute left-full top-1/2 -translate-y-1/2 pl-2.5 z-50 pointer-events-auto">
-                    <div className="w-[238px] rounded-xl border border-[#343c37] bg-[#1a1f1c] p-3 text-xs text-white shadow-2xl animate-[modal-in_0.14s_ease]">
-                      <div className="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-[#282f2b]">
-                        <div className="flex items-center gap-2 font-bold text-[#e87f67]">
+                    <div className="w-[238px] rounded-xl border border-white/15 bg-[#0D1B30] p-3 text-xs text-white shadow-2xl animate-[modal-in_0.14s_ease]">
+                      <div className="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-white/10">
+                        <div className="flex items-center gap-2 font-bold text-[var(--mizu)]">
                           <Icon name={item.icon} size={15} />
                           <div>
                             <span className="block leading-tight">{item.label}</span>
-                            <small lang="ja" className="text-[9.5px] font-normal text-[#828a85]">
+                            <small lang="ja" className="text-[9.5px] font-normal text-white/60">
                               {item.jp}
                             </small>
                           </div>
                         </div>
                         {badge && (
-                          <span className="rounded-full bg-[#dc6048] px-1.5 py-0.5 text-[9.5px] font-bold text-white">
+                          <span className="rounded-full bg-[var(--shu)] px-1.5 py-0.5 text-[9.5px] font-bold text-white">
                             {badge.text}
                           </span>
                         )}
                       </div>
 
                       {/* Preview Konten & Aksi Dinamis Khusus per Nav Item */}
-                      <div className="text-[11px] text-[#adb5b0] mb-2.5 leading-relaxed">
+                      <div className="text-[11px] text-white/80 mb-2.5 leading-relaxed">
                         {item.label === "Beranda" && (
                           <div className="space-y-1.5">
                             <p className="m-0">
@@ -567,9 +578,9 @@ export default function ProtectedLayout() {
                                 ? `${totalDue} kartu jatuh tempo siap diulas hari ini.`
                                 : "Semua kartu harian telah selesai diulas!"}
                             </p>
-                            <div className="flex items-center justify-between text-[10px] text-[#d5dbd7]">
+                            <div className="flex items-center justify-between text-[10px] text-white/90">
                               <span>Target Harian</span>
-                              <span className="font-mono font-bold text-[#e87f67]">
+                              <span className="font-mono font-bold text-[var(--mizu)]">
                                 {todayReviewedCount}/{dailyGoalTarget} ({dailyGoalPct}%)
                               </span>
                             </div>
@@ -591,10 +602,10 @@ export default function ProtectedLayout() {
                                     onClick={() =>
                                       navigate(d.due > 0 ? `/deck/${d.id}/review` : `/deck/${d.id}`)
                                     }
-                                    className="w-full flex items-center justify-between rounded-md bg-[#232925] hover:bg-[#2d3631] px-2 py-1 text-[10.5px] text-left text-[#dfe5e1]"
+                                    className="w-full flex items-center justify-between rounded-md bg-white/10 hover:bg-white/15 px-2 py-1 text-[10.5px] text-left text-white/90"
                                   >
                                     <span className="truncate">{d.title}</span>
-                                    <span className="text-[#e87f67] font-bold shrink-0 ml-1">
+                                    <span className="text-[var(--mizu)] font-bold shrink-0 ml-1">
                                       {d.due > 0 ? `${d.due}` : "✓"}
                                     </span>
                                   </button>
@@ -619,13 +630,13 @@ export default function ProtectedLayout() {
                                 <p className="m-0 truncate text-white font-semibold" lang="ja">
                                   📖 {recentBook.title}
                                 </p>
-                                <div className="h-1.5 w-full rounded-full bg-[#2b322e] overflow-hidden">
+                                <div className="h-1.5 w-full rounded-full bg-white/15 overflow-hidden">
                                   <div
-                                    className="h-full bg-[#df674d]"
+                                    className="h-full bg-[var(--mizu)]"
                                     style={{ width: `${recentBook.progress}%` }}
                                   />
                                 </div>
-                                <span className="text-[10px] text-[#8c948f] block">
+                                <span className="text-[10px] text-white/60 block">
                                   Progres baca: {recentBook.progress}% ({booksCount} koleksi)
                                 </span>
                               </>
@@ -648,7 +659,7 @@ export default function ProtectedLayout() {
                                   key={lvl}
                                   type="button"
                                   onClick={() => navigate(`/exam?level=${lvl}`)}
-                                  className="rounded bg-[#252d29] hover:bg-[#df674d] hover:text-white py-1 text-[10px] font-bold text-[#e2e7e4] transition-colors"
+                                  className="rounded bg-white/10 hover:bg-[var(--ai)] hover:text-white py-1 text-[10px] font-bold text-white/90 transition-colors"
                                 >
                                   {lvl}
                                 </button>
@@ -667,7 +678,7 @@ export default function ProtectedLayout() {
                       <button
                         type="button"
                         onClick={() => navigate(item.path)}
-                        className="w-full rounded-lg bg-[#27322d] hover:bg-[#df674d] hover:text-white py-1.5 px-2.5 text-[10.5px] font-bold text-[#d1dcd6] transition-colors flex items-center justify-center gap-1"
+                        className="w-full rounded-lg bg-[var(--ai-tua)] hover:bg-[var(--ai)] text-white py-1.5 px-2.5 text-[10.5px] font-bold transition-colors flex items-center justify-center gap-1"
                       >
                         <span>Buka {item.label}</span>
                         <Icon name="arrow" size={12} />
@@ -682,12 +693,12 @@ export default function ProtectedLayout() {
 
         {/* Quick Dock Dinamis saat Sidebar Dilipat (Collapsed Mode) */}
         {effectiveCollapsed && (
-          <div className="mt-3 pt-2.5 border-t border-[#262b28] flex flex-col items-center gap-1.5">
+          <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-col items-center gap-1.5">
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
               title="Pencarian Cepat & Kamus Global (Ctrl+K)"
-              className="w-full rounded-xl border border-[#2a312d] bg-[#1d2320] hover:border-[#df674d] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-[#9ea4a0] transition-colors"
+              className="w-full rounded-xl border border-white/15 bg-white/5 hover:border-[var(--mizu)] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-white/75 transition-colors"
             >
               <Icon name="search" size={16} />
               <span className="text-[8.5px] font-bold">⌘K Cari</span>
@@ -704,7 +715,7 @@ export default function ProtectedLayout() {
                   )
                 }
                 title={`Lanjutkan Membaca: ${recentBook.title} (${recentBook.progress}%)`}
-                className="w-full rounded-xl border border-[#2c3832] bg-[#1a241f] hover:border-[#78cf9f] py-2 flex flex-col items-center justify-center gap-0.5 text-[#8fd9b0] transition-colors"
+                className="w-full rounded-xl border border-white/15 bg-white/5 hover:border-[var(--mizu)] py-2 flex flex-col items-center justify-center gap-0.5 text-[var(--mizu)] transition-colors"
               >
                 <Icon name="book" size={15} />
                 <span className="text-[8.5px] font-bold">{recentBook.progress}%</span>
@@ -716,7 +727,7 @@ export default function ProtectedLayout() {
                 type="button"
                 onClick={handleQuickStartReview}
                 title={`Review Kilat Sekarang (${totalDue} kartu jatuh tempo)`}
-                className="w-full rounded-xl border border-[#4a2f28] bg-[#291b18] hover:bg-[#df674d] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-[#f08b75] transition-colors"
+                className="w-full rounded-xl border border-[var(--shu)]/40 bg-[var(--shu)]/15 hover:bg-[var(--shu)] hover:text-white py-2 flex flex-col items-center justify-center gap-0.5 text-[#FCE2DC] transition-colors"
               >
                 <Icon name="bolt" size={15} />
                 <span className="text-[8.5px] font-bold">{totalDue} Ulas</span>
@@ -725,49 +736,49 @@ export default function ProtectedLayout() {
           </div>
         )}
 
-        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan], [Deck], & [JLPT] (Expanded Mode) */}
-        <div className="sb-quick-section mt-4 pt-3 border-t border-[#262b28]">
-          <div className="flex items-center justify-between px-1 mb-2">
-            <div className="flex items-center gap-1 bg-[#1a201c] p-0.5 rounded-lg border border-[#2b332e]">
+        {/* Seksi Akses Cepat Interaktif: Tab [Bacaan], [Deck], & [JLPT] (Expanded / Drawer Mode) */}
+        <div className="sb-quick-section mt-4 pt-3 border-t border-white/10">
+          <div className="flex items-center justify-between gap-1.5 px-1 mb-2">
+            <div className="sb-quick-tabs flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10 min-w-0">
               <button
                 type="button"
                 onClick={() => setQuickTab("bacaan")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "bacaan"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                📖 Bacaan {booksCount > 0 ? `(${booksCount})` : ""}
+                Bacaan{booksCount > 0 ? ` (${booksCount})` : ""}
               </button>
               <button
                 type="button"
                 onClick={() => setQuickTab("deck")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "deck"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                🗂️ Deck ({rootDecksCount})
+                Deck ({rootDecksCount})
               </button>
               <button
                 type="button"
                 onClick={() => setQuickTab("jlpt")}
-                className={`px-2 py-0.5 rounded-md text-[9.5px] font-bold transition-all ${
+                className={`sb-quick-tab px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors ${
                   quickTab === "jlpt"
-                    ? "bg-[#2d3832] text-[#fff]"
-                    : "text-[#7f8682] hover:text-[#c5ccc7]"
+                    ? "bg-[var(--ai)] text-white"
+                    : "text-[var(--mizu)] hover:text-white"
                 }`}
               >
-                🎯 JLPT
+                JLPT
               </button>
             </div>
 
             <button
               type="button"
               onClick={() => setQuickOpen((v) => !v)}
-              className="text-[#666d68] hover:text-[#a8b0ab] text-[11px] p-1 transition-colors"
+              className="text-white/55 hover:text-white text-[11px] p-1 transition-colors"
               title={quickOpen ? "Sembunyikan Akses Cepat" : "Tampilkan Akses Cepat"}
               aria-label="Toggle Akses Cepat"
             >
@@ -788,26 +799,26 @@ export default function ProtectedLayout() {
                           : `/library/${recentBook.id}`;
                       navigate(path);
                     }}
-                    className="w-full rounded-xl border border-[#2a302c] bg-[#1e2320] hover:bg-[#252b28] hover:border-[#3c443f] p-2.5 text-left transition-all group"
+                    className="w-full rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[var(--mizu)] p-2.5 text-left transition-all group"
                     title={`Lanjutkan membaca ${recentBook.title}`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#d9644c] flex items-center gap-1">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--mizu)] flex items-center gap-1">
                         {recentBook.type === "manga" ? "📑 MANGA" : "📖 NOVEL"}
                       </span>
-                      <span className="text-[10px] font-mono text-[#949a96]">
+                      <span className="text-[10px] font-mono text-white/60">
                         {recentBook.progress}%
                       </span>
                     </div>
                     <div
                       lang="ja"
-                      className="text-xs font-semibold text-[#eef0ec] truncate group-hover:text-white"
+                      className="text-xs font-semibold text-white truncate group-hover:text-white"
                     >
                       {recentBook.title}
                     </div>
-                    <div className="mt-1.5 h-1 w-full rounded-full bg-[#2e3430] overflow-hidden">
+                    <div className="mt-1.5 h-1 w-full rounded-full bg-white/15 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-[#d9644c] transition-all"
+                        className="h-full rounded-full bg-[var(--mizu)] transition-all"
                         style={{ width: `${recentBook.progress}%` }}
                       />
                     </div>
@@ -816,7 +827,7 @@ export default function ProtectedLayout() {
                   <button
                     type="button"
                     onClick={() => navigate("/library")}
-                    className="w-full rounded-xl border border-dashed border-[#2f3732] bg-[#1a201c] p-2.5 text-center text-xs text-[#8e9591] hover:border-[#df674d] hover:text-white transition-colors"
+                    className="w-full rounded-xl border border-dashed border-white/20 bg-white/5 p-2.5 text-center text-xs text-white/70 hover:border-[var(--mizu)] hover:text-white transition-colors"
                   >
                     + Unggah Novel / Manga
                   </button>
@@ -831,7 +842,7 @@ export default function ProtectedLayout() {
                       onClick={() =>
                         navigate(d.due > 0 ? `/deck/${d.id}/review` : `/deck/${d.id}`)
                       }
-                      className="w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs text-[#b5bbb7] hover:bg-[#222724] hover:text-white transition-colors"
+                      className="w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs text-white/80 hover:bg-white/10 hover:text-white transition-colors"
                       title={
                         d.due > 0
                           ? `Mulai review ${d.title} (${d.due} jatuh tempo)`
@@ -841,7 +852,7 @@ export default function ProtectedLayout() {
                       <div className="flex items-center gap-2 min-w-0">
                         <span
                           lang="ja"
-                          className="w-5 h-5 rounded-md bg-[#282e2b] text-[#e7dfcf] grid place-items-center text-[10px] font-serif shrink-0"
+                          className="w-5 h-5 rounded-md bg-white/10 text-[var(--mizu)] grid place-items-center text-[10px] font-serif shrink-0"
                         >
                           {d.kanji.slice(0, 1)}
                         </span>
@@ -850,8 +861,8 @@ export default function ProtectedLayout() {
                       <span
                         className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold ${
                           d.due > 0
-                            ? "bg-[#dc6048]/20 text-[#ee846d]"
-                            : "bg-[#2a302c] text-[#7c827e]"
+                            ? "bg-[var(--shu)]/25 text-[#FCE2DC]"
+                            : "bg-white/10 text-white/50"
                         }`}
                       >
                         {d.due > 0 ? `${d.due}` : "✓"}
@@ -863,7 +874,7 @@ export default function ProtectedLayout() {
                     <button
                       type="button"
                       onClick={handleQuickStartReview}
-                      className="mt-1 w-full rounded-lg bg-[#273d34] hover:bg-[#345246] py-1.5 px-2 text-[10.5px] font-bold text-[#bdf0d7] transition-colors flex items-center justify-center gap-1.5"
+                      className="mt-1 w-full rounded-lg bg-[var(--ai-tua)] hover:bg-[var(--ai)] py-1.5 px-2 text-[10.5px] font-bold text-white transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Icon name="bolt" size={13} />
                       <span>Review Kilat ({totalDue} Kartu)</span>
@@ -873,10 +884,10 @@ export default function ProtectedLayout() {
               )}
 
               {quickTab === "jlpt" && (
-                <div className="rounded-xl border border-[#2a302c] bg-[#1e2320] p-2.5 space-y-2">
-                  <div className="flex items-center justify-between text-[10px] text-[#9ea4a0]">
+                <div className="rounded-xl border border-white/15 bg-white/5 p-2.5 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] text-white/70">
                     <span>Pilih Level Ujian:</span>
-                    <span lang="ja" className="text-[#e87f67] font-serif font-bold">
+                    <span lang="ja" className="text-[var(--mizu)] font-serif font-bold">
                       模擬試験
                     </span>
                   </div>
@@ -886,7 +897,7 @@ export default function ProtectedLayout() {
                         key={lvl}
                         type="button"
                         onClick={() => navigate(`/exam?level=${lvl}`)}
-                        className="rounded-md border border-[#303833] bg-[#252c28] hover:border-[#df674d] hover:bg-[#df674d] hover:text-white py-1 text-[10px] font-bold text-[#dfe5e1] transition-colors"
+                        className="rounded-md border border-white/15 bg-white/5 hover:border-[var(--mizu)] hover:bg-[var(--ai)] hover:text-white py-1 text-[10px] font-bold text-white/85 transition-colors"
                       >
                         {lvl}
                       </button>
@@ -901,27 +912,27 @@ export default function ProtectedLayout() {
         {/* Footer Sidebar: Target Harian, Pengaturan, Pepatah Jepang, & Profil */}
         <div className="sidebar-footer">
           {/* Widget Target Harian (Expanded) */}
-          <div className="sb-goal-expanded mb-2.5 rounded-xl border border-[#2c332f] bg-[#1e2421] p-3">
+          <div className="sb-goal-expanded mb-2.5 rounded-xl border border-white/15 bg-white/5 p-3">
             <div className="flex items-center justify-between text-[10.5px] mb-1.5">
-              <span className="font-bold text-[#d5dbd7] flex items-center gap-1.5">
+              <span className="font-bold text-white/85 flex items-center gap-1.5">
                 <Icon name="flame" size={14} /> Target Hari Ini
               </span>
-              <span className="font-mono font-bold text-[#e6a18f]">
+              <span className="font-mono font-bold text-[var(--mizu)]">
                 {todayReviewedCount}/{dailyGoalTarget}
               </span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-[#2c322e] overflow-hidden mb-2">
+            <div className="h-1.5 w-full rounded-full bg-white/15 overflow-hidden mb-2">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   dailyGoalPct >= 100
                     ? "bg-gradient-to-r from-[#38b376] to-[#5edc9a] shadow-xs"
-                    : "bg-gradient-to-r from-[#d95b43] to-[#e7977f]"
+                    : "bg-gradient-to-r from-[var(--ai)] to-[var(--mizu)]"
                 }`}
                 style={{ width: `${dailyGoalPct}%` }}
               />
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-[#8c918d]">
+              <span className="text-[10px] text-white/60">
                 {dailyGoalPct >= 100
                   ? "✨ Target tercapai!"
                   : totalDue > 0
@@ -933,8 +944,8 @@ export default function ProtectedLayout() {
                 onClick={handleQuickStartReview}
                 className={`rounded-md px-2 py-1 text-[10px] font-bold transition-colors ${
                   dailyGoalPct >= 100
-                    ? "bg-[#214232] hover:bg-[#2b5943] text-[#7de4ad]"
-                    : "bg-[#2b3c36] hover:bg-[#354b43] text-[#dfece6]"
+                    ? "bg-[var(--ok)]/30 hover:bg-[var(--ok)]/45 text-[#9FE6C8]"
+                    : "bg-white/10 hover:bg-white/20 text-white"
                 }`}
               >
                 {totalDue > 0 ? "▶ Review" : "Buka Deck"}
@@ -942,13 +953,13 @@ export default function ProtectedLayout() {
             </div>
           </div>
 
-          {/* Mini Target Harian saat Sidebar Dilipat */}
-          {effectiveCollapsed && (
+          {/* Mini Target Harian pada Rail Desktop */}
+          {!mobileDrawerOpen && (
             <button
               type="button"
               onClick={handleQuickStartReview}
               title={`Target Harian: ${todayReviewedCount}/${dailyGoalTarget} kartu (${dailyGoalPct}%) — Klik untuk Review`}
-              className="mb-2 w-full rounded-xl border border-[#2c332f] bg-[#1e2421] py-2 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-[#e6a18f] hover:border-[#df674d]"
+              className="sb-goal-mini mb-2 w-full rounded-xl border border-white/15 bg-white/5 py-2 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-[var(--mizu)] hover:border-[var(--mizu)]"
             >
               <Icon name="flame" size={15} />
               <span>{dailyGoalPct}%</span>
@@ -958,16 +969,22 @@ export default function ProtectedLayout() {
           <Link
             to="/settings"
             className={`nav-item ${active === "Pengaturan" ? "active" : ""}`}
-            title={effectiveCollapsed ? "Pengaturan & Kamus Yomitan" : undefined}
+            aria-label="Pengaturan"
+            title="Pengaturan & Kamus Yomitan"
           >
             <div className="nav-item-icon">
-              <Icon name="settings" size={19} />
+              <span className="nav-rail-kanji" lang="ja" aria-hidden="true">
+                設
+              </span>
+              <span className="nav-drawer-icon">
+                <Icon name="settings" size={19} />
+              </span>
             </div>
             <div className="nav-item-label">
               <span className="truncate font-semibold">Pengaturan</span>
               <small lang="ja">設定・辞書</small>
             </div>
-            <span className="nav-collapsed-caption">Setelan</span>
+            <span className="nav-collapsed-caption">Atur</span>
           </Link>
 
           {/* Pepatah Jepang Interaktif ("Kotowaza") dengan Furigana, TTS Audio, & Terjemahan Flip */}
@@ -977,7 +994,7 @@ export default function ProtectedLayout() {
           >
             <span className="quote-kanji">{quote.kanji}</span>
             <div className="relative z-10 flex items-center justify-between gap-2 mb-1.5">
-              <span lang="ja" className="text-[12px] font-bold text-[#e6a18f]">
+              <span lang="ja" className="text-[12px] font-bold text-[var(--mizu)]">
                 {quote.jp}
               </span>
               <div className="flex items-center gap-1">
@@ -990,7 +1007,7 @@ export default function ProtectedLayout() {
                   title="Dengarkan pengucapan (Audio TTS)"
                   className={`rounded-md p-1 transition-colors ${
                     isSpeakingQuote
-                      ? "bg-[#df674d] text-white animate-pulse"
+                      ? "bg-[var(--ai)] text-white animate-pulse"
                       : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
                   }`}
                   aria-label="Putar audio pepatah"
@@ -1017,21 +1034,21 @@ export default function ProtectedLayout() {
             </div>
 
             {/* Reading Furigana / Romaji */}
-            <p className="relative z-10 mb-1.5 text-[10px] text-[#8e9591] font-mono">
+            <p className="relative z-10 mb-1.5 text-[10px] text-white/60 font-mono">
               {quote.reading}
             </p>
 
             {/* Terjemahan Interaktif (Reveal/Hide toggle) */}
             <div className="relative z-10 mb-2">
               {showTranslation ? (
-                <p className="text-[11px] text-[#daddd8] font-medium leading-relaxed">
+                <p className="text-[11px] text-white/90 font-medium leading-relaxed">
                   {quote.idText}
                 </p>
               ) : (
                 <button
                   type="button"
                   onClick={() => setShowTranslation(true)}
-                  className="rounded-md border border-[#3b433e] bg-[#202723] px-2 py-1 text-[10px] text-[#a9b1ab] hover:text-white hover:border-[#df674d] transition-colors flex items-center gap-1"
+                  className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[10px] text-white/80 hover:text-white hover:border-[var(--mizu)] transition-colors flex items-center gap-1"
                 >
                   <Icon name="eye" size={12} />
                   <span>Tebak arti? Klik untuk buka</span>
@@ -1040,18 +1057,18 @@ export default function ProtectedLayout() {
             </div>
 
             <div className="relative z-10 flex items-center justify-between pt-1 border-t border-white/10">
-              <small className="text-[#737a75] text-[9.5px]">{quote.sub}</small>
+              <small className="text-white/55 text-[9.5px]">{quote.sub}</small>
               <button
                 type="button"
                 onClick={handleNextQuote}
-                className="text-[9.5px] font-bold text-[#e6a18f] hover:underline flex items-center gap-0.5"
+                className="text-[9.5px] font-bold text-[var(--mizu)] hover:underline flex items-center gap-0.5"
               >
                 <span>Ganti ↻</span>
               </button>
             </div>
           </div>
 
-          <div className="user-profile mt-2 flex items-center justify-between gap-2 pt-2 border-t border-[#262b28]">
+          <div className="user-profile mt-2 flex items-center justify-between gap-2 pt-2 border-t border-white/10">
             <Link
               to="/profile"
               title={`Profil ${user.name} (${user.level})`}
@@ -1068,7 +1085,7 @@ export default function ProtectedLayout() {
               <div className="avatar shrink-0">{user.name.charAt(0)}</div>
               <div className="user-profile-info truncate">
                 <strong className="block text-xs truncate">{user.name}</strong>
-                <small className="block text-[10px] text-[#8c918d]">
+                <small className="block text-[10px] text-white/60">
                   Target {user.level}
                 </small>
               </div>
@@ -1089,21 +1106,22 @@ export default function ProtectedLayout() {
               type="button"
               onClick={() => setMobileDrawerOpen((v) => !v)}
               aria-label="Buka menu sidebar"
-              className="mr-1 rounded-lg border border-[#d8d3c9] bg-[#fffdfa] px-2 py-1 text-xs font-bold text-[#25231f]"
+              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[40px] min-h-[40px]"
             >
               ☰
             </button>
-            <span>語</span> 語楽
+            <span>語</span>
+            <strong className="whitespace-nowrap">語楽</strong>
           </div>
 
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
-            className="searchbox text-left cursor-pointer hover:border-[#c9604b] transition-colors"
+            className="searchbox text-left cursor-pointer hover:border-[var(--ai)] transition-colors"
             aria-label="Buka pencarian cepat (Ctrl+K)"
           >
             <Icon name="search" size={18} />
-            <span className="flex-1 text-xs text-[#88877f] truncate">
+            <span className="flex-1 text-xs text-[var(--tinta-2)] truncate">
               Cari kosakata kamus, deck, atau novel...
             </span>
             <kbd>⌘ K</kbd>
@@ -1134,31 +1152,31 @@ export default function ProtectedLayout() {
               </Button>
 
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[#e0dbd1] bg-[#fffdf9] shadow-xl p-4 z-50 animate-[modal-in_0.16s_ease]">
-                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[#ebe6dc]">
-                    <strong className="text-xs font-bold text-[#25231f]">
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[var(--garis)] bg-[var(--panel)] shadow-xl p-4 z-50 animate-[modal-in_0.16s_ease]">
+                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[var(--garis)]">
+                    <strong className="text-xs font-bold text-[var(--tinta)]">
                       Notifikasi Belajar
                     </strong>
                     <button
                       type="button"
                       onClick={() => setNotifRead(true)}
-                      className="text-[10px] font-semibold text-[#c4543f] hover:underline"
+                      className="text-[10px] font-semibold text-[var(--ai)] hover:underline"
                     >
                       Tandai dibaca
                     </button>
                   </div>
 
                   <div className="space-y-2.5 text-xs">
-                    <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                    <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-[#233c35]">
+                        <span className="font-bold text-[var(--kon)]">
                           Target Review Harian
                         </span>
-                        <span className="rounded-full bg-[#f1e6df] px-2 py-0.5 text-[10px] font-bold text-[#bf5b46]">
+                        <span className="rounded-full bg-[var(--mizu-soft)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)]">
                           {totalDue} kartu
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#6f6b63] mb-2">
+                      <p className="text-[11px] text-[var(--tinta-2)] mb-2">
                         {totalDue > 0
                           ? `Ada ${totalDue} kartu menunggu untuk diulas hari ini.`
                           : "Semua kartu jatuh tempo hari ini sudah selesai!"}
@@ -1170,7 +1188,7 @@ export default function ProtectedLayout() {
                             setNotifOpen(false);
                             handleQuickStartReview();
                           }}
-                          className="text-[11px] font-bold text-[#c4543f] hover:underline"
+                          className="text-[11px] font-bold text-[var(--shu)] hover:underline"
                         >
                           Mulai review sekarang →
                         </button>
@@ -1178,16 +1196,16 @@ export default function ProtectedLayout() {
                     </div>
 
                     {recentBook && (
-                      <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                      <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-[#25231f] truncate">
+                          <span className="font-bold text-[var(--tinta)] truncate">
                             Lanjutkan Membaca
                           </span>
-                          <span className="text-[10px] font-semibold text-[#8a867d]">
+                          <span className="text-[10px] font-semibold text-[var(--tinta-2)]">
                             {recentBook.progress}%
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#6f6b63] truncate mb-1.5" lang="ja">
+                        <p className="text-[11px] text-[var(--tinta-2)] truncate mb-1.5" lang="ja">
                           {recentBook.title}
                         </p>
                         <button
@@ -1196,23 +1214,23 @@ export default function ProtectedLayout() {
                             setNotifOpen(false);
                             navigate(`/library/${recentBook.id}`);
                           }}
-                          className="text-[11px] font-bold text-[#233c35] hover:underline"
+                          className="text-[11px] font-bold text-[var(--kon)] hover:underline"
                         >
                           Buka pembaca novel →
                         </button>
                       </div>
                     )}
 
-                    <div className="rounded-xl bg-[#f7f4ec] p-3 border border-[#ebe6dc]">
+                    <div className="rounded-xl bg-[var(--tsuki)] p-3 border border-[var(--garis)]">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-[#25231f]">
+                        <span className="font-bold text-[var(--tinta)]">
                           Status Kamus Yomitan
                         </span>
-                        <span className="text-[10px] font-bold text-[#3f7a5f]">
+                        <span className="text-[10px] font-bold text-[var(--ok)]">
                           {activeDictCount} aktif
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#6f6b63] mb-1.5">
+                      <p className="text-[11px] text-[var(--tinta-2)] mb-1.5">
                         {activeDictCount > 0
                           ? "Kamus siap digunakan untuk klik kata di novel & Sentence Mining."
                           : "Belum ada kamus Yomitan aktif. Impor ZIP kamus untuk mulai mencari arti kata."}
@@ -1223,7 +1241,7 @@ export default function ProtectedLayout() {
                           setNotifOpen(false);
                           navigate("/settings");
                         }}
-                        className="text-[11px] font-bold text-[#c4543f] hover:underline"
+                        className="text-[11px] font-bold text-[var(--ai)] hover:underline"
                       >
                         Kelola kamus →
                       </button>
@@ -1267,12 +1285,20 @@ export default function ProtectedLayout() {
         ))}
       </nav>
 
-      <CommandPaletteModal open={paletteOpen} onClose={() => setPaletteOpen(false)} />
-      <DictionaryManagerModal
-        open={dictModalOpen}
-        onClose={() => setDictModalOpen(false)}
-        onDictionariesChanged={setDictionaries}
-      />
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPaletteModal open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+        </Suspense>
+      )}
+      {dictModalOpen && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open={dictModalOpen}
+            onClose={() => setDictModalOpen(false)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
