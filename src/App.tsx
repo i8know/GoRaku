@@ -273,7 +273,7 @@ export default function App() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
         {/* KOLOM KIRI: DAFTAR DECK BERBORDER */}
-        <section className="lg:col-span-8">
+        <section className="lg:col-span-8 beranda-deck-section">
           <div className="section-heading">
             <div>
               <h2>Deck belajarmu</h2>
@@ -310,7 +310,7 @@ export default function App() {
                   <article className="beranda-deck-row">
                     <button
                       type="button"
-                      className="bg-transparent border-0 p-0 cursor-pointer shrink-0"
+                      className="beranda-deck-row__tile bg-transparent border-0 p-0 cursor-pointer shrink-0"
                       aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
                       aria-label={
                         displaySubdecks.length > 0
@@ -326,7 +326,7 @@ export default function App() {
                     </button>
 
                     <div className="beranda-deck-info min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <div className="beranda-deck-row__meta flex items-center gap-2 flex-wrap mb-1">
                         <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
                         {imported && (
                           <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
@@ -368,7 +368,7 @@ export default function App() {
                         >
                           復 {s.reviewDue}
                         </span>
-                        <span className="font-sans text-[var(--teks-redup)]">
+                        <span className="beranda-deck-row__total font-sans text-[var(--teks-redup)]">
                           {deck.total.toLocaleString("id-ID")} kartu
                         </span>
                       </div>
@@ -384,7 +384,7 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="beranda-deck-row__action flex items-center gap-2 shrink-0">
                       {displaySubdecks.length > 0 ? (
                         <Button className="outline-button" ariaExpanded={isExpanded} onClick={toggleDeckExpand}>
                           {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
