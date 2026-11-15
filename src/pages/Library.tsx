@@ -15,6 +15,15 @@ import {
   type BookRecord,
   type DictionaryRecord,
 } from "../lib/lexiconDb";
+import { deckDexie } from "../lib/deckDb";
+import {
+  countCompletedReviews,
+  countUserMinedCards,
+  getMiningActionPath,
+} from "../lib/onboardingStats";
+import { useAppStore } from "../store/useAppStore";
+import { useReviewStore } from "../store/useReviewStore";
+import FirstRunChecklist from "../components/FirstRunChecklist";
 import {
   addMangaArchiveFile,
   addMangaImagesOrFolder,
@@ -207,8 +216,13 @@ export default function LibraryPage({
   const [q, setQ] = useState("");
   const [dictModalOpen, setDictModalOpen] = useState(false);
   const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const [reviewLogCount, setReviewLogCount] = useState(0);
+  const [onboardingReady, setOnboardingReady] = useState(false);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [managingBook, setManagingBook] = useState<BookRecord | null>(null);
+
+  const minedQueue = useAppStore((s) => s.minedQueue);
+  const activity = useReviewStore((s) => s.activity);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
@@ -228,11 +242,31 @@ export default function LibraryPage({
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     void refreshBooks();
-    void listDictionaries().then(setDictionaries).catch(() => {});
+    void Promise.allSettled([
+      listDictionaries(),
+      deckDexie.reviewLogs.count(),
+    ]).then(([dictsRes, logsRes]) => {
+      if (cancelled) return;
+      if (dictsRes.status === "fulfilled") setDictionaries(dictsRes.value);
+      if (logsRes.status === "fulfilled") setReviewLogCount(logsRes.value);
+      setOnboardingReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshBooks]);
 
   const activeDictCount = dictionaries.filter((d) => d.enabled).length;
+  const minedCardsCount = useMemo(
+    () => countUserMinedCards(books, minedQueue),
+    [books, minedQueue],
+  );
+  const reviewedCount = useMemo(
+    () => countCompletedReviews(reviewLogCount, activity),
+    [reviewLogCount, activity],
+  );
 
   /**
    * Memproses berkas yang dipilih atau diseret ke Perpustakaan:
@@ -505,6 +539,21 @@ export default function LibraryPage({
         </Suspense>
       )}
 
+      {onboardingReady && !loading && (
+        <FirstRunChecklist
+          layout="wide"
+          className="mb-6"
+          activeDictCount={activeDictCount}
+          booksCount={books.length}
+          minedCardsCount={minedCardsCount}
+          reviewedCount={reviewedCount}
+          onOpenDictManager={() => setDictModalOpen(true)}
+          onAddBook={() => fileInputRef.current?.click()}
+          onStartMining={() => navigate(getMiningActionPath(books))}
+          onStartReview={() => navigate("/deck")}
+        />
+      )}
+
       {/* Pesan Error */}
       {errorMsg && (
         <div
@@ -575,82 +624,68 @@ export default function LibraryPage({
         </section>
       )}
 
-      {/* Dropzone Drag-and-Drop */}
-      <section
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={async (e) => {
-          e.preventDefault();
-          setIsDragging(false);
-          const droppedFiles = await extractFilesFromDataTransfer(e.dataTransfer);
-          if (droppedFiles.length > 0) {
-            await handleFilesSelected(droppedFiles);
-          }
-        }}
-        className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-colors flex flex-col lg:flex-row items-center justify-between gap-4"
-        style={{
-          borderColor: isDragging ? "var(--ai)" : "var(--garis)",
-          background: isDragging ? "rgba(180, 201, 219, 0.16)" : "var(--panel)",
-        }}
-      >
-        <div className="flex items-center gap-3.5 min-w-0 flex-1 w-full">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-            style={{
-              background: "var(--tsuki)",
-              color: "var(--ai)",
-            }}
-          >
-            <Icon name="upload" size={20} />
-          </div>
-          <div>
-            <div className="text-[14px] font-semibold">
-              Seret &amp; lepas novel (<code>.epub</code>, <code>.txt</code>) atau
-              manga (<code>.cbz</code>, <code>.zip</code>, gambar, atau folder)
+      {/* Dropzone Drag-and-Drop (saat koleksi sudah ada; saat kosong menyatu ke kartu kosong) */}
+      {books.length > 0 && (
+        <section
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={async (e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            const droppedFiles = await extractFilesFromDataTransfer(e.dataTransfer);
+            if (droppedFiles.length > 0) {
+              await handleFilesSelected(droppedFiles);
+            }
+          }}
+          className="mb-6 rounded-2xl border-2 border-dashed p-5 transition-colors flex flex-col lg:flex-row items-center justify-between gap-4"
+          style={{
+            borderColor: isDragging ? "var(--ai)" : "var(--garis)",
+            background: isDragging ? "rgba(180, 201, 219, 0.16)" : "var(--panel)",
+          }}
+        >
+          <div className="flex items-center gap-3.5 min-w-0 flex-1 w-full">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{
+                background: "var(--tsuki)",
+                color: "var(--ai)",
+              }}
+            >
+              <Icon name="upload" size={20} />
             </div>
-            <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
-              Novel dan arsip manga disimpan langsung di perangkat dan dimuat per
-              halaman sesuai urutan asli secara otomatis.
-            </p>
+            <div>
+              <div className="text-[14px] font-semibold">
+                Seret &amp; lepas novel (<code>.epub</code>, <code>.txt</code>) atau
+                manga (<code>.cbz</code>, <code>.zip</code>, gambar, atau folder)
+              </div>
+              <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
+                Novel dan arsip manga disimpan langsung di perangkat dan dimuat per
+                halaman sesuai urutan asli secara otomatis.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
-          <Button
-            className="outline-button"
-            disabled={uploading}
-            onClick={() => void handleAddSampleManga()}
-          >
-            <Icon name="sparkle" size={15} /> Manga Contoh (CBZ)
-          </Button>
-          {books.length === 0 && (
+          <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
             <Button
               className="outline-button"
               disabled={uploading}
-              onClick={() => void handleAddSampleNovel()}
+              onClick={() => folderInputRef.current?.click()}
             >
-              <Icon name="sparkle" size={15} /> Novel Contoh
+              <Icon name="upload" size={15} /> Pilih Folder
             </Button>
-          )}
-          <Button
-            className="outline-button"
-            disabled={uploading}
-            onClick={() => folderInputRef.current?.click()}
-          >
-            <Icon name="upload" size={15} /> Pilih Folder
-          </Button>
-          <Button
-            className="outline-button"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Icon name="plus" size={15} /> Pilih Berkas
-          </Button>
-        </div>
-      </section>
+            <Button
+              className="outline-button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Icon name="plus" size={15} /> Pilih Berkas
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Toolbar Filter & Pencarian */}
       <section className="pg-toolbar">
@@ -686,35 +721,62 @@ export default function LibraryPage({
         <p className="pg-empty">Memuat koleksi perpustakaan...</p>
       ) : filteredBooks.length === 0 ? (
         <div
-          className="rounded-2xl border p-10 text-center my-4"
+          onDragOver={
+            books.length === 0
+              ? (e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }
+              : undefined
+          }
+          onDragLeave={books.length === 0 ? () => setIsDragging(false) : undefined}
+          onDrop={
+            books.length === 0
+              ? async (e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const droppedFiles = await extractFilesFromDataTransfer(e.dataTransfer);
+                  if (droppedFiles.length > 0) {
+                    await handleFilesSelected(droppedFiles);
+                  }
+                }
+              : undefined
+          }
+          className={`rounded-md ${books.length === 0 ? "border-2 border-dashed" : "border"} p-8 md:p-10 text-center my-4 transition-colors`}
           style={{
-            background: "var(--panel)",
-            borderColor: "var(--garis)",
+            background:
+              books.length === 0 && isDragging
+                ? "rgba(180, 201, 219, 0.16)"
+                : "var(--panel)",
+            borderColor:
+              books.length === 0 && isDragging ? "var(--ai)" : "var(--garis)",
           }}
         >
-          <p className="text-[15px] font-semibold">
+          <p className="text-[16px] font-semibold text-[var(--tinta)]">
             {books.length === 0
               ? "Rak Perpustakaan masih kosong"
               : "Tidak ada koleksi yang cocok dengan filter"}
           </p>
           <p
-            className="text-[13px] mt-1 max-w-md mx-auto"
-            style={{ color: "var(--tinta-2)" }}
+            className="text-[14px] mt-1.5 max-w-lg mx-auto"
+            style={{ color: "#5A6C80" }}
           >
             {books.length === 0
-              ? "Tambahkan berkas novel (.epub/.txt) atau manga (.cbz/.zip/kumpulan gambar/folder), atau muat contoh untuk menguji fitur pembaca dan sentence mining."
+              ? "Seret dan lepas berkas novel (.epub/.txt) atau manga (.cbz/.zip/folder) ke area ini, klik Tambah Novel / Manga di atas, atau muat buku contoh di bawah."
               : "Coba ubah kata kunci pencarian atau tab filter format di atas."}
           </p>
           {books.length === 0 && (
-            <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
+            <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
               <Button
                 className="outline-button"
+                disabled={uploading}
                 onClick={() => void handleAddSampleManga()}
               >
                 <Icon name="sparkle" size={16} /> Coba Manga Contoh
               </Button>
               <Button
                 className="outline-button"
+                disabled={uploading}
                 onClick={() => void handleAddSampleNovel()}
               >
                 <Icon name="sparkle" size={16} /> Coba Novel Contoh

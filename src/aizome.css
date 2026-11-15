@@ -1057,3 +1057,237 @@ progress {
   align-items: center;
   text-align: center;
 }
+
+/* =========================================================
+   Fase 1.5 — Daftar Periksa Orientasi Awal (FirstRunChecklist)
+   ========================================================= */
+
+.frc-card {
+  background: var(--panel);
+  border: 1px solid var(--garis);
+  border-radius: var(--r-box, 6px);
+  padding: 18px;
+}
+
+.frc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.frc-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5A6C80;
+}
+
+.frc-title {
+  margin: 2px 0 0;
+  font-family: "Shippori Mincho B1", "Noto Serif JP", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--tinta);
+}
+
+.frc-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5A6C80;
+}
+
+button.frc-dismiss {
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--garis);
+  background: transparent;
+  color: #5A6C80;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+button.frc-dismiss:hover {
+  color: var(--tinta);
+  border-color: var(--ai);
+}
+
+button.frc-dismiss:focus-visible,
+button.frc-step-btn:focus-visible {
+  outline: 2px solid var(--ai);
+  outline-offset: 2px;
+}
+
+.frc-progress {
+  height: 4px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--kertas-2);
+  overflow: hidden;
+  margin: 12px 0 14px;
+}
+
+.frc-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--ai);
+  border-radius: 999px;
+}
+
+.frc-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.frc-steps--wide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.frc-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm, 4px);
+  border: 1px solid var(--garis);
+  background: var(--tsuki);
+  min-width: 0;
+}
+
+.frc-step--next {
+  border-color: var(--ai);
+  background: var(--panel);
+}
+
+.frc-step--done {
+  opacity: 0.85;
+}
+
+.frc-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--garis);
+  background: var(--panel);
+  color: var(--tinta-2);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.frc-step--done .frc-marker {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+
+.frc-step--next .frc-marker {
+  border-color: var(--ai);
+  color: var(--ai);
+}
+
+.frc-step-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.frc-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--tinta);
+}
+
+.frc-step--done .frc-step-title {
+  color: #5A6C80;
+  text-decoration: line-through;
+}
+
+.frc-step-detail {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #5A6C80;
+}
+
+button.frc-step-btn {
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--garis);
+  background: var(--panel);
+  color: var(--kon);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+button.frc-step-btn:hover {
+  border-color: var(--ai);
+}
+
+button.frc-step-btn.is-next {
+  background: var(--kon);
+  border-color: var(--kon);
+  color: #FCFAF5;
+}
+
+button.frc-step-btn.is-next:hover {
+  background: var(--ai);
+  border-color: var(--ai);
+}
+
+.frc-done-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.frc-done-copy {
+  flex: 1;
+  min-width: 180px;
+}
+
+@media (max-width: 900px) {
+  .frc-steps--wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .frc-card {
+    padding: 14px 16px;
+  }
+
+  .frc-step {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  button.frc-step-btn {
+    min-height: 36px;
+    margin-left: 34px;
+  }
+}
+

@@ -16,12 +16,24 @@ import {
 import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
 import { deckTileGlyph, dyeStep, jlptDyeStep } from "./lib/dye";
 import { ensureSeeded } from "./lib/deckCards";
+import { deckDexie } from "./lib/deckDb";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
-import type { BookRecord } from "./lib/lexiconDb";
+import {
+  listDictionaries,
+  type BookRecord,
+  type DictionaryRecord,
+} from "./lib/lexiconDb";
+import {
+  countCompletedReviews,
+  countUserMinedCards,
+  getMiningActionPath,
+} from "./lib/onboardingStats";
 import { speakJapanese } from "./lib/tts";
+import FirstRunChecklist from "./components/FirstRunChecklist";
 
 const ImportDeckModal = lazy(() => import("./components/ImportDeckModal"));
 const DeckFormModal = lazy(() => import("./components/DeckFormModal"));
+const DictionaryManagerModal = lazy(() => import("./components/DictionaryManagerModal"));
 
 const defaultSources = [
   {
@@ -61,22 +73,54 @@ const defaultSources = [
 
 export default function App() {
   const navigate = useNavigate();
-  const [modal, setModal] = useState<"deck" | "mining" | "import" | null>(null);
+  const [modal, setModal] = useState<"deck" | "mining" | "import" | "dict" | null>(null);
   const [notice, setNotice] = useState("");
   const [books, setBooks] = useState<BookRecord[]>([]);
+  const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const [reviewLogCount, setReviewLogCount] = useState(0);
+  const [onboardingReady, setOnboardingReady] = useState(false);
   const [expandedDeckId, setExpandedDeckId] = useState<string | null>(null);
 
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
+  const minedQueue = useAppStore((s) => s.minedQueue);
   const settings = useAppStore((s) => s.settings);
   const deckLimits = useAppStore((s) => s.deckLimits);
   const srsCards = useReviewStore((s) => s.srsCards);
   const newIntroduced = useReviewStore((s) => s.newIntroduced);
+  const activity = useReviewStore((s) => s.activity);
 
   useEffect(() => {
+    let cancelled = false;
     void ensureSeeded();
-    void listNovels().then(setBooks).catch(() => {});
+    void Promise.allSettled([
+      listNovels(),
+      listDictionaries(),
+      deckDexie.reviewLogs.count(),
+    ]).then(([booksRes, dictsRes, logsRes]) => {
+      if (cancelled) return;
+      if (booksRes.status === "fulfilled") setBooks(booksRes.value);
+      if (dictsRes.status === "fulfilled") setDictionaries(dictsRes.value);
+      if (logsRes.status === "fulfilled") setReviewLogCount(logsRes.value);
+      setOnboardingReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const activeDictCount = useMemo(
+    () => dictionaries.filter((d) => d.enabled).length,
+    [dictionaries],
+  );
+  const minedCardsCount = useMemo(
+    () => countUserMinedCards(books, minedQueue),
+    [books, minedQueue],
+  );
+  const reviewedCount = useMemo(
+    () => countCompletedReviews(reviewLogCount, activity),
+    [reviewLogCount, activity],
+  );
 
   const now = new Date();
   const jpDateVertical = formatKanjiDate(now);
@@ -468,8 +512,21 @@ export default function App() {
           </div>
         </section>
 
-        {/* KOLOM KANAN: DUA KARTU (TUJUH HARI KE DEPAN & KUOTA HARI INI) */}
+        {/* KOLOM KANAN: ONBOARDING + TUJUH HARI KE DEPAN & KUOTA HARI INI */}
         <aside className="lg:col-span-4 space-y-5">
+          {onboardingReady && (
+            <FirstRunChecklist
+              activeDictCount={activeDictCount}
+              booksCount={books.length}
+              minedCardsCount={minedCardsCount}
+              reviewedCount={reviewedCount}
+              onOpenDictManager={() => setModal("dict")}
+              onAddBook={() => navigate("/library")}
+              onStartMining={() => navigate(getMiningActionPath(books))}
+              onStartReview={handleStartReview}
+            />
+          )}
+
           {/* 1. Tujuh hari ke depan */}
           <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
             <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
@@ -697,6 +754,16 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {modal === "dict" && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open
+            onClose={() => setModal(null)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
       )}
 
       {notice && (
