@@ -1291,3 +1291,161 @@ button.frc-step-btn.is-next:hover {
   }
 }
 
+/* =========================================================
+   Fase 1.7 — Halaman Progres (Sistem Editorial Aizome)
+   ========================================================= */
+
+.pr-kpis.pr-kpis-aizome {
+  gap: 14px;
+}
+
+.pr-kpis.pr-kpis-aizome article {
+  border: 1px solid var(--garis);
+  border-top: 2px solid var(--kon);
+  border-radius: var(--r-box, 6px);
+  padding: 16px 18px;
+  background: var(--panel);
+  gap: 0;
+}
+
+.pr-kpis.pr-kpis-aizome strong {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-top: 0;
+  color: var(--kon);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-kpis.pr-kpis-aizome small {
+  margin-top: 6px;
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pr-kpis.pr-kpis-aizome em {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--garis);
+  font-style: normal;
+  color: var(--ai);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.pr-panel.pr-panel-aizome {
+  border-radius: var(--r-box, 6px);
+}
+
+.pr-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.pr-line .pr-cursor-line {
+  stroke: var(--ai);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+
+.pr-line .pr-dot-hit {
+  fill: transparent;
+  stroke: none;
+}
+
+.pr-line .pr-dot {
+  fill: var(--ai);
+  stroke: var(--panel);
+  stroke-width: 1.5;
+}
+
+.pr-line .pr-dot.is-active {
+  fill: var(--kon);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+
+.pr-line .pr-dot-focus {
+  fill: none;
+  stroke: var(--ai);
+  stroke-width: 1.5;
+  opacity: 0;
+}
+
+.pr-line g[role="button"]:focus {
+  outline: none;
+}
+
+.pr-line g[role="button"]:focus-visible .pr-dot-focus {
+  opacity: 1;
+}
+
+.pr-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  padding: 6px 10px;
+  border-radius: var(--r-sm, 4px);
+  background: var(--kon);
+  color: #FCFAF5;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(18, 40, 74, 0.22);
+}
+
+.pr-tooltip-sub {
+  color: #DCE8F0;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.pr-axis.pr-axis-aizome,
+.pr-legend.pr-legend-aizome,
+.pr-forecast.pr-forecast-aizome span,
+.pr-forecast.pr-forecast-aizome small,
+.pr-mix.pr-mix-aizome li,
+.pr-streaks.pr-streaks-aizome {
+  font-size: 12px;
+  color: #5A6C80;
+}
+
+.pr-jlpt.pr-jlpt-aizome li {
+  grid-template-columns: 44px 1fr;
+  gap: 6px 12px;
+}
+
+.pr-jlpt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.pr-jlpt.pr-jlpt-aizome .dye-bar {
+  background-color: var(--tsuki);
+  border: 1px solid var(--garis);
+  height: 8px;
+}
+
+.pr-jlpt.pr-jlpt-aizome small {
+  grid-column: 2;
+  color: #5A6C80;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .pr-kpis.pr-kpis-aizome strong {
+    font-size: 26px;
+  }
+}
+
+
