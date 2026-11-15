@@ -1,4 +1,4 @@
-import { limitsFor, type DeckItem } from "../store/useAppStore";
+import { type DeckItem, type DeckLimitOverride } from "../store/useAppStore";
 import type { LiveDeckStats } from "./deckStats";
 import { liveDeckStats } from "./deckStats";
 import type { SRSCard } from "./srs";
@@ -314,10 +314,12 @@ export function getLeafDescendantDecks(
 export function aggregateParentStats(
   parentDeck: DeckItem,
   childDecks: DeckItem[],
-  srsCards: Record<string, Record<string, SRSCard>>,
-  newIntroduced: Record<string, { date: string; count: number }>,
-  settings: { newCards: number; maxReview: number },
+  srsCards: Record<string, Record<string, SRSCard> | undefined>,
+  newIntroduced: Record<string, { date: string; count: number; extraNew?: number } | undefined>,
+  settings: { newCards: number; maxReview: number; dayStartHour?: number },
   allDecks?: DeckItem[],
+  now: Date | number = Date.now(),
+  deckLimits?: Record<string, DeckLimitOverride>,
 ): LiveDeckStats {
   const targetChildren =
     allDecks && allDecks.length > 0
@@ -325,12 +327,13 @@ export function aggregateParentStats(
       : childDecks;
 
   if (targetChildren.length === 0) {
-    const parentLimits = limitsFor(parentDeck.id, settings);
     return liveDeckStats(
       parentDeck,
       srsCards[parentDeck.id],
       newIntroduced[parentDeck.id],
-      parentLimits,
+      settings,
+      now,
+      deckLimits,
     );
   }
 
@@ -343,12 +346,13 @@ export function aggregateParentStats(
   let totalCards = 0;
 
   for (const child of targetChildren) {
-    const childLimits = limitsFor(child.id, settings);
     const st = liveDeckStats(
       child,
       srsCards[child.id],
       newIntroduced[child.id],
-      childLimits,
+      settings,
+      now,
+      deckLimits,
     );
     due += st.due;
     reviewDue += st.reviewDue;
