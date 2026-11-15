@@ -326,18 +326,45 @@ progress {
   background: var(--ai-tua);
 }
 
-.landing-hero-v2 {
+.landing-hero.landing-hero-v2 {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
   align-items: stretch;
   position: relative;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: max(92px, calc(env(safe-area-inset-top) + 80px)) 20px 40px;
 }
 
-@media (min-width: 960px) {
-  .landing-hero-v2 {
+.landing-hero.landing-hero-v2 .landing-hero-copy {
+  flex: none;
+  min-width: 0;
+}
+
+.landing-hero.landing-hero-v2 .landing-hero-copy h1 {
+  margin: 0 0 16px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(36px, 4.2vw, 56px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: var(--kon);
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 901px) {
+  .landing-hero.landing-hero-v2 {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 48px;
+    gap: 44px;
+    padding: max(100px, calc(env(safe-area-inset-top) + 88px)) 36px 48px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .landing-hero.landing-hero-v2 {
+    gap: 64px;
+    padding: max(108px, calc(env(safe-area-inset-top) + 92px)) 44px 52px;
   }
 }
 
@@ -351,7 +378,7 @@ progress {
   border-left: 1px solid var(--garis);
   padding-left: 12px;
   line-height: 1.7;
-  max-height: 220px;
+  max-height: 320px;
   flex-shrink: 0;
   user-select: none;
 }
@@ -370,6 +397,7 @@ progress {
 
 .landing-fabric-panel {
   position: relative;
+  min-width: 0;
   border-radius: 8px;
   border: 1px solid var(--garis);
   background: linear-gradient(
@@ -380,12 +408,12 @@ progress {
     #BCD6E2 84%,
     #EDF2F5 100%
   );
-  padding: 28px 20px 24px;
+  padding: 24px 18px 20px;
   overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 440px;
+  min-height: 400px;
 }
 
 .landing-fabric-panel__seigaiha {
@@ -414,11 +442,20 @@ progress {
 .landing-bunko-overlap {
   position: relative;
   z-index: 2;
+  min-width: 0;
+  max-width: 100%;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 901px) {
   .landing-bunko-overlap {
-    margin-left: -48px;
+    margin-left: -32px;
+    max-width: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .landing-bunko-overlap {
+    margin-left: -72px;
   }
 }
 

@@ -547,8 +547,8 @@ export default function LandingPage() {
 
             <div className="min-w-0 flex-1">
               <h1>
-                Baca karya asli Jepang,<br />
-                klik satu kata, <span>tambahkan ke dalam ingatan.</span>
+                Baca karya asli Jepang, klik satu kata,{" "}
+                <span>tambahkan ke dalam ingatan.</span>
               </h1>
 
               <p className="welcome-copy">
