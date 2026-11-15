@@ -334,7 +334,7 @@ export default function ReviewPage() {
           <div className="review-complete-v2__body">
             {reviewed > 0 ? (
               <div className="mb-5">
-                <Hanko char="済" size={96} title={`Sesi selesai: ${reviewed} kartu diulas`} />
+                <Hanko char="済" size={96} />
               </div>
             ) : (
               <div className="mb-4 w-12 h-12 rounded-md border border-[var(--garis)] bg-[var(--kertas-2)] grid place-items-center text-[var(--kon)]">

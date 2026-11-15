@@ -94,17 +94,20 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 
 /**
  * Cap hanko merah (`--shu`) yang muncul saat sesuatu selesai (mis. sesi selesai atau deck 100% dikuasai).
- * Selalu dekoratif (`aria-hidden="true"`); makna aksesibel wajib disampaikan lewat teks di sebelahnya.
+ * Bawaan bersifat dekoratif (`aria-hidden="true"`). Jika `label` diberikan, beralih menjadi
+ * `role="img"` dengan `aria-label` agar bermakna bagi pembaca layar.
  */
 export function Hanko({
   char = "済",
   tilt = -6,
   size = 52,
+  label,
   className = "",
 }: {
   char?: string;
   tilt?: number;
   size?: number;
+  label?: string;
   className?: string;
 }) {
   const borderW = size >= 84 ? 4.5 : size <= 40 ? 3 : 3.5;
@@ -118,9 +121,18 @@ export function Hanko({
     fontSize: `${fontSize}px`,
     "--hanko-tilt": `${tilt}deg`,
   } as CSSProperties;
+  const cleanLabel = label?.trim();
 
   return (
-    <span className={`hanko-stamp ${className}`.trim()} style={style} lang="ja" aria-hidden="true">
+    <span
+      className={`hanko-stamp ${className}`.trim()}
+      style={style}
+      lang="ja"
+      role={cleanLabel ? "img" : undefined}
+      aria-label={cleanLabel || undefined}
+      aria-hidden={cleanLabel ? undefined : true}
+      title={cleanLabel || undefined}
+    >
       {char}
     </span>
   );

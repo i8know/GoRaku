@@ -376,7 +376,7 @@ export default function App() {
 
                     <div className="beranda-deck-row__mastery flex items-center justify-end min-w-[128px]">
                       {s.progress >= 100 ? (
-                        <Hanko char="済" size={44} title="Deck tuntas 100%" />
+                        <Hanko char="済" size={44} label={`Penguasaan ${deck.title} 100%, tuntas`} />
                       ) : (
                         <div className="w-full max-w-[140px]">
                           <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />

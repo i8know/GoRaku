@@ -365,7 +365,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
           {/* 4. Penguasaan */}
           <td style={{ minWidth: "150px" }}>
             {s.progress >= 100 ? (
-              <Hanko char="済" size={40} title="Deck tuntas 100%" />
+              <Hanko char="済" size={40} label={`Penguasaan ${deck.subdeckName || deck.title} 100%, tuntas`} />
             ) : (
               <DyeProgress percent={s.progress} label={`Penguasaan ${deck.subdeckName || deck.title}`} />
             )}
@@ -707,7 +707,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   </div>
                   <div className="my-2">
                     {s.progress >= 100 ? (
-                      <Hanko char="済" size={36} title="Deck tuntas 100%" />
+                      <Hanko char="済" size={36} label={`Penguasaan ${deck.title} 100%, tuntas`} />
                     ) : (
                       <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />
                     )}
