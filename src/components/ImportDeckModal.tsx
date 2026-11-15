@@ -133,6 +133,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
 
   useEffect(() => {
     return () => {
+      startedWith.current = null;
       terminateWorker();
     };
   }, [terminateWorker]);
