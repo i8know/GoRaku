@@ -376,7 +376,7 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
               <motion.span
                 layoutId="lnav-desktop-pill"
                 className="lnav-active-bg"
-                style={{ borderRadius: 999 }}
+                style={{ borderRadius: "var(--r-pill)" }}
                 transition={NAV_PILL_SPRING}
                 aria-hidden="true"
               />
@@ -416,7 +416,7 @@ function LandingNav({ loggedIn }: { loggedIn: boolean }) {
               <motion.span
                 layoutId="lnav-mobile-pill"
                 className="lnav-active-bg"
-                style={{ borderRadius: 999 }}
+                style={{ borderRadius: "var(--r-pill)" }}
                 transition={NAV_PILL_SPRING}
                 aria-hidden="true"
               />
@@ -492,7 +492,7 @@ export default function LandingPage() {
                 <Link
                   to={user ? "/beranda" : "/login"}
                   className="primary-light no-underline"
-                  style={{ padding: "12px 22px", fontSize: "16px" }}
+                  style={{ padding: "var(--sp-3) var(--sp-5)", fontSize: "var(--fs-16)" }}
                 >
                   {user ? "Lanjutkan di Dashboard" : "Mulai Belajar Sekarang"}
                 </Link>
@@ -511,7 +511,7 @@ export default function LandingPage() {
         <div className="landing-fabric-panel w-full" data-glyph="読">
           <div className="landing-fabric-panel__seigaiha motif-seigaiha" aria-hidden="true" />
           <div
-            className="landing-bunko-overlap rounded-lg border shadow-xl overflow-hidden transition-colors"
+            className="landing-bunko-overlap rounded-[var(--r-box)] border shadow-xl overflow-hidden transition-colors"
             style={{
               background: readerThemeStyle.bg,
               color: readerThemeStyle.fg,
@@ -737,14 +737,14 @@ export default function LandingPage() {
                       onClick={() => speakJapanese(activeToken.reading)}
                       title="Dengarkan pengucapan kata"
                       aria-label={`Dengarkan pengucapan ${activeToken.dictionaryForm}`}
-                      className="min-w-[32px] min-h-[32px] grid place-items-center rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-1.5 text-[var(--ai)] hover:bg-[var(--tsuki)] transition-colors cursor-pointer"
+                      className="min-w-[32px] min-h-[32px] grid place-items-center rounded-[var(--r-sm)] border border-[var(--garis)] bg-[var(--panel)] p-1.5 text-[var(--ai)] hover:bg-[var(--tsuki)] transition-colors cursor-pointer"
                     >
                       <Icon name="volume" size={14} />
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-right">
+                <div className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-right">
                   <div lang="ja" className="text-xs font-bold text-[var(--kon)]">
                     {activeToken.surface} → {activeToken.dictionaryForm}
                   </div>
@@ -759,13 +759,13 @@ export default function LandingPage() {
               </p>
 
               {/* Extracted Context Sentence Box */}
-              <div className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-2.5 mb-2.5">
+              <div className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-2.5 mb-2.5">
                 <div className="flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.06em] text-[var(--tinta-2)] mb-1">
                   <span>Kalimat Konteks Otomatis (Tag &lt;b&gt; Utuh)</span>
                   <button
                     type="button"
                     onClick={() => speakJapanese(activeToken.sentencePlain)}
-                    className="min-h-[32px] px-2 -my-1 rounded-md text-xs font-bold text-[var(--ai)] hover:bg-[var(--tsuki)] hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer shrink-0 normal-case"
+                    className="min-h-[32px] px-2 -my-1 rounded-[var(--r-sm)] text-xs font-bold text-[var(--ai)] hover:bg-[var(--tsuki)] hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer shrink-0 normal-case"
                   >
                     <Icon name="volume" size={12} /> Putar Kalimat
                   </button>
@@ -790,7 +790,7 @@ export default function LandingPage() {
                       [activeToken.id]: true,
                     }))
                   }
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 min-h-[36px] text-base font-bold text-white transition-colors cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 rounded-[var(--r-pill)] px-3.5 py-2 min-h-[36px] text-base font-bold text-white transition-colors cursor-pointer ${
                     minedMap[activeToken.id]
                       ? "bg-[var(--ai-tua)]"
                       : "bg-[var(--kon)] hover:bg-[var(--ai-tua)]"
@@ -860,7 +860,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Parent Deck Row */}
-            <div className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] overflow-hidden">
+            <div className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--tsuki)] overflow-hidden">
               <button
                 type="button"
                 aria-expanded={demoParentOpen}
@@ -944,7 +944,7 @@ export default function LandingPage() {
             </div>
 
             {/* Selected Subdeck Quick Detail */}
-            <div className="mt-3 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-3 flex items-center justify-between gap-3 flex-wrap">
+            <div className="mt-3 rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--tsuki)] p-3 flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <span className="text-xs font-bold uppercase tracking-[0.06em] text-[var(--tinta-2)] block">
                   Sub-Deck Terpilih: {activeSubdeck.title} ({activeSubdeck.total} kartu)
@@ -955,7 +955,7 @@ export default function LandingPage() {
               </div>
               <Button
                 className="btn-kon"
-                style={{ padding: "8px 14px", fontSize: "14px" }}
+                style={{ padding: "var(--sp-2) var(--sp-3)", fontSize: "var(--fs-14)" }}
                 onClick={() => navigate(user ? "/deck" : "/login")}
               >
                 {user ? "Buka Koleksi Deck" : "Masuk untuk Buka Deck"} <Icon name="arrow" size={14} />
@@ -988,7 +988,7 @@ export default function LandingPage() {
               ].map((part) => (
                 <div
                   key={part.sec}
-                  className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-2"
+                  className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--tsuki)] p-2"
                 >
                   <small className="block text-xs font-bold uppercase tracking-[0.04em] text-[var(--tinta-2)]">
                     {part.sec}
@@ -1002,7 +1002,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Mini Mondai Question */}
-            <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-3.5">
+            <div className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-3.5">
               <div className="flex items-center justify-between text-xs font-bold text-[var(--tinta-2)] mb-1.5">
                 <span>CONTOH LATIHAN ORISINAL • LEVEL N5 (PARTIKEL)</span>
                 <span lang="ja" className="text-[var(--ai)]">問題 1</span>
@@ -1096,7 +1096,7 @@ export default function LandingPage() {
                 aria-selected={isOn}
                 aria-controls="explorer-tabpanel"
                 onClick={() => setActiveTabId(tab.id)}
-                className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors cursor-pointer ${
+                className={`flex items-center gap-3 rounded-[var(--r-box)] border p-3 text-left transition-colors cursor-pointer ${
                   isOn
                     ? "border-[var(--kon)] bg-[var(--kon)] text-white"
                     : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta)] hover:border-[var(--ai)]"
@@ -1166,7 +1166,7 @@ export default function LandingPage() {
               <div className="pt-1">
                 <Button
                   className="btn-kon"
-                  style={{ fontSize: "14px", padding: "8px 16px" }}
+                  style={{ fontSize: "var(--fs-14)", padding: "var(--sp-2) var(--sp-4)" }}
                   onClick={() => navigate(user ? "/beranda" : "/login")}
                 >
                   {user ? "Buka Fitur di Dashboard" : "Masuk untuk Mencoba Fitur"} <Icon name="arrow" size={15} />
@@ -1175,7 +1175,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Visual Preview per Tab */}
-            <div className="lg:col-span-5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-4">
+            <div className="lg:col-span-5 rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--tsuki)] p-4">
               {activeTab.id === "reader" && (
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -1211,7 +1211,7 @@ export default function LandingPage() {
                   </div>
                   <div
                     lang="ja"
-                    className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-3.5 font-serif text-sm leading-loose min-h-[132px] flex items-center justify-center"
+                    className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-3.5 font-serif text-sm leading-loose min-h-[132px] flex items-center justify-center"
                     style={{
                       writingMode: previewWritingMode,
                       maxHeight: "172px",
@@ -1264,7 +1264,7 @@ export default function LandingPage() {
                     ].map((row, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-3 py-1.5 gap-2"
+                        className="flex items-center justify-between rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] px-3 py-1.5 gap-2"
                       >
                         <div>
                           <span className="text-xs text-[var(--tinta-2)] block">{row.step}</span>
@@ -1286,7 +1286,7 @@ export default function LandingPage() {
                   <div className="text-xs font-bold text-[var(--kon)]">
                     Perbandingan Ekstraksi Kalimat Dialog
                   </div>
-                  <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-2.5">
+                  <div className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-2.5">
                     <span className="text-xs font-bold text-[var(--teks-redup)] uppercase tracking-[0.06em] inline-flex items-center gap-1 mb-1">
                       <Icon name="close" size={12} /> Pemisah Biasa (Terpotong)
                     </span>
@@ -1294,7 +1294,7 @@ export default function LandingPage() {
                       「本当に<b>信じられない</b>！
                     </p>
                   </div>
-                  <div className="rounded-lg border border-[var(--ai)] bg-[var(--panel)] p-2.5">
+                  <div className="rounded-[var(--r-box)] border border-[var(--ai)] bg-[var(--panel)] p-2.5">
                     <span className="text-xs font-bold text-[var(--kon)] uppercase tracking-[0.06em] inline-flex items-center gap-1 mb-1">
                       <Icon name="check" size={12} /> Ekstraktor Kontekstual 語楽
                     </span>
@@ -1326,7 +1326,7 @@ export default function LandingPage() {
                     type="button"
                     aria-pressed={demoCardFlipped}
                     onClick={() => setDemoCardFlipped((v) => !v)}
-                    className="w-full rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-4 text-center cursor-pointer shadow-xs min-h-[136px] flex flex-col justify-center items-center hover:border-[var(--ai)] transition-colors"
+                    className="w-full rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-4 text-center cursor-pointer shadow-xs min-h-[136px] flex flex-col justify-center items-center hover:border-[var(--ai)] transition-colors"
                   >
                     <small lang="ja" className="text-xs text-[var(--ai)] font-bold">
                       {demoCardFlipped ? "じゅみょう • Sub-deck N3" : "Klik untuk membuka jawaban"}
@@ -1385,7 +1385,7 @@ export default function LandingPage() {
             ].map((stmt) => (
               <div
                 key={stmt.jp}
-                className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-4 py-3"
+                className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] px-4 py-3"
               >
                 <span lang="ja" className="block text-xs font-bold uppercase tracking-[0.05em] text-[var(--ai)] mb-1">
                   {stmt.jp}
@@ -1475,9 +1475,9 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom CTA Banner */}
-          <div className="lg:col-span-5 rounded-lg border border-[var(--ai)] bg-[var(--kon)] p-6 text-white relative overflow-hidden">
+          <div className="lg:col-span-5 rounded-[var(--r-box)] border border-[var(--ai)] bg-[var(--kon)] p-6 text-white relative overflow-hidden">
             <p className="eyebrow light">一歩ずつ、確実に • MULAI IMMERSION</p>
-            <h3 className="text-[24px] leading-snug font-serif font-bold mt-1 mb-2 text-white">
+            <h3 className="text-[length:var(--fs-24)] leading-snug font-serif font-bold mt-1 mb-2 text-white">
               Siap membangun ruang belajar pribadi di 語楽?
             </h3>
             <p className="text-sm text-[var(--mizu)] mb-5 leading-relaxed">

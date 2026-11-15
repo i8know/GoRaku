@@ -371,9 +371,9 @@ export default function App() {
 
                     <div className="beranda-deck-info min-w-0">
                       <div className="beranda-deck-row__meta flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
+                        <span className="text-[length:var(--fs-12)] font-bold text-[var(--ai)]">{deck.level}</span>
                         {imported && (
-                          <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
+                          <span className="rounded-[var(--r-sm)] bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[length:var(--fs-12)] font-bold text-[var(--kon)]">
                             ANKI
                           </span>
                         )}
@@ -528,10 +528,10 @@ export default function App() {
           )}
 
           {/* 1. Tujuh hari ke depan */}
-          <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
+          <article className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-5">
             <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
               <div>
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                <p className="text-[length:var(--fs-12)] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
                   予習と復習
                 </p>
                 <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
@@ -552,7 +552,7 @@ export default function App() {
                   className="beranda-forecast-col"
                 >
                   <span
-                    className={`text-[11px] font-mono ${
+                    className={`text-[length:var(--fs-12)] font-mono ${
                       idx === 0 ? "font-bold text-[var(--kon)]" : "text-[var(--teks-redup)]"
                     }`}
                   >
@@ -584,7 +584,7 @@ export default function App() {
           <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
             <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
               <div>
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                <p className="text-[length:var(--fs-12)] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
                   本日の割当
                 </p>
                 <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">

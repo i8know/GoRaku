@@ -391,7 +391,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                       <small className="dk-subdeck-badge-sub">Sub-deck</small>
                     )}
                   </span>
-                  <small className="block text-[11px] text-[var(--teks-redup)]">
+                  <small className="block text-[length:var(--fs-12)] text-[var(--teks-redup)]">
                     {deck.total.toLocaleString("id-ID")} kartu · {deckUpdatedLabel(deck)}
                   </small>
                 </span>
@@ -650,7 +650,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
             id="dk-hero-drop"
             type="button"
             className="outline-button"
-            style={{ padding: "6px 12px", fontSize: "12px" }}
+            style={{ padding: "var(--sp-1) var(--sp-3)", fontSize: "var(--fs-12)" }}
             onClick={() => openImport()}
           >
             Pilih file .apkg
@@ -942,7 +942,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                 </span>
                               </button>
                               <div className="dk-card-subdeck-item-right">
-                                <div className="inline-flex items-center gap-2 font-mono text-[11px]">
+                                <div className="inline-flex items-center gap-2 font-mono text-[length:var(--fs-12)]">
                                   <span
                                     className={cs.newToday > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
                                     aria-label={`${cs.newToday} kartu baru`}

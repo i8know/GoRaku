@@ -752,13 +752,13 @@ export default function LibraryPage({
               books.length === 0 && isDragging ? "var(--ai)" : "var(--garis)",
           }}
         >
-          <p className="text-[16px] font-semibold text-[var(--tinta)]">
+          <p className="text-[length:var(--fs-16)] font-semibold text-[var(--tinta)]">
             {books.length === 0
               ? "Rak Perpustakaan masih kosong"
               : "Tidak ada koleksi yang cocok dengan filter"}
           </p>
           <p
-            className="text-[14px] mt-1.5 max-w-lg mx-auto"
+            className="text-[length:var(--fs-14)] mt-1.5 max-w-lg mx-auto"
             style={{ color: "#5A6C80" }}
           >
             {books.length === 0
