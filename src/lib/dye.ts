@@ -58,3 +58,14 @@ export function titleDyeStep(title: string): DyeStep {
   }
   return (hash % 5) as DyeStep;
 }
+
+/**
+ * Mengembalikan glif untuk ubin deck: memakai `kanji` bila tersedia,
+ * atau jatuh kembali ke karakter pertama judul deck (atau "札" bila kosong).
+ */
+export function deckTileGlyph(kanji?: string, title?: string): string {
+  const cleanKanji = (kanji || "").trim();
+  if (cleanKanji) return cleanKanji;
+  const firstChar = Array.from((title || "").trim())[0];
+  return firstChar || "札";
+}

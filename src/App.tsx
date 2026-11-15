@@ -14,7 +14,7 @@ import {
   type LiveDeckStats,
 } from "./lib/deckStats";
 import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
-import { dyeStep, jlptDyeStep } from "./lib/dye";
+import { deckTileGlyph, dyeStep, jlptDyeStep } from "./lib/dye";
 import { ensureSeeded } from "./lib/deckCards";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
 import type { BookRecord } from "./lib/lexiconDb";
@@ -322,7 +322,7 @@ export default function App() {
                         else navigate(`/deck/${deck.id}`);
                       }}
                     >
-                      <DyeTile step={dyeStep(s.progress)} kanji={deck.kanji} size={44} />
+                      <DyeTile step={dyeStep(s.progress)} glyph={deckTileGlyph(deck.kanji, deck.title)} fallbackTitle={deck.title} size={44} />
                     </button>
 
                     <div className="beranda-deck-info min-w-0">
@@ -438,7 +438,7 @@ export default function App() {
                                   className="dk-card-subdeck-item-left"
                                   onClick={() => navigate(`/deck/${c.id}`)}
                                 >
-                                  <DyeTile step={jlptDyeStep(code)} kanji={c.kanji} size={32} />
+                                  <DyeTile step={jlptDyeStep(code)} glyph={deckTileGlyph(c.kanji, c.title)} fallbackTitle={c.title} size={32} />
                                   <span>
                                     <strong>{c.subdeckName || c.title}</strong>
                                     <small className="font-mono">

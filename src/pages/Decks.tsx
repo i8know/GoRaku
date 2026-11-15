@@ -5,7 +5,7 @@ import { useAppStore, type DeckItem } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 import { deckUpdatedLabel, liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
-import { dyeStep, jlptDyeStep } from "../lib/dye";
+import { deckTileGlyph, dyeStep, jlptDyeStep } from "../lib/dye";
 import { ensureSeeded } from "../lib/deckCards";
 
 const ImportDeckModal = lazy(() => import("../components/ImportDeckModal"));
@@ -306,7 +306,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   }
                 }}
               >
-                <DyeTile step={tileStep} kanji={deck.kanji} size={isSubdeck ? 30 : 38} />
+                <DyeTile step={tileStep} glyph={deckTileGlyph(deck.kanji, deck.title)} fallbackTitle={deck.title} size={isSubdeck ? 30 : 38} />
                 <span className="min-w-0">
                   <span className="flex items-center gap-1.5 flex-wrap">
                     <strong className="font-serif text-sm text-[var(--tinta)]">
@@ -612,7 +612,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                         : `Buka dashboard ${deck.title}`
                     }
                   >
-                    <span>{deck.kanji}</span>
+                    <span>{deckTileGlyph(deck.kanji, deck.title)}</span>
                     <i />
                   </button>
                   {imported && <em className="dk-badge">ANKI</em>}
@@ -751,7 +751,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                 className="dk-card-subdeck-item-left"
                                 onClick={() => navigate(`/deck/${c.id}`)}
                               >
-                                <DyeTile step={jlptDyeStep(cCode)} kanji={c.kanji} size={28} />
+                                <DyeTile step={jlptDyeStep(cCode)} glyph={deckTileGlyph(c.kanji, c.title)} fallbackTitle={c.title} size={28} />
                                 <span>
                                   <strong>{c.subdeckName || c.title}</strong>
                                   <small>{c.total.toLocaleString("id-ID")} kartu</small>

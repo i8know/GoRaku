@@ -900,7 +900,7 @@ export default function LandingPage() {
                   key={lvl}
                   className="flex flex-col items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-2 backdrop-blur-xs"
                 >
-                  <DyeTile step={jlptDyeStep(lvl)} kanji={lvl} size={36} />
+                  <DyeTile step={jlptDyeStep(lvl)} glyph={lvl} size={36} />
                   <span className="text-[10px] font-mono font-semibold text-white/90">
                     {lvl === "N5" ? "Dasar" : lvl === "N4" ? "Pemula" : lvl === "N3" ? "Menengah" : lvl === "N2" ? "Lanjut" : "Mahir"}
                   </span>
@@ -977,7 +977,7 @@ export default function LandingPage() {
                           <span className="font-mono text-[var(--teks-redup)] text-xs">
                             {i === SUBDECK_DEMO_TREE.length - 1 ? "└─" : "├─"}
                           </span>
-                          <DyeTile step={jlptDyeStep(sub.code)} kanji={sub.kanji} size={26} />
+                          <DyeTile step={jlptDyeStep(sub.code)} glyph={sub.kanji} size={26} />
                           <span className="truncate text-[var(--tinta)]">{sub.title}</span>
                           <span className="rounded border border-[var(--garis)] bg-[var(--kertas-2)] px-1.5 py-0.5 text-[9.5px] font-bold text-[var(--kon)]">
                             {sub.code}

@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
-import { dyeStep, type DyeStep } from "./lib/dye";
+import { deckTileGlyph, dyeStep, type DyeStep } from "./lib/dye";
 
 export type IconName =
   | "home" | "cards" | "mine" | "book" | "chart" | "settings" | "search" | "bell" | "plus"
@@ -173,16 +173,23 @@ export function DyeProgress({
  */
 export function DyeTile({
   glyph,
+  fallbackTitle,
   step = 2,
   size = 52,
   className = "",
 }: {
   glyph: string;
+  fallbackTitle?: string;
   step?: DyeStep;
   size?: number;
   className?: string;
 }) {
-  const fontSize = Math.max(24, Math.round(size * 0.48));
+  const displayGlyph = deckTileGlyph(glyph, fallbackTitle);
+  const charCount = Array.from(displayGlyph).length;
+  const fontSize =
+    charCount > 1
+      ? Math.max(12, Math.round(size * 0.36))
+      : Math.max(15, Math.round(size * 0.48));
   return (
     <span
       className={`dye-tile dye-${step} ${className}`.trim()}
@@ -190,7 +197,7 @@ export function DyeTile({
       lang="ja"
       aria-hidden="true"
     >
-      {glyph}
+      {displayGlyph}
     </span>
   );
 }
