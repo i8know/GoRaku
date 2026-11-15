@@ -115,15 +115,14 @@ const FEATURE_TABS = [
     label: "Kamus Yomitan & Deinflection",
     jpSub: "形態素解析・辞書検索",
     icon: "search" as IconName,
-    badge: "Lookup ~1 ms • 200k+ Entri",
-    title: "Mesin pencarian substring terpanjang & deinflection kata berkonjugasi",
+    badge: "Skema Yomitan v3 • Lokal",
+    title: "Pencarian substring terpanjang & deinflection kata berkonjugasi secara lokal",
     description:
-      "Impor kamus ZIP berformat Yomitan (seperti JMdict atau Jitendex) melalui Web Worker tanpa membekukan layar. Saat Anda mengeklik kata berkonjugasi, mesin mengurai rantai imbuhan kembali ke bentuk kamus dalam satu transaksi IndexedDB.",
+      "Impor kamus ZIP berformat Yomitan (JMdict atau Jitendex) via Web Worker bertahap dengan tombol batal dan prioritas multi-kamus di browser.",
     bullets: [
-      "Mendukung rantai konjugasi berlapis: Ichidan, Godan, Adjektiva-i, Suru, dan Kuru (ます, て/た, ない, ば, させる, られる, たい, ている)",
-      "Normalisasi bacaan Katakana ke Hiragana otomatis untuk pencarian kata berkana",
-      "Pengelompokan arti per kamus yang dapat dilipat beserta atribusi lisensi resmi (CC BY-SA 4.0)",
-      "Pencarian global instan kapan saja lewat pintasan Command Palette (Ctrl+K / ⌘K)",
+      "Mengurai konjugasi Ichidan, Godan, Adj-i, Suru, dan Kuru beserta validasi tag aturan (v1/v5/adj-i)",
+      "Normalisasi bacaan Katakana ke Hiragana otomatis dengan pengelompokan arti & atribusi CC BY-SA 4.0",
+      "Pencarian global instan kapan saja lewat Command Palette (Ctrl+K / ⌘K)",
     ],
   },
   {
@@ -150,82 +149,16 @@ const FEATURE_TABS = [
     jpSub: "階層型暗記システム",
     icon: "cards" as IconName,
     badge: "SQLite WASM • Sub-Deck N5–N1",
-    title: "Impor deck Anki (.apkg) dengan hierarki Sub-Deck N5–N1 otomatis",
+    title: "Impor paket .apkg lengkap dengan hierarki Sub-Deck N5–N1 dan media offline",
     description:
-      "Tarik berkas .apkg seperti Philia Space atau Core 10K langsung ke aplikasi. Sistem memisahkan struktur folder bertingkat (::) dan level JLPT N5–N1 menjadi sub-deck rapi sehingga Anda bebas memilih belajar N5 dulu atau N1.",
+      "Tarik berkas .apkg (Philia Space atau Core 10K) via SQLite WASM. Sistem mempartisi struktur bertingkat (::) beserta media audio dan gambar offline di IndexedDB.",
     bullets: [
-      "Mendukung format paket Anki lama (.anki2) maupun kompresi modern (.anki21b / Zstandard)",
-      "Hierarki Sub-Deck interaktif dengan penghitung 3-angka khas Anki: Baru (Biru), Belajar (Merah), Ulas (Hijau)",
-      "Sesi review interaktif dengan pintasan keyboard (Spasi & 1–4), Undo (Ctrl+Z), dan toggle Furigana",
-      "Ekspor kembali koleksi deck kapan saja ke format CSV atau JSON",
+      "Mendukung format paket Anki .anki2 maupun modern .anki21b / Zstandard beserta ekspor CSV/JSON",
+      "Hierarki Sub-Deck interaktif dengan penghitung 3-angka: Baru (新), Belajar (習), Ulas (復)",
+      "Sesi review FSRS lewat pintasan keyboard (Spasi & 1–4), Undo (Ctrl+Z), dan toggle Furigana",
     ],
   },
 ] as const;
-
-const PILLAR_CARDS: {
-  icon: IconName;
-  kanjiWatermark: string;
-  tag: string;
-  jpTag: string;
-  title: string;
-  desc: string;
-  highlights: string[];
-}[] = [
-  {
-    icon: "book",
-    kanjiWatermark: "読",
-    tag: "PEMBACA MULTI-FORMAT",
-    jpTag: "読書空間",
-    title: "Perpustakaan EPUB, TXT & Manga",
-    desc: "Simpan novel dan manga Jepang di browser, baca per halaman atau gulir, dan lanjutkan tepat dari posisi kalimat terakhir.",
-    highlights: ["Deteksi Shift_JIS & UTF-8", "Dukungan <ruby> Furigana", "Mode Yokogaki & Tategaki"],
-  },
-  {
-    icon: "search",
-    kanjiWatermark: "辞",
-    tag: "KAMUS OFFLINE",
-    jpTag: "高速辞書",
-    title: "Impor ZIP Format Yomitan",
-    desc: "Gunakan JMdict atau Jitendex secara offline. Proses impor berjalan di Web Worker per 1.000 baris dengan tombol batal.",
-    highlights: ["Skema Yomitan v3", "Prioritas Multi-Kamus", "Lookup ~1 milidetik"],
-  },
-  {
-    icon: "sparkle",
-    kanjiWatermark: "態",
-    tag: "MORFOLOGI JEPANG",
-    jpTag: "活用分解",
-    title: "Deinflection Berlapis",
-    desc: "Mengenali perubahan kata kerja dan kata sifat hingga rantai 4 lapis dan memvalidasinya terhadap aturan kamus.",
-    highlights: ["Ichidan, Godan, Adj-i", "Kausatif-Pasif-Negatif", "Validasi Tag Aturan (v1/v5)"],
-  },
-  {
-    icon: "mine",
-    kanjiWatermark: "掘",
-    tag: "SENTENCE MINING",
-    jpTag: "文脈採掘",
-    title: "1-Click Popup & Studio Teks",
-    desc: "Klik kata di novel, pindai balon dialog manga, atau gunakan Studio Teks untuk membuat kartu lengkap dengan kalimat sumber.",
-    highlights: ["Dialog 「...」 Tidak Terpotong", "Deteksi Kartu Ganda", "Audio Pengucapan ja-JP"],
-  },
-  {
-    icon: "cards",
-    kanjiWatermark: "層",
-    tag: "REVOLUSI ANKI",
-    jpTag: "階層構造",
-    title: "Impor .apkg & Sub-Deck N5–N1",
-    desc: "Bawa masuk deck Anki lengkap dengan hierarki sub-deck bertingkat (Philia Space / Core 10K) dan media audio/gambar offline.",
-    highlights: ["Sub-Deck N5 hingga N1", "Format .anki2 & .anki21b", "3 Indikator Baru/Belajar/Ulas"],
-  },
-  {
-    icon: "lock",
-    kanjiWatermark: "密",
-    tag: "ARSITEKTUR PRIVASI",
-    jpTag: "完全ローカル",
-    title: "100% Local-First di Browser",
-    desc: "Tanpa backend server. Seluruh berkas novel, kamus, hasil ujian JLPT, dan jadwal kartu disimpan aman di IndexedDB perangkat Anda.",
-    highlights: ["Tanpa Upload ke Server", "Bekerja Tanpa Internet", "Isolasi Data Pengguna"],
-  },
-];
 
 const SUBDECK_DEMO_TREE = [
   { id: "n5", code: "N5", title: "Kotoba N5 (Dasar)", kanji: "五", newCount: 15, learnCount: 2, dueCount: 10, total: 100, sample: "食べる • 行く • 美味しい • 水" },
@@ -559,15 +492,15 @@ export default function LandingPage() {
                 <Link
                   to={user ? "/beranda" : "/login"}
                   className="primary-light no-underline"
-                  style={{ padding: "12px 22px", fontSize: "13px" }}
+                  style={{ padding: "12px 22px", fontSize: "16px" }}
                 >
                   {user ? "Lanjutkan di Dashboard" : "Mulai Belajar Sekarang"}
                 </Link>
                 <a
                   href="#eksplorer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--kon)] hover:text-[var(--ai)] underline underline-offset-4 py-2"
+                  className="inline-flex items-center gap-1.5 text-base font-semibold text-[var(--kon)] hover:text-[var(--ai)] underline underline-offset-4 py-2"
                 >
-                  Lihat cara kerjanya <Icon name="arrow" size={14} />
+                  Lihat cara kerjanya <Icon name="arrow" size={16} />
                 </a>
               </div>
             </div>
@@ -575,11 +508,8 @@ export default function LandingPage() {
         </div>
 
         {/* RIGHT: PANEL KAIN (BOKASHI + SEIGAIHA) & BUNKOBON LIVE SIMULATOR */}
-        <div className="landing-fabric-panel w-full">
+        <div className="landing-fabric-panel w-full" data-glyph="読">
           <div className="landing-fabric-panel__seigaiha motif-seigaiha" aria-hidden="true" />
-          <span lang="ja" className="landing-fabric-panel__glyph" aria-hidden="true">
-            読
-          </span>
           <div
             className="landing-bunko-overlap rounded-lg border shadow-xl overflow-hidden transition-colors"
             style={{
@@ -596,7 +526,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-2 min-w-0">
                 <span
                   lang="ja"
-                  className="rounded border px-2 py-0.5 text-[10px] font-serif font-bold shrink-0"
+                  className="rounded border px-2 py-0.5 text-xs font-serif font-bold shrink-0"
                   style={{
                     color: readerThemeStyle.accent,
                     borderColor: readerThemeStyle.border,
@@ -615,7 +545,7 @@ export default function LandingPage() {
                   type="button"
                   onClick={() => setHeroFurigana((v) => !v)}
                   aria-pressed={heroFurigana}
-                  className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-[10.5px] font-bold transition-colors cursor-pointer"
+                  className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
                   style={
                     heroFurigana
                       ? {
@@ -646,7 +576,7 @@ export default function LandingPage() {
                       type="button"
                       onClick={() => setHeroTheme(t.id)}
                       aria-pressed={active}
-                      className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-[10.5px] font-serif transition-colors cursor-pointer"
+                      className="rounded-md border px-2.5 min-h-[32px] inline-flex items-center justify-center text-xs font-serif transition-colors cursor-pointer"
                       style={
                         active
                           ? {
@@ -671,26 +601,26 @@ export default function LandingPage() {
 
             {/* Bunkobon Excerpt Area with Tategaki Spine Margin */}
             <div
-              className="p-5 border-b flex gap-4 items-stretch"
+              className="p-4 border-b flex gap-4 items-stretch"
               style={{ borderColor: readerThemeStyle.border }}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <span
-                    className="text-[10px] font-bold uppercase tracking-wider"
+                    className="text-xs font-bold uppercase tracking-[0.06em]"
                     style={{ color: readerThemeStyle.accent }}
                   >
                     Ketuk kata bergaris bawah untuk membedah morfologi:
                   </span>
                   <span
-                    className="text-[10px] font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1"
+                    className="text-xs font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1"
                     style={{ background: readerThemeStyle.badgeBg, color: readerThemeStyle.sub }}
                   >
-                    <Icon name="mine" size={11} /> {minedCount} kartu ditambang
+                    <Icon name="mine" size={12} /> {minedCount} kartu ditambang
                   </span>
                 </div>
 
-                <p lang="ja" className="text-[16.5px] leading-[2.2] font-serif select-none m-0">
+                <p lang="ja" className="text-base leading-[2.1] font-serif select-none m-0">
                   「今日はとても
                   <button
                     type="button"
@@ -703,7 +633,7 @@ export default function LandingPage() {
                   >
                     {heroFurigana ? (
                       <ruby>
-                        美味<rt className="text-[9px]">おい</rt>しかった
+                        美味<rt className="text-xs">おい</rt>しかった
                       </ruby>
                     ) : (
                       "美味しかった"
@@ -721,7 +651,7 @@ export default function LandingPage() {
                   >
                     {heroFurigana ? (
                       <ruby>
-                        食<rt className="text-[9px]">た</rt>べさせられなかった
+                        食<rt className="text-xs">た</rt>べさせられなかった
                       </ruby>
                     ) : (
                       "食べさせられなかった"
@@ -739,7 +669,7 @@ export default function LandingPage() {
                   >
                     {heroFurigana ? (
                       <ruby>
-                        勉強<rt className="text-[9px]">べんきょう</rt>している
+                        勉強<rt className="text-xs">べんきょう</rt>している
                       </ruby>
                     ) : (
                       "勉強している"
@@ -757,7 +687,7 @@ export default function LandingPage() {
                   >
                     {heroFurigana ? (
                       <ruby>
-                        行<rt className="text-[9px]">い</rt>かなかった
+                        行<rt className="text-xs">い</rt>かなかった
                       </ruby>
                     ) : (
                       "行かなかった"
@@ -781,25 +711,25 @@ export default function LandingPage() {
 
             {/* Yomitan + Deinflection + Sub-deck Mining Inspector */}
             <div className="p-4 bg-[var(--tsuki)] text-[var(--tinta)]">
-              <div className="flex items-start justify-between gap-2 mb-2.5">
+              <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span lang="ja" className="text-xs font-bold text-[var(--ai)]">
                       {activeToken.reading}
                     </span>
-                    <span className="rounded bg-[var(--kon)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--kon)]">
+                    <span className="rounded bg-[var(--kon)]/10 px-2 py-0.5 text-xs font-bold text-[var(--kon)]">
                       {activeToken.pos} • {activeToken.jlpt}
                     </span>
                     <span
                       lang="ja"
-                      className="rounded border border-[var(--garis)] bg-[var(--panel)] px-1.5 py-0.5 text-[9.5px] font-mono text-[var(--tinta-2)]"
+                      className="rounded border border-[var(--garis)] bg-[var(--panel)] px-1.5 py-0.5 text-xs font-mono text-[var(--tinta-2)]"
                       title="Pola Pitch Accent Bahasa Jepang"
                     >
                       高低: {activeToken.pitch}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <strong lang="ja" className="text-2xl font-serif font-bold text-[var(--tinta)]">
+                    <strong lang="ja" className="text-base font-serif font-bold text-[var(--kon)]">
                       {activeToken.dictionaryForm}
                     </strong>
                     <button
@@ -814,41 +744,41 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] px-2.5 py-1.5 text-right">
-                  <div lang="ja" className="text-[11px] font-bold text-[var(--kon)]">
+                <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-right">
+                  <div lang="ja" className="text-xs font-bold text-[var(--kon)]">
                     {activeToken.surface} → {activeToken.dictionaryForm}
                   </div>
-                  <small className="block text-[9.5px] text-[var(--tinta-2)] mt-0.5">
+                  <small className="block text-xs text-[var(--tinta-2)] mt-0.5">
                     {activeToken.reasons.join(" ← ")}
                   </small>
                 </div>
               </div>
 
-              <p className="text-xs text-[var(--tinta)] mb-2.5 font-medium">
+              <p className="text-base text-[var(--tinta)] mb-2 font-medium leading-snug">
                 <strong>JMdict (CC BY-SA 4.0):</strong> {activeToken.meaning}
               </p>
 
               {/* Extracted Context Sentence Box */}
-              <div className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-2.5 mb-3">
-                <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-[var(--tinta-2)] mb-1">
+              <div className="rounded-xl border border-[var(--garis)] bg-[var(--panel)] p-2.5 mb-2.5">
+                <div className="flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.06em] text-[var(--tinta-2)] mb-1">
                   <span>Kalimat Konteks Otomatis (Tag &lt;b&gt; Utuh)</span>
                   <button
                     type="button"
                     onClick={() => speakJapanese(activeToken.sentencePlain)}
-                    className="min-h-[32px] px-2 -my-1 rounded-md text-[var(--ai)] hover:bg-[var(--tsuki)] hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+                    className="min-h-[32px] px-2 -my-1 rounded-md text-xs font-bold text-[var(--ai)] hover:bg-[var(--tsuki)] hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer shrink-0 normal-case"
                   >
                     <Icon name="volume" size={12} /> Putar Kalimat
                   </button>
                 </div>
                 <p
                   lang="ja"
-                  className="text-xs leading-relaxed text-[var(--tinta)] m-0 font-serif"
+                  className="text-base leading-relaxed text-[var(--tinta)] m-0 font-serif"
                   dangerouslySetInnerHTML={{ __html: activeToken.sentenceHtml }}
                 />
               </div>
 
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-[10.5px] text-[var(--tinta-2)] flex items-center gap-1.5">
+                <span className="text-xs text-[var(--tinta-2)] flex items-center gap-1.5">
                   <Icon name="cards" size={13} /> Sub-deck Tujuan:{" "}
                   <strong className="text-[var(--kon)]">{activeToken.targetSubdeck}</strong>
                 </span>
@@ -860,9 +790,9 @@ export default function LandingPage() {
                       [activeToken.id]: true,
                     }))
                   }
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 min-h-[36px] text-xs font-bold text-white transition-colors cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 min-h-[36px] text-base font-bold text-white transition-colors cursor-pointer ${
                     minedMap[activeToken.id]
-                      ? "bg-[var(--ok)]"
+                      ? "bg-[var(--ai-tua)]"
                       : "bg-[var(--kon)] hover:bg-[var(--ai-tua)]"
                   }`}
                 >
@@ -878,30 +808,30 @@ export default function LandingPage() {
       </section>
 
       {/* REVOLUSI SUB-DECK ANKI & LATIHAN UJIAN JLPT (INTERACTIVE SHOWCASE) */}
-      <section id="subdeck-jlpt" className="landing-section" style={{ paddingTop: "32px", paddingBottom: "56px" }}>
+      <section id="subdeck-jlpt" className="landing-section">
         {/* Pita JLPT Bokashi + Seigaiha */}
-        <div className="landing-jlpt-ribbon mb-8">
+        <div className="landing-jlpt-ribbon mb-5">
           <div className="landing-jlpt-ribbon__seigaiha motif-seigaiha" aria-hidden="true" />
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="max-w-xl">
-              <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[var(--mizu)] m-0 mb-1.5">
+              <p className="text-xs font-bold tracking-[0.06em] uppercase text-[var(--mizu)] m-0 mb-1">
                 階層デッキ • HIERARKI DECK &amp; LATIHAN BERJENJANG
               </p>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold text-white m-0 mb-2">
+              <h2 className="text-2xl font-serif font-bold text-white m-0 mb-1.5">
                 Sub-Deck Anki N5–N1 &amp; Latihan Ujian Berjenjang
               </h2>
-              <p className="text-xs sm:text-sm text-white/85 m-0 leading-relaxed">
-                Buka deck induk untuk memunculkan sub-deck per tingkat JLPT. Seluruh paket soal di bawah adalah <strong>latihan orisinal, bukan soal resmi JLPT</strong>, disusun mengikuti struktur tiga bagian evaluasi untuk menguji penguasaan kosakata, tata bahasa, dan pendengaran secara bertahap.
+              <p className="text-sm text-white/90 m-0 leading-relaxed">
+                Buka deck induk untuk memunculkan sub-deck per tingkat JLPT. Seluruh paket soal di bawah adalah <strong>latihan orisinal, bukan soal resmi JLPT</strong>, disusun mengikuti tiga bagian evaluasi bertahap.
               </p>
             </div>
             <div className="grid grid-cols-5 gap-2 shrink-0">
               {(["N5", "N4", "N3", "N2", "N1"] as const).map((lvl) => (
                 <div
                   key={lvl}
-                  className="flex flex-col items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-2 backdrop-blur-xs"
+                  className="flex flex-col items-center gap-1 rounded-md border border-white/15 bg-white/10 px-2 py-1.5 backdrop-blur-xs"
                 >
-                  <DyeTile step={jlptDyeStep(lvl)} glyph={lvl} size={36} />
-                  <span className="text-[10px] font-mono font-semibold text-white/90">
+                  <DyeTile step={jlptDyeStep(lvl)} glyph={lvl} size={32} />
+                  <span className="text-xs font-mono font-semibold text-white/90">
                     {lvl === "N5" ? "Dasar" : lvl === "N4" ? "Pemula" : lvl === "N3" ? "Menengah" : lvl === "N2" ? "Lanjut" : "Mahir"}
                   </span>
                 </div>
@@ -910,19 +840,19 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* LEFT CARD: Interactive Anki Sub-Deck Hierarchy Demo */}
-          <div className="lg:col-span-7 jp-koushi-frame p-6">
-            <div className="flex items-center justify-between gap-2 flex-wrap mb-4 pb-3 border-b border-[var(--garis)]">
+          <div className="lg:col-span-7 jp-koushi-frame p-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-3 pb-2.5 border-b border-[var(--garis)]">
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)]">
+                <span className="text-xs font-bold tracking-[0.06em] uppercase text-[var(--ai)]">
                   階層デッキ • MULTI-LEVEL ANKI TREE
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
+                <h3 className="text-sm font-serif font-bold text-[var(--kon)] m-0 mt-0.5">
                   Tekan Deck Induk → Muncul Sub-Deck (N5–N1)
                 </h3>
               </div>
-              <div className="flex items-center gap-3 text-[11px] font-mono">
+              <div className="flex items-center gap-3 text-xs font-mono">
                 <span className="text-[var(--kon)] font-semibold">新 Baru</span>
                 <span className="text-[var(--ai-tua)] font-semibold">習 Belajar</span>
                 <span className="text-[var(--ai)] font-semibold">復 Ulas</span>
@@ -936,7 +866,7 @@ export default function LandingPage() {
                 aria-expanded={demoParentOpen}
                 aria-controls="demo-subdeck-rows"
                 onClick={() => setDemoParentOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left bg-[var(--kon)] text-white cursor-pointer transition-colors hover:bg-[var(--ai-tua)]"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 text-left bg-[var(--kon)] text-white cursor-pointer transition-colors hover:bg-[var(--ai-tua)]"
               >
                 <div className="flex items-center gap-2.5">
                   <Icon name={demoParentOpen ? "chevron-up" : "chevron-down"} size={15} />
@@ -944,17 +874,17 @@ export default function LandingPage() {
                     宙
                   </span>
                   <div>
-                    <strong className="text-xs sm:text-sm font-serif block">
+                    <strong className="text-sm font-serif block">
                       Philia Space ▸ Bahasa Indonesia
                     </strong>
-                    <small className="text-[10px] text-white/80">
+                    <small className="text-xs text-white/85">
                       {demoParentOpen ? "Tekan untuk menutup cabang sub-deck" : "Tekan untuk membuka 6 sub-deck (N5–N1 & Core 10K)"}
                     </small>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 font-mono text-xs">
+                <div className="flex items-center gap-2.5 font-mono text-xs shrink-0">
                   <span className="text-white/90">新 40</span>
-                  <span className="text-white/80">習 18</span>
+                  <span className="text-white/85">習 18</span>
                   <span className="text-[var(--mizu)] font-bold">復 258</span>
                 </div>
               </button>
@@ -969,22 +899,22 @@ export default function LandingPage() {
                         type="button"
                         aria-pressed={isSelected}
                         onClick={() => setSelectedSubdeckId(sub.id)}
-                        className={`w-full text-left flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors text-xs ${
+                        className={`w-full text-left flex items-center justify-between px-3.5 py-1.5 cursor-pointer transition-colors text-sm ${
                           isSelected ? "bg-[var(--tsuki)] font-semibold" : "hover:bg-[var(--tsuki)]"
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0 pl-2">
+                        <div className="flex items-center gap-2 min-w-0 pl-1">
                           <span className="font-mono text-[var(--teks-redup)] text-xs">
                             {i === SUBDECK_DEMO_TREE.length - 1 ? "└─" : "├─"}
                           </span>
-                          <DyeTile step={jlptDyeStep(sub.code)} glyph={sub.kanji} size={26} />
+                          <DyeTile step={jlptDyeStep(sub.code)} glyph={sub.kanji} size={24} className="dye-tile-mini" />
                           <span className="truncate text-[var(--tinta)]">{sub.title}</span>
-                          <span className="rounded border border-[var(--garis)] bg-[var(--kertas-2)] px-1.5 py-0.5 text-[9.5px] font-bold text-[var(--kon)]">
+                          <span className="rounded border border-[var(--garis)] bg-[var(--kertas-2)] px-1.5 py-0.5 text-xs font-bold text-[var(--kon)]">
                             {sub.code}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
+                        <div className="flex items-center gap-2.5 shrink-0 font-mono text-xs">
                           <span className={sub.newCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}>
                             新 {sub.newCount}
                           </span>
@@ -1000,12 +930,12 @@ export default function LandingPage() {
                   })}
                 </div>
               ) : (
-                <div id="demo-subdeck-rows" className="px-4 py-3 text-xs text-[var(--tinta-2)] bg-[var(--panel)] flex items-center justify-between gap-2">
-                  <span>Sub-deck disembunyikan — ukuran daftar tetap ringkas dan terorganisir.</span>
+                <div id="demo-subdeck-rows" className="px-3.5 py-2.5 text-sm text-[var(--tinta-2)] bg-[var(--panel)] flex items-center justify-between gap-2">
+                  <span>Sub-deck disembunyikan — daftar tetap ringkas.</span>
                   <button
                     type="button"
                     onClick={() => setDemoParentOpen(true)}
-                    className="min-h-[32px] px-2 font-bold text-[var(--ai)] hover:underline inline-flex items-center shrink-0 cursor-pointer"
+                    className="min-h-[32px] px-2 text-xs font-bold text-[var(--ai)] hover:underline inline-flex items-center shrink-0 cursor-pointer"
                   >
                     Buka Sub-deck ▾
                   </button>
@@ -1014,18 +944,18 @@ export default function LandingPage() {
             </div>
 
             {/* Selected Subdeck Quick Detail */}
-            <div className="mt-3.5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-3.5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="mt-3 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-3 flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--tinta-2)] block">
+                <span className="text-xs font-bold uppercase tracking-[0.06em] text-[var(--tinta-2)] block">
                   Sub-Deck Terpilih: {activeSubdeck.title} ({activeSubdeck.total} kartu)
                 </span>
-                <p lang="ja" className="text-xs font-serif text-[var(--tinta)] m-0 mt-0.5">
+                <p lang="ja" className="text-sm font-serif text-[var(--tinta)] m-0 mt-0.5">
                   Contoh kosakata: <strong>{activeSubdeck.sample}</strong>
                 </p>
               </div>
               <Button
                 className="btn-kon"
-                style={{ padding: "8px 14px", fontSize: "11px" }}
+                style={{ padding: "8px 14px", fontSize: "14px" }}
                 onClick={() => navigate(user ? "/deck" : "/login")}
               >
                 {user ? "Buka Koleksi Deck" : "Masuk untuk Buka Deck"} <Icon name="arrow" size={14} />
@@ -1034,23 +964,23 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT CARD: Original JLPT Practice Exam Preview */}
-          <div className="lg:col-span-5 jp-koushi-frame p-6">
-            <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[var(--garis)]">
+          <div className="lg:col-span-5 jp-koushi-frame p-4">
+            <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-[var(--garis)]">
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--kon)]">
+                <span className="text-xs font-bold tracking-[0.06em] uppercase text-[var(--kon)]">
                   模擬練習 • LATIHAN UJIAN ORISINAL
                 </span>
-                <h3 className="text-lg font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
+                <h3 className="text-sm font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
                   Format 3 Bagian &amp; Mondai Interaktif
                 </h3>
               </div>
-              <span lang="ja" className="rounded border border-[var(--kon)] px-2 py-0.5 text-[10px] font-serif font-bold text-[var(--kon)]">
+              <span lang="ja" className="rounded border border-[var(--kon)] px-2 py-0.5 text-xs font-serif font-bold text-[var(--kon)]">
                 N5–N1
               </span>
             </div>
 
             {/* 3 Section Pills */}
-            <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+            <div className="grid grid-cols-3 gap-2 mb-3 text-center">
               {[
                 { sec: "Bagian 1", jp: "文字・語彙", sub: "Kosakata & Kanji" },
                 { sec: "Bagian 2", jp: "文法・読解", sub: "Tata Bahasa" },
@@ -1060,24 +990,24 @@ export default function LandingPage() {
                   key={part.sec}
                   className="rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-2"
                 >
-                  <small className="block text-[9px] font-bold uppercase text-[var(--tinta-2)]">
+                  <small className="block text-xs font-bold uppercase tracking-[0.04em] text-[var(--tinta-2)]">
                     {part.sec}
                   </small>
-                  <strong lang="ja" className="font-serif text-xs text-[var(--kon)] block">
+                  <strong lang="ja" className="font-serif text-sm text-[var(--kon)] block">
                     {part.jp}
                   </strong>
-                  <span className="text-[9.5px] text-[var(--tinta-2)]">{part.sub}</span>
+                  <span className="text-xs text-[var(--tinta-2)]">{part.sub}</span>
                 </div>
               ))}
             </div>
 
             {/* Interactive Mini Mondai Question */}
-            <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-4">
-              <div className="flex items-center justify-between text-[10px] font-bold text-[var(--tinta-2)] mb-2">
+            <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-3.5">
+              <div className="flex items-center justify-between text-xs font-bold text-[var(--tinta-2)] mb-1.5">
                 <span>CONTOH LATIHAN ORISINAL • LEVEL N5 (PARTIKEL)</span>
                 <span lang="ja" className="text-[var(--ai)]">問題 1</span>
               </div>
-              <p lang="ja" className="text-base font-serif font-semibold text-[var(--tinta)] mb-3">
+              <p lang="ja" className="text-sm font-serif font-semibold text-[var(--tinta)] mb-2.5">
                 毎朝、新鮮な水（　★　）飲みます。
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -1105,15 +1035,15 @@ export default function LandingPage() {
               </div>
 
               {demoExamChoice !== null && (
-                <div className="mt-3 pt-2.5 border-t border-[var(--garis)] text-[11px] text-[var(--tinta)]">
+                <div className="mt-2.5 pt-2 border-t border-[var(--garis)] text-sm text-[var(--tinta)]">
                   {demoExamChoice === 0 ? (
                     <span className="text-[var(--kon)] font-bold inline-flex items-center gap-1.5">
-                      <Icon name="check" size={13} className="shrink-0" />
+                      <Icon name="check" size={14} className="shrink-0" />
                       <span>Benar! Partikel 「を」 menandai objek langsung dari kata kerja transitif 飲みます.</span>
                     </span>
                   ) : (
                     <span className="text-[var(--tinta-2)] font-semibold inline-flex items-center gap-1.5">
-                      <Icon name="close" size={13} className="shrink-0 text-[var(--kon)]" />
+                      <Icon name="close" size={14} className="shrink-0 text-[var(--kon)]" />
                       <span>Kurang tepat. Jawaban yang benar adalah 1 (を) sebagai penanda objek langsung.</span>
                     </span>
                   )}
@@ -1121,13 +1051,13 @@ export default function LandingPage() {
               )}
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
-              <span className="text-[11px] text-[var(--tinta-2)]">
-                Soal latihan orisinal (bukan soal resmi JLPT) untuk level N5–N1 dengan timer per bagian.
+            <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-xs text-[var(--tinta-2)]">
+                Soal latihan orisinal (bukan soal resmi JLPT) untuk N5–N1 dengan timer.
               </span>
               <Button
                 className="outline-button"
-                style={{ padding: "8px 14px", fontSize: "11px" }}
+                style={{ padding: "8px 14px", fontSize: "14px" }}
                 onClick={() => navigate(user ? "/exam" : "/login")}
               >
                 {user ? "Halaman Latihan" : "Masuk untuk Latihan"} <Icon name="arrow" size={14} />
@@ -1137,69 +1067,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4 MODUL INTI & INTERACTIVE FEATURE EXPLORER */}
-      <section id="eksplorer" className="landing-section" style={{ paddingTop: "32px", paddingBottom: "56px" }}>
-        <div className="section-heading" style={{ marginBottom: "24px" }}>
+      {/* EMPAT MODUL INTI, EXPLORER INTERAKTIF & ARSITEKTUR LOKAL (#eksplorer + #fitur) */}
+      <section id="eksplorer" className="landing-section">
+        <div className="section-heading">
           <div>
-            <p className="eyebrow" style={{ margin: "0 0 6px" }}>EMPAT MODUL INTI</p>
+            <p className="eyebrow">EMPAT MODUL &amp; ARSITEKTUR LOKAL</p>
             <h2>Bagaimana setiap modul 語楽 bekerja untukmu?</h2>
           </div>
-          <p className="text-xs text-[var(--tinta-2)] max-w-md">
-            Empat modul yang saling terhubung dari membaca teks asli hingga pengulangan berjarak FSRS.
+          <p className="text-sm text-[var(--tinta-2)] max-w-md m-0">
+            Empat modul terhubung dari membaca teks asli hingga pengulangan berjarak FSRS — seluruhnya berjalan lokal di browser.
           </p>
-        </div>
-
-        {/* 4 Kolom Berborder dengan Glif 読, 漫, 辞, 復 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-[var(--garis)] bg-[var(--panel)] mb-8">
-          {[
-            {
-              glyph: "読",
-              title: "Pembaca EPUB & TXT",
-              sentence: "Baca novel Jepang dalam mode horizontal atau vertikal lengkap dengan furigana dan kamus klik langsung.",
-            },
-            {
-              glyph: "漫",
-              title: "Pembaca Manga & OCR",
-              sentence: "Buka arsip CBZ/CBR dan pindai balon dialog vertikal maupun horizontal untuk menambang kosakata.",
-            },
-            {
-              glyph: "辞",
-              title: "Kamus Yomitan & Deinflection",
-              sentence: "Urai konjugasi kata kerja dan kata sifat berlapis ke bentuk kamus dalam satu ketukan secara lokal.",
-            },
-            {
-              glyph: "復",
-              title: "Penjadwal FSRS & Sub-Deck",
-              sentence: "Jadwalkan ulang kartu baru dan ulasan harian dengan algoritma FSRS pada hierarki sub-deck Anki.",
-            },
-          ].map((m) => (
-            <div
-              key={m.glyph}
-              className="border-r border-b border-[var(--garis)] p-5 flex flex-col justify-between gap-3"
-            >
-              <div>
-                <span
-                  lang="ja"
-                  className="inline-grid place-items-center w-9 h-9 rounded border border-[var(--garis)] bg-[var(--kertas-2)] font-serif text-lg font-bold text-[var(--kon)] mb-3"
-                >
-                  {m.glyph}
-                </span>
-                <h3 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mb-1.5">
-                  {m.title}
-                </h3>
-                <p className="text-xs text-[var(--tinta-2)] leading-relaxed m-0">
-                  {m.sentence}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Tab Buttons */}
         <div
           role="tablist"
           aria-label="4 Modul Inti GoRaku"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4"
         >
           {FEATURE_TABS.map((tab) => {
             const isOn = tab.id === activeTabId;
@@ -1212,28 +1096,28 @@ export default function LandingPage() {
                 aria-selected={isOn}
                 aria-controls="explorer-tabpanel"
                 onClick={() => setActiveTabId(tab.id)}
-                className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition-colors cursor-pointer ${
+                className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors cursor-pointer ${
                   isOn
                     ? "border-[var(--kon)] bg-[var(--kon)] text-white"
                     : "border-[var(--garis)] bg-[var(--panel)] text-[var(--tinta)] hover:border-[var(--ai)]"
                 }`}
               >
                 <span
-                  className={`w-9 h-9 rounded grid place-items-center shrink-0 ${
+                  className={`w-8 h-8 rounded grid place-items-center shrink-0 ${
                     isOn ? "bg-white/15 text-white" : "bg-[var(--tsuki)] text-[var(--ai)]"
                   }`}
                 >
-                  <Icon name={tab.icon} size={18} />
+                  <Icon name={tab.icon} size={17} />
                 </span>
                 <div className="min-w-0">
-                  <strong className="block text-xs truncate">{tab.label}</strong>
+                  <strong className="block text-sm truncate">{tab.label}</strong>
                   <small
                     lang="ja"
-                    className={`block text-[10px] truncate mt-0.5 ${
+                    className={`block text-xs truncate mt-0.5 ${
                       isOn ? "text-[var(--mizu)]" : "text-[var(--tinta-2)]"
                     }`}
                   >
-                    {tab.jpSub} • {tab.badge}
+                    {tab.jpSub}
                   </small>
                 </div>
               </button>
@@ -1248,53 +1132,54 @@ export default function LandingPage() {
             id="explorer-tabpanel"
             role="tabpanel"
             aria-labelledby={`tab-${activeTab.id}`}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="jp-koushi-frame p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="jp-koushi-frame p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center"
           >
-            <div className="lg:col-span-7 space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="inline-block rounded bg-[var(--tsuki)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ai)]">
+            <div className="lg:col-span-7 space-y-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-block rounded bg-[var(--tsuki)] px-2.5 py-0.5 text-xs font-bold uppercase tracking-[0.06em] text-[var(--ai)]">
                   {activeTab.badge}
                 </span>
                 <span lang="ja" className="text-xs font-serif text-[var(--tinta-2)]">
                   〔 {activeTab.jpSub} 〕
                 </span>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-[var(--tinta)] leading-snug">
+              <h3 className="text-sm font-serif font-bold text-[var(--kon)] leading-snug m-0">
                 {activeTab.title}
               </h3>
-              <p className="text-xs sm:text-sm text-[var(--tinta-2)] leading-relaxed">
+              <p className="text-sm text-[var(--tinta-2)] leading-relaxed m-0">
                 {activeTab.description}
               </p>
-              <ul className="space-y-2.5 pt-1">
+              <ul className="space-y-1.5 pt-1 m-0 pl-0 list-none">
                 {activeTab.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs text-[var(--tinta)]">
-                    <span className="w-5 h-5 rounded-full bg-[var(--kon)] text-white grid place-items-center shrink-0 mt-0.5">
-                      <Icon name="check" size={12} />
+                  <li key={i} className="flex items-start gap-2 text-sm text-[var(--tinta)]">
+                    <span className="w-4 h-4 rounded-full bg-[var(--kon)] text-white grid place-items-center shrink-0 mt-1">
+                      <Icon name="check" size={11} />
                     </span>
-                    <span className="leading-relaxed">{b}</span>
+                    <span className="leading-snug">{b}</span>
                   </li>
                 ))}
               </ul>
-              <div className="pt-2">
+              <div className="pt-1">
                 <Button
                   className="btn-kon"
+                  style={{ fontSize: "14px", padding: "8px 16px" }}
                   onClick={() => navigate(user ? "/beranda" : "/login")}
                 >
-                  {user ? "Buka Fitur di Dashboard" : "Masuk untuk Mencoba Fitur"} <Icon name="arrow" size={16} />
+                  {user ? "Buka Fitur di Dashboard" : "Masuk untuk Mencoba Fitur"} <Icon name="arrow" size={15} />
                 </Button>
               </div>
             </div>
 
             {/* Interactive Visual Preview per Tab */}
-            <div className="lg:col-span-5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-5">
+            <div className="lg:col-span-5 rounded-lg border border-[var(--garis)] bg-[var(--tsuki)] p-4">
               {activeTab.id === "reader" && (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-[11px] font-bold text-[var(--kon)]">
+                    <span className="text-xs font-bold text-[var(--kon)]">
                       Pratinjau Mode Teks Pembaca
                     </span>
                     <div className="flex gap-1.5">
@@ -1302,7 +1187,7 @@ export default function LandingPage() {
                         type="button"
                         aria-pressed={previewWritingMode === "horizontal-tb"}
                         onClick={() => setPreviewWritingMode("horizontal-tb")}
-                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-[10px] font-bold transition-colors cursor-pointer ${
+                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-xs font-bold transition-colors cursor-pointer ${
                           previewWritingMode === "horizontal-tb"
                             ? "bg-[var(--kon)] text-white"
                             : "bg-[var(--panel)] text-[var(--tinta)] border border-[var(--garis)]"
@@ -1314,7 +1199,7 @@ export default function LandingPage() {
                         type="button"
                         aria-pressed={previewWritingMode === "vertical-rl"}
                         onClick={() => setPreviewWritingMode("vertical-rl")}
-                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-[10px] font-bold transition-colors cursor-pointer ${
+                        className={`rounded-md px-2.5 min-h-[32px] inline-flex items-center text-xs font-bold transition-colors cursor-pointer ${
                           previewWritingMode === "vertical-rl"
                             ? "bg-[var(--kon)] text-white"
                             : "bg-[var(--panel)] text-[var(--tinta)] border border-[var(--garis)]"
@@ -1326,10 +1211,10 @@ export default function LandingPage() {
                   </div>
                   <div
                     lang="ja"
-                    className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-4 font-serif text-base leading-loose min-h-[160px] flex items-center justify-center"
+                    className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-3.5 font-serif text-sm leading-loose min-h-[132px] flex items-center justify-center"
                     style={{
                       writingMode: previewWritingMode,
-                      maxHeight: "200px",
+                      maxHeight: "172px",
                     }}
                   >
                     <p className="m-0">
@@ -1359,35 +1244,35 @@ export default function LandingPage() {
                       がつかぬ。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[var(--tinta-2)]">
-                    Tag <code>&lt;rt&gt;</code> furigana otomatis diabaikan saat pemindaian kamus agar kata dasar kanji tetap ditemukan secara presisi.
+                  <p className="text-sm text-[var(--tinta-2)] m-0 leading-relaxed">
+                    Tag <code>&lt;rt&gt;</code> furigana otomatis diabaikan saat pencarian kamus agar kata dasar kanji tetap tepat.
                   </p>
                 </div>
               )}
 
               {activeTab.id === "dictionary" && (
-                <div className="space-y-3">
-                  <div className="text-[11px] font-bold text-[var(--kon)]">
+                <div className="space-y-2">
+                  <div className="text-xs font-bold text-[var(--kon)]">
                     Alur Deinflection &amp; Lookup Tunggal
                   </div>
-                  <div className="space-y-2 text-xs">
+                  <div className="space-y-1.5 text-sm">
                     {[
-                      { step: "Input Klik di Novel", val: "食べさせられなかった", note: "10 karakter" },
+                      { step: "Input Klik di Novel", val: "食べさせられなかった", note: "Bentuk turunan" },
                       { step: "1. Kupas Negatif Lampau", val: "食べさせられる", note: "-なかった → -る" },
                       { step: "2. Kupas Pasif/Potensial", val: "食べさせる", note: "-られる → -る" },
                       { step: "3. Kupas Kausatif & Validasi v1", val: "食べる 【たべる】", note: "Cocok di JMdict!" },
                     ].map((row, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-3 py-2"
+                        className="flex items-center justify-between rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-3 py-1.5 gap-2"
                       >
                         <div>
-                          <span className="text-[10px] text-[var(--tinta-2)] block">{row.step}</span>
+                          <span className="text-xs text-[var(--tinta-2)] block">{row.step}</span>
                           <strong lang="ja" className="font-serif text-sm text-[var(--tinta)]">
                             {row.val}
                           </strong>
                         </div>
-                        <span className="rounded bg-[var(--tsuki)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)]">
+                        <span className="rounded bg-[var(--tsuki)] px-2 py-0.5 text-xs font-bold text-[var(--ai)] shrink-0">
                           {row.note}
                         </span>
                       </div>
@@ -1397,42 +1282,42 @@ export default function LandingPage() {
               )}
 
               {activeTab.id === "mining" && (
-                <div className="space-y-3 text-xs">
-                  <div className="text-[11px] font-bold text-[var(--kon)]">
+                <div className="space-y-2.5 text-sm">
+                  <div className="text-xs font-bold text-[var(--kon)]">
                     Perbandingan Ekstraksi Kalimat Dialog
                   </div>
-                  <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-3">
-                    <span className="text-[10px] font-bold text-[var(--teks-redup)] uppercase inline-flex items-center gap-1 mb-1">
-                      <Icon name="close" size={12} /> Pemisah Titik/Tanda Seru Biasa (Terpotong)
+                  <div className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-2.5">
+                    <span className="text-xs font-bold text-[var(--teks-redup)] uppercase tracking-[0.06em] inline-flex items-center gap-1 mb-1">
+                      <Icon name="close" size={12} /> Pemisah Biasa (Terpotong)
                     </span>
-                    <p lang="ja" className="text-xs text-[var(--tinta-2)] m-0">
+                    <p lang="ja" className="text-sm text-[var(--tinta-2)] m-0">
                       「本当に<b>信じられない</b>！
                     </p>
                   </div>
-                  <div className="rounded-lg border border-[var(--ai)] bg-[var(--panel)] p-3">
-                    <span className="text-[10px] font-bold text-[var(--kon)] uppercase inline-flex items-center gap-1 mb-1">
-                      <Icon name="check" size={12} /> Ekstraktor Kontekstual 語楽 (Utuh dengan Atribusi)
+                  <div className="rounded-lg border border-[var(--ai)] bg-[var(--panel)] p-2.5">
+                    <span className="text-xs font-bold text-[var(--kon)] uppercase tracking-[0.06em] inline-flex items-center gap-1 mb-1">
+                      <Icon name="check" size={12} /> Ekstraktor Kontekstual 語楽
                     </span>
-                    <p lang="ja" className="text-xs text-[var(--tinta)] m-0">
+                    <p lang="ja" className="text-sm text-[var(--tinta)] m-0">
                       「本当に<b>信じられない</b>！」と彼女は驚いた声で言った。
                     </p>
                   </div>
-                  <p className="text-[11px] text-[var(--tinta-2)]">
-                    Pelacak kedalaman tanda kutip <code>「」</code> dan <code>『』</code> memastikan kalimat dialog beserta klausa penutupnya tidak terpotong di tengah.
+                  <p className="text-sm text-[var(--tinta-2)] m-0 leading-relaxed">
+                    Pelacak tanda kutip <code>「」</code> dan <code>『』</code> menjaga dialog serta klausa penutup tetap utuh.
                   </p>
                 </div>
               )}
 
               {activeTab.id === "srs" && (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-[var(--kon)]">
+                    <span className="text-xs font-bold text-[var(--kon)]">
                       Simulasi Kartu Review FSRS
                     </span>
                     <button
                       type="button"
                       onClick={() => setDemoCardFlipped((v) => !v)}
-                      className="rounded-md bg-[var(--kon)] px-3 min-h-[32px] inline-flex items-center text-[10.5px] font-bold text-white hover:bg-[var(--ai-tua)] transition-colors cursor-pointer"
+                      className="rounded-md bg-[var(--kon)] px-3 min-h-[32px] inline-flex items-center text-xs font-bold text-white hover:bg-[var(--ai-tua)] transition-colors cursor-pointer"
                     >
                       {demoCardFlipped ? "Lihat Depan" : "Balik Kartu (Spasi)"}
                     </button>
@@ -1441,254 +1326,201 @@ export default function LandingPage() {
                     type="button"
                     aria-pressed={demoCardFlipped}
                     onClick={() => setDemoCardFlipped((v) => !v)}
-                    className="w-full rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-5 text-center cursor-pointer shadow-xs min-h-[165px] flex flex-col justify-center items-center hover:border-[var(--ai)] transition-colors"
+                    className="w-full rounded-lg border border-[var(--garis)] bg-[var(--panel)] p-4 text-center cursor-pointer shadow-xs min-h-[136px] flex flex-col justify-center items-center hover:border-[var(--ai)] transition-colors"
                   >
                     <small lang="ja" className="text-xs text-[var(--ai)] font-bold">
                       {demoCardFlipped ? "じゅみょう • Sub-deck N3" : "Klik untuk membuka jawaban"}
                     </small>
-                    <strong lang="ja" className="text-3xl font-serif my-1 text-[var(--tinta)]">
+                    <strong lang="ja" className="text-2xl font-serif my-1 text-[var(--tinta)]">
                       寿命
                     </strong>
                     {demoCardFlipped && (
-                      <div className="mt-2 pt-2 border-t border-[var(--garis)] text-xs space-y-1 w-full">
-                        <p className="font-bold text-[var(--kon)]">umur; masa hidup (lifespan)</p>
-                        <p lang="ja" className="text-[var(--tinta-2)]">
+                      <div className="mt-1.5 pt-1.5 border-t border-[var(--garis)] text-sm space-y-0.5 w-full">
+                        <p className="font-bold text-[var(--kon)] m-0">umur; masa hidup (lifespan)</p>
+                        <p lang="ja" className="text-[var(--tinta-2)] m-0">
                           人間の<b>寿命</b>は短いんだね。
                         </p>
                       </div>
                     )}
                   </button>
-                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-bold">
-                    <div className="rounded bg-[var(--kertas-2)] border border-[var(--garis)] py-1.5 text-[var(--tinta)]">1 • Lupa</div>
-                    <div className="rounded bg-[var(--kertas-2)] border border-[var(--garis)] py-1.5 text-[var(--ai-tua)]">2 • Sulit</div>
-                    <div className="rounded bg-[var(--tsuki)] border border-[var(--garis)] py-1.5 text-[var(--kon)]">3 • Baik</div>
-                    <div className="rounded bg-[var(--kon)] py-1.5 text-white">4 • Mudah</div>
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-xs font-bold">
+                    <div className="rounded bg-[var(--kertas-2)] border border-[var(--garis)] py-1 text-[var(--tinta)]">1 • Lupa</div>
+                    <div className="rounded bg-[var(--kertas-2)] border border-[var(--garis)] py-1 text-[var(--ai-tua)]">2 • Sulit</div>
+                    <div className="rounded bg-[var(--tsuki)] border border-[var(--garis)] py-1 text-[var(--kon)]">3 • Baik</div>
+                    <div className="rounded bg-[var(--kon)] py-1 text-white">4 • Mudah</div>
                   </div>
                 </div>
               )}
             </div>
           </motion.div>
         </AnimatePresence>
-      </section>
 
-      {/* ARSITEKTUR & 6 PILAR KEUNGGULAN SISTEM */}
-      <section id="fitur" className="landing-section" style={{ paddingTop: "28px" }}>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow" style={{ margin: "0 0 6px" }}>ARSITEKTUR &amp; FILOSOFI DESAIN</p>
-            <h2>Arsitektur Lokal &amp; 6 Pilar 語楽 (GORAKU)</h2>
+        {/* Pita Ringkas Arsitektur Lokal (#fitur digabung ke seksi modul) */}
+        <div id="fitur" className="scroll-mt-24 pt-5 mt-5 border-t border-[var(--garis)]">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-3">
+            <span className="text-xs font-bold uppercase tracking-[0.06em] text-[var(--ai)]">
+              ARSITEKTUR &amp; PRIVASI • PENYIMPANAN LOKAL DI PERANGKAT
+            </span>
+            <span className="text-xs text-[var(--tinta-2)]">
+              Tanpa backend server — bekerja offline &amp; isolasi data pengguna di browser.
+            </span>
           </div>
-        </div>
-
-        {/* Tiga Pernyataan Arsitektur Berborder Horizontal Tanpa Kotak */}
-        <div className="divide-y divide-[var(--garis)] border-y border-[var(--garis)] my-6">
-          {[
-            {
-              jp: "検索速度",
-              title: "Pencarian Kamus ~1,00 ms pada 200.000+ Entri JMdict",
-              desc: "Mesin deinflection 4 lapis mengurai konjugasi ke bentuk dasar secara instan di memori lokal.",
-            },
-            {
-              jp: "階層構造",
-              title: "Partisi Otomatis Sub-Deck Anki (.apkg) N5 → N1",
-              desc: "Paket kartu Anki dibuka di browser menggunakan SQLite WASM dan dikelompokkan per tingkat JLPT.",
-            },
-            {
-              jp: "保存設計",
-              title: "Penyimpanan 100% Lokal di IndexedDB Tanpa Server",
-              desc: "Seluruh koleksi buku, kamus, kartu FSRS, dan riwayat review tersimpan di perangkat Anda sendiri.",
-            },
-          ].map((stmt) => (
-            <div
-              key={stmt.jp}
-              className="py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2"
-            >
-              <div className="flex items-baseline gap-3">
-                <span lang="ja" className="text-xs font-serif font-bold tracking-widest text-[var(--ai)] shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              {
+                jp: "検索速度 • KAMUS",
+                title: "Lookup & Deinflection Cepat di Memori",
+                desc: "Kamus Yomitan v3 diproses via Web Worker bertahap dengan tombol batal dan validasi tag aturan (v1/v5).",
+              },
+              {
+                jp: "階層構造 • SUB-DECK",
+                title: "Partisi .apkg via SQLite WASM",
+                desc: "Membaca .anki2/.anki21b beserta media audio/gambar offline ke hierarki sub-deck JLPT N5–N1.",
+              },
+              {
+                jp: "保存設計 • PRIVASI",
+                title: "100% Local-First di IndexedDB",
+                desc: "Novel, manga, progres baca, riwayat FSRS, dan hasil latihan JLPT tidak pernah meninggalkan perangkat.",
+              },
+            ].map((stmt) => (
+              <div
+                key={stmt.jp}
+                className="rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-4 py-3"
+              >
+                <span lang="ja" className="block text-xs font-bold uppercase tracking-[0.05em] text-[var(--ai)] mb-1">
                   {stmt.jp}
                 </span>
-                <strong className="text-sm font-serif font-bold text-[var(--tinta)]">
+                <strong className="block text-sm font-serif font-bold text-[var(--kon)] mb-1">
                   {stmt.title}
                 </strong>
+                <p className="text-sm text-[var(--tinta-2)] m-0 leading-snug">
+                  {stmt.desc}
+                </p>
               </div>
-              <span className="text-xs text-[var(--tinta-2)] sm:text-right max-w-md">
-                {stmt.desc}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-7">
-          {PILLAR_CARDS.map((card) => (
-            <article key={card.title} className="landing-card flex flex-col justify-between">
-              {/* Subtle Japanese Kanji Watermark */}
-              <span
-                lang="ja"
-                aria-hidden="true"
-                className="pointer-events-none select-none absolute -right-2 -top-3 font-serif text-[72px] font-bold leading-none text-[var(--kon)]/[0.045]"
-              >
-                {card.kanjiWatermark}
-              </span>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="w-10 h-10 rounded-lg bg-[var(--tsuki)] text-[var(--ai)] grid place-items-center">
-                    <Icon name={card.icon} size={20} />
-                  </span>
-                  <div className="text-right">
-                    <span className="block text-[9.5px] font-bold tracking-wider uppercase text-[var(--ai)]">
-                      {card.tag}
-                    </span>
-                    <small lang="ja" className="text-[10px] font-serif text-[var(--tinta-2)]">
-                      {card.jpTag}
-                    </small>
-                  </div>
-                </div>
-                <h3 className="text-base font-serif font-bold mb-2">{card.title}</h3>
-                <p className="text-xs text-[var(--tinta-2)] leading-relaxed mb-4">{card.desc}</p>
-              </div>
-              <div className="relative z-10 flex flex-wrap gap-1.5 pt-3 border-t border-[var(--garis)]">
-                {card.highlights.map((h) => (
-                  <span
-                    key={h}
-                    className="inline-flex items-center gap-1 rounded bg-[var(--tsuki)] px-2 py-0.5 text-[10px] font-semibold text-[var(--tinta-2)]"
-                  >
-                    <Icon name="check" size={11} className="text-[var(--ai)] shrink-0" />
-                    <span>{h}</span>
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 伍 • ALUR KERJA 4 LANGKAH IMMERSION */}
+      {/* 伍 • PITA RINGKAS CARA KERJA */}
       <section id="cara-kerja" className="landing-section landing-dark">
-        <div className="section-heading light">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 mb-4">
           <div>
             <p className="eyebrow light">学習の道筋 • ALUR BELAJAR END-TO-END</p>
-            <h2>4 Langkah Menguasai Bahasa Jepang dari Karya Asli</h2>
+            <h2 className="text-2xl font-serif font-bold text-white m-0">
+              4 Langkah Menguasai Bahasa Jepang dari Karya Asli
+            </h2>
           </div>
-          <span lang="ja" className="hidden md:inline-block font-serif text-sm text-white/60 tracking-widest">
+          <span lang="ja" className="text-xs font-serif text-white/80">
             継続は力なり — Konsistensi adalah kekuatan
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="step">
             <span lang="ja" className="step-num">壱</span>
             <h3>Impor Kamus &amp; Sub-Deck</h3>
-            <p>
-              Unggah kamus ZIP Yomitan (JMdict) atau tarik paket Anki <code>.apkg</code> untuk dipartisi otomatis menjadi sub-deck N5–N1.
-            </p>
+            <p>Unggah kamus ZIP Yomitan atau tarik paket Anki <code>.apkg</code> menjadi sub-deck N5–N1.</p>
           </div>
           <div className="step">
             <span lang="ja" className="step-num">弐</span>
             <h3>Baca Novel &amp; Manga</h3>
-            <p>
-              Buka berkas EPUB, TXT, atau CBZ di Perpustakaan dengan dukungan furigana, tema Washi, dan pemindaian OCR vertikal.
-            </p>
+            <p>Buka EPUB, TXT, atau CBZ dengan furigana, tema Washi, dan OCR dialog vertikal.</p>
           </div>
           <div className="step">
             <span lang="ja" className="step-num">参</span>
             <h3>Klik Kata &amp; Tambang</h3>
-            <p>
-              Klik kata yang belum dikenal. Lihat arti kamus + deinflection, lalu tambahkan ke sub-deck lengkap dengan kalimat aslinya.
-            </p>
+            <p>Bedah arti kamus &amp; deinflection, lalu simpan ke sub-deck beserta kalimat konteksnya.</p>
           </div>
           <div className="step">
             <span lang="ja" className="step-num">肆</span>
             <h3>Review SRS &amp; Latihan JLPT</h3>
-            <p>
-              Ulas kartu jatuh tempo setiap hari per sub-deck dan ukur kemampuanmu pada halaman latihan ujian JLPT N5–N1.
-            </p>
+            <p>Ulas kartu jatuh tempo per sub-deck dan ukur pemahaman lewat simulasi JLPT N5–N1.</p>
           </div>
         </div>
       </section>
 
       {/* FAQ INTERAKTIF (NATIVE DETAILS/SUMMARY) */}
       <section id="faq" className="landing-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow" style={{ margin: "0 0 6px" }}>PERTANYAAN UMUM</p>
-            <h2>Tanya Jawab Seputar 語楽</h2>
-          </div>
-        </div>
-        <div className="mt-6 max-w-3xl mx-auto border-t border-[var(--garis)]">
-          {FAQ_ITEMS.map((item, idx) => (
-            <details
-              key={idx}
-              className="landing-faq-details"
-              open={idx === 0}
-            >
-              <summary className="font-serif font-bold text-sm text-[var(--tinta)]">
-                <span>{item.q}</span>
-                <span className="landing-faq-chevron text-[var(--ai)] text-xs font-sans shrink-0 transition-transform" aria-hidden="true">
-                  ▾
-                </span>
-              </summary>
-              <div
-                id={`faq-answer-${idx}`}
-                className="px-2 pb-5 text-xs text-[var(--tinta-2)] leading-relaxed"
-              >
-                {item.a}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-7">
+            <div className="section-heading" style={{ marginBottom: 14 }}>
+              <div>
+                <p className="eyebrow" style={{ margin: "0 0 4px" }}>PERTANYAAN UMUM</p>
+                <h2>Tanya Jawab Seputar 語楽</h2>
               </div>
-            </details>
-          ))}
-        </div>
+            </div>
+            <div className="border-t border-[var(--garis)]">
+              {FAQ_ITEMS.map((item, idx) => (
+                <details
+                  key={idx}
+                  className="landing-faq-details"
+                  open={idx === 0}
+                >
+                  <summary className="font-serif font-bold text-sm text-[var(--tinta)] py-3">
+                    <span>{item.q}</span>
+                    <span className="landing-faq-chevron text-[var(--ai)] text-xs font-sans shrink-0 transition-transform" aria-hidden="true">
+                      ▾
+                    </span>
+                  </summary>
+                  <div
+                    id={`faq-answer-${idx}`}
+                    className="px-2 pb-3 text-sm text-[var(--tinta-2)] leading-relaxed"
+                  >
+                    {item.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
 
-        {/* Bottom CTA Banner */}
-        <div className="mt-14 rounded-lg border border-[var(--ai)] bg-[var(--kon)] p-8 sm:p-10 text-center text-white relative overflow-hidden">
-          <p className="eyebrow light">一歩ずつ、確実に • MULAI PERJALANAN IMMERSION-MU</p>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold mt-1 mb-3 text-white">
-            Siap membangun ruang belajar bahasa Jepang pribadimu di 語楽?
-          </h2>
-          <p className="text-xs sm:text-sm text-[var(--mizu)] max-w-xl mx-auto mb-6">
-            Langsung masuk ke dashboard, pilih sub-deck N5–N1 pada <em>Philia Space</em>, baca novel contoh <em>吾輩は猫である</em>, atau mulai latihan ujian JLPT sekarang.
-          </p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Link
-              to={user ? "/beranda" : "/login"}
-              className="outline-button no-underline"
-              style={{
-                padding: "12px 22px",
-                fontSize: "13px",
-                background: "#fff",
-                color: "var(--kon)",
-                borderColor: "#fff",
-                fontWeight: 700,
-              }}
-            >
-              {user ? "Buka Dashboard 語楽" : "Masuk & Mulai Belajar"}
-            </Link>
-            {user ? (
+          {/* Bottom CTA Banner */}
+          <div className="lg:col-span-5 rounded-lg border border-[var(--ai)] bg-[var(--kon)] p-6 text-white relative overflow-hidden">
+            <p className="eyebrow light">一歩ずつ、確実に • MULAI IMMERSION</p>
+            <h3 className="text-[24px] leading-snug font-serif font-bold mt-1 mb-2 text-white">
+              Siap membangun ruang belajar pribadi di 語楽?
+            </h3>
+            <p className="text-sm text-[var(--mizu)] mb-5 leading-relaxed">
+              Masuk ke dashboard, pilih sub-deck N5–N1, baca novel contoh <em>吾輩は猫である</em>, atau mulai simulasi JLPT sekarang.
+            </p>
+            <div className="flex items-center gap-2.5 flex-wrap">
               <Link
-                to="/deck"
-                className="outline-button no-underline"
+                to={user ? "/beranda" : "/login"}
+                className="outline-button no-underline text-sm font-bold px-4 py-2.5"
                 style={{
-                  padding: "12px 18px",
-                  fontSize: "12.5px",
-                  background: "rgba(255,255,255,0.08)",
-                  color: "#fff",
-                  borderColor: "rgba(188,214,226,0.35)",
+                  background: "#fff",
+                  color: "var(--kon)",
+                  borderColor: "#fff",
                 }}
               >
-                <Icon name="cards" size={16} /> Jelajahi Sub-Deck
+                {user ? "Buka Dashboard 語楽" : "Masuk & Mulai Belajar"}
               </Link>
-            ) : (
-              <a
-                href="#subdeck-jlpt"
-                className="outline-button no-underline"
-                style={{
-                  padding: "12px 18px",
-                  fontSize: "12.5px",
-                  background: "rgba(255,255,255,0.08)",
-                  color: "#fff",
-                  borderColor: "rgba(188,214,226,0.35)",
-                }}
-              >
-                <Icon name="cards" size={16} /> Lihat Hierarki Sub-Deck
-              </a>
-            )}
+              {user ? (
+                <Link
+                  to="/deck"
+                  className="outline-button no-underline text-sm px-4 py-2.5"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#fff",
+                    borderColor: "rgba(188,214,226,0.35)",
+                  }}
+                >
+                  <Icon name="cards" size={16} /> Jelajahi Sub-Deck
+                </Link>
+              ) : (
+                <a
+                  href="#subdeck-jlpt"
+                  className="outline-button no-underline text-sm px-4 py-2.5"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#fff",
+                    borderColor: "rgba(188,214,226,0.35)",
+                  }}
+                >
+                  <Icon name="cards" size={16} /> Lihat Hierarki Sub-Deck
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -1696,16 +1528,16 @@ export default function LandingPage() {
 
       {/* FOOTER — Minimalist Japanese Editorial Colophon */}
       <footer className="landing-footer">
-        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
             <div className="brand" style={{ padding: 0 }}>
-              <span className="brand-mark" style={{ background: "var(--kon)" }}>語</span>
+              <span className="brand-mark text-sm" style={{ background: "var(--kon)" }}>語</span>
               <span className="brand-copy">
-                <strong>語楽</strong>
-                <small>GORAKU</small>
+                <strong className="text-sm">語楽</strong>
+                <small className="text-xs">GORAKU</small>
               </span>
             </div>
-            <span className="rounded border border-[var(--garis)] px-2 py-0.5 text-[9.5px] font-serif font-semibold text-[var(--tinta-2)]">
+            <span className="rounded border border-[var(--garis)] px-2 py-0.5 text-xs font-serif font-semibold text-[var(--tinta-2)]">
               純国産ローカル
             </span>
           </div>
@@ -1719,7 +1551,7 @@ export default function LandingPage() {
             <Link to="/license" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Atribusi &amp; Lisensi</Link>
           </div>
 
-          <p className="m-0 text-[11px] text-[var(--tinta-2)]">
+          <p className="m-0 text-sm text-[var(--tinta-2)]">
             © 2026 語楽 (GORAKU) —千里の道も一歩から。
           </p>
         </div>

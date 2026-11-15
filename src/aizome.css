@@ -334,7 +334,7 @@ progress {
   position: relative;
   max-width: 1320px;
   margin: 0 auto;
-  padding: max(92px, calc(env(safe-area-inset-top) + 80px)) 20px 40px;
+  padding: max(92px, calc(env(safe-area-inset-top) + 80px)) 20px 28px;
 }
 
 .landing-hero.landing-hero-v2 .landing-hero-copy {
@@ -343,7 +343,7 @@ progress {
 }
 
 .landing-hero.landing-hero-v2 .landing-hero-copy h1 {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   font-family: var(--font-serif);
   font-weight: 700;
   font-size: clamp(36px, 4.2vw, 56px);
@@ -357,14 +357,14 @@ progress {
   .landing-hero.landing-hero-v2 {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     gap: 44px;
-    padding: max(100px, calc(env(safe-area-inset-top) + 88px)) 36px 48px;
+    padding: max(96px, calc(env(safe-area-inset-top) + 84px)) 36px 32px;
   }
 }
 
 @media (min-width: 1200px) {
   .landing-hero.landing-hero-v2 {
     gap: 64px;
-    padding: max(108px, calc(env(safe-area-inset-top) + 92px)) 44px 52px;
+    padding: max(100px, calc(env(safe-area-inset-top) + 86px)) 44px 32px;
   }
 }
 
@@ -408,12 +408,26 @@ progress {
     #BCD6E2 84%,
     #EDF2F5 100%
   );
-  padding: 24px 18px 20px;
+  padding: 20px 18px 18px;
   overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 400px;
+  min-height: 360px;
+}
+
+.landing-fabric-panel[data-glyph]::after {
+  content: attr(data-glyph);
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  font-family: var(--serif-jp);
+  font-size: clamp(96px, 12vw, 156px);
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  user-select: none;
 }
 
 .landing-fabric-panel__seigaiha {
@@ -471,7 +485,7 @@ progress {
     #2F6C95 100%
   );
   color: #fff;
-  padding: 28px 24px;
+  padding: 20px 24px;
   overflow: hidden;
 }
 
@@ -493,7 +507,8 @@ progress {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 8px;
+  padding: 14px 6px;
+  font-size: 14px;
   transition: background-color 150ms ease;
 }
 
@@ -512,6 +527,144 @@ progress {
 .landing-v2 .step-num {
   background: var(--ai-tua);
   color: #fff;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.landing-v2 .landing-section {
+  padding: 32px 44px;
+  max-width: 1320px;
+}
+
+@media (max-width: 900px) {
+  .landing-v2 .landing-section {
+    padding: 24px 20px;
+  }
+}
+
+.landing-v2 .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px;
+}
+
+.landing-v2 .section-heading {
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.landing-v2 .section-heading h2 {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.landing-v2 .landing-hero-copy .welcome-copy {
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--tinta-2);
+  max-width: 560px;
+}
+
+.landing-v2 .landing-tategaki-lead {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  max-height: 290px;
+}
+
+.landing-v2 .jp-tategaki-tag {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+.landing-v2 ruby rt {
+  font-size: 12px;
+}
+
+.landing-v2 .landing-dark {
+  border-radius: 8px;
+  padding: 28px 36px;
+  max-width: 1232px;
+  margin: 12px auto;
+}
+
+@media (max-width: 900px) {
+  .landing-v2 .landing-dark {
+    margin: 12px 20px;
+    padding: 24px 20px;
+  }
+}
+
+.landing-v2 .step {
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.landing-v2 .step h3 {
+  font-size: 14px;
+  line-height: 1.35;
+  margin: 0 0 6px;
+}
+
+.landing-v2 .step p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.landing-v2 .landing-footer {
+  padding: 22px 44px;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .landing-v2 .landing-footer {
+    padding: 20px;
+  }
+}
+
+.landing-v2 .landing-footer .brand-copy strong {
+  font-size: 14px;
+}
+
+.landing-v2 .landing-footer .brand-copy small {
+  font-size: 12px;
+  margin-top: 3px;
+  letter-spacing: 0.06em;
+}
+
+.landing-v2 .landing-footer .brand-mark {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.landing-v2 button.text-xs {
+  font-size: 12px;
+}
+
+.landing-v2 button.text-sm {
+  font-size: 14px;
+}
+
+.landing-v2 .lnav-tagline {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.landing-v2 .lnav-seal,
+.landing-v2 .lnav-brand-copy strong {
+  font-size: 18px;
+}
+
+.landing-v2 .lnav-links a,
+.landing-v2 .lnav-cta,
+.landing-v2 .lnav-panel a {
+  font-size: 14px;
+}
+
+.landing-v2 .dye-tile-mini {
+  font-size: 14px !important;
 }
 
 
