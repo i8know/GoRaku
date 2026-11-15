@@ -126,7 +126,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
       expect(converted.difficulty).toBeLessThanOrEqual(10);
       expect(converted.stability).toBe(12);
       expect(converted.state).toBe(State.Review);
-      return converted.difficulty;
+      return converted.difficulty ?? Number.NaN;
     });
 
     for (let i = 1; i < difficulties.length; i++) {
@@ -206,7 +206,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
 
     expect(afterAgain.scheduler).toBe("fsrs");
     expect(useReviewStore.getState().newIntroduced[deckId]?.count).toBe(1);
-    const logsAfterFirst = await getCardReviewLogs(cardId, deckId);
+    const logsAfterFirst = await getCardReviewLogs(cardId);
     expect(logsAfterFirst).toHaveLength(1);
     expect(logsAfterFirst[0].rating).toBe(qualityToRating(0));
 
@@ -226,7 +226,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
       snapshotBeforeDrill,
     );
     expect(useReviewStore.getState().activity[deckId]?.count).toBe(1);
-    expect(await getCardReviewLogs(cardId, deckId)).toHaveLength(1);
+    expect(await getCardReviewLogs(cardId)).toHaveLength(1);
 
     // 3. Undo the drill grading -> keeps card state and reviewLogs intact
     useReviewStore
@@ -239,7 +239,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
       snapshotBeforeDrill,
     );
     expect(useReviewStore.getState().activity[deckId]?.count).toBe(1);
-    expect(await getCardReviewLogs(cardId, deckId)).toHaveLength(1);
+    expect(await getCardReviewLogs(cardId)).toHaveLength(1);
 
     // 4. Undo the initial normal grading -> removes card, decrements newIntroduced & activity, deletes log
     useReviewStore.getState().restoreCardState(deckId, cardId, undefined, true);
@@ -247,7 +247,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     expect(useReviewStore.getState().srsCards[deckId]?.[cardId]).toBeUndefined();
     expect(useReviewStore.getState().newIntroduced[deckId]?.count).toBe(0);
     expect(useReviewStore.getState().activity[deckId]?.count ?? 0).toBe(0);
-    expect(await getCardReviewLogs(cardId, deckId)).toHaveLength(0);
+    expect(await getCardReviewLogs(cardId)).toHaveLength(0);
 
     // 5. forgetCards and removeDeck clean up reviewLogs
     useReviewStore.getState().reviewCardAction(deckId, cardId, 4);
@@ -257,7 +257,7 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
 
     useReviewStore.getState().forgetCards(deckId, [cardId]);
     await flushReviewLogs();
-    expect(await getCardReviewLogs(cardId, deckId)).toHaveLength(0);
+    expect(await getCardReviewLogs(cardId)).toHaveLength(0);
     expect(await getAllReviewLogs()).toHaveLength(1);
 
     useReviewStore.getState().removeDeck(deckId);
@@ -273,15 +273,14 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     const deckA: DeckItem = {
       id: "deck-custom",
       title: "Custom Deck",
-      sub: "Sub",
       level: "N3",
       kind: "Kosakata",
       total: 40,
       due: 0,
-      newToday: 15,
       color: "#335",
       kanji: "語",
       progress: 0,
+      updated: "Baru saja",
     };
     const deckB: DeckItem = {
       ...deckA,
@@ -455,15 +454,14 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     const parentDeck: DeckItem = {
       id: "parent-1",
       title: "Parent",
-      sub: "",
       level: "N3",
       kind: "Kosakata",
       total: 19,
       due: 0,
-      newToday: 0,
       color: "#335",
       kanji: "語",
       progress: 0,
+      updated: "Baru saja",
     };
     const leafDeck: DeckItem = {
       ...parentDeck,
@@ -562,15 +560,14 @@ describe("FSRS scheduler & lazy SM-2 migration (Tahap 2)", () => {
     const deck: DeckItem = {
       id: deckId,
       title: "E2E Deck",
-      sub: "Sub",
       level: "N3",
       kind: "Kosakata",
       total: 10,
       due: 0,
-      newToday: 3,
       color: "#335",
       kanji: "語",
       progress: 0,
+      updated: "Baru saja",
     };
     const settings = {
       newCards: 3,

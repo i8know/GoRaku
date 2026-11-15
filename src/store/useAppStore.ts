@@ -465,7 +465,8 @@ export const useAppStore = create<AppState>()(
           state.deckLimits = {};
         }
         if (state.settings) {
-          state.settings = {
+          const prev = state.settings as Partial<AppState["settings"]>;
+          const merged: AppState["settings"] = {
             newCards: 15,
             maxReview: 120,
             dayStartHour: DEFAULT_DAY_START_HOUR,
@@ -478,11 +479,12 @@ export const useAppStore = create<AppState>()(
             time: "19:30",
             weekly: true,
             size: "Sedang",
-            ...state.settings,
-            dayStartHour: clampDayStartHour(state.settings.dayStartHour ?? DEFAULT_DAY_START_HOUR),
-            desiredRetention: clampDesiredRetention(state.settings.desiredRetention ?? DEFAULT_DESIRED_RETENTION),
-            newOrder: state.settings.newOrder === "acak" ? "acak" : "urutan",
+            ...prev,
           };
+          merged.dayStartHour = clampDayStartHour(prev.dayStartHour ?? DEFAULT_DAY_START_HOUR);
+          merged.desiredRetention = clampDesiredRetention(prev.desiredRetention ?? DEFAULT_DESIRED_RETENTION);
+          merged.newOrder = prev.newOrder === "acak" ? "acak" : "urutan";
+          state.settings = merged;
         }
         return state as AppState;
       },

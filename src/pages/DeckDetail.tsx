@@ -763,7 +763,6 @@ function DeckSettings({
 
   const settings = useAppStore((s) => s.settings);
   const deckLimits = useAppStore((s) => s.deckLimits);
-  const deckLimits = useAppStore((s) => s.deckLimits);
   const setDeckLimits = useAppStore((s) => s.setDeckLimits);
   const currentOverride = deckLimits[deck.id];
   const hasOverride =

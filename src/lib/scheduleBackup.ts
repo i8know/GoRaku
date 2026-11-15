@@ -2,7 +2,7 @@ import {
   flushReviewLogs,
   getAllReviewLogs,
   replaceAllReviewLogs,
-  type ReviewLogRecord,
+  type ReviewLogEntry as ReviewLogRecord,
 } from "./deckDb";
 import type { SRSCard } from "./srs";
 import { normalizeStudyDayKey } from "./studyDay";

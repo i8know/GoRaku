@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt",
+    "typecheck": "tsc --noEmit -p .",
     "test": "vitest run",
+    "verify": "npm run typecheck && npm test && npm run build",
     "gen:n5": "tsx tools/generateQuestionPack.ts",
     "audit:sample": "tsx tools/auditSample.ts",
     "review:workflow": "tsx tools/reviewWorkflow.ts"

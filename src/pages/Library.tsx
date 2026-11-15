@@ -153,7 +153,7 @@ function BookCover({
 
   return (
     <div
-      className={`${className} ${coverUrl ? tone : `dye-${step}`} relative overflow-hidden`}
+      className={`${className} ${coverUrl ? "" : `dye-${step}`} relative overflow-hidden`}
       style={
         coverUrl
           ? {
