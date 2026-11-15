@@ -244,7 +244,7 @@ export default function ProgressPage() {
           {heat.map((v, i) => (
             <i
               key={i}
-              className={`l${v} transition-transform hover:scale-125${hoverHeatIdx === i ? " ring-2 ring-[var(--shu)]" : ""}`}
+              className={`l${v} transition-transform hover:scale-125${hoverHeatIdx === i ? " ring-2 ring-[var(--kon)]" : ""}`}
               onMouseEnter={() => setHoverHeatIdx(i)}
               title={`Hari ke-${i + 1}: level aktivitas ${v}`}
             />

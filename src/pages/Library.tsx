@@ -9,6 +9,7 @@ import {
   extractCoverKanji,
   listNovels,
 } from "../lib/bookStorage";
+import { titleDyeStep } from "../lib/dye";
 import {
   listDictionaries,
   type BookRecord,
@@ -147,14 +148,12 @@ function BookCover({
     };
   }, [book.coverBlob]);
 
-  const tone = isMangaBook(book)
-    ? "manga"
-    : TONE_CLASSES[index % TONE_CLASSES.length];
-  const kanji = extractCoverKanji(book.title);
+  const kanji = extractCoverKanji(book.title).slice(0, 1) || "書";
+  const step = titleDyeStep(book.title);
 
   return (
     <div
-      className={`${className} ${tone} relative overflow-hidden`}
+      className={`${className} ${coverUrl ? tone : `dye-${step}`} relative overflow-hidden`}
       style={
         coverUrl
           ? {
@@ -165,7 +164,11 @@ function BookCover({
           : undefined
       }
     >
-      {!coverUrl && <span>{kanji}</span>}
+      {!coverUrl && (
+        <span lang="ja" className="font-serif font-bold tracking-normal">
+          {kanji}
+        </span>
+      )}
       {children}
     </div>
   );
@@ -704,12 +707,6 @@ export default function LibraryPage({
           </p>
           {books.length === 0 && (
             <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
-              <Button
-                className="pg-primary"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Icon name="upload" size={16} /> Unggah Novel / Manga
-              </Button>
               <Button
                 className="outline-button"
                 onClick={() => void handleAddSampleManga()}

@@ -373,7 +373,7 @@ export default function ProtectedLayout() {
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                activeDictCount > 0 ? "bg-[#52d1a2] animate-pulse" : "bg-[var(--shu)]"
+                activeDictCount > 0 ? "bg-[#52d1a2] animate-pulse" : "bg-[var(--ai)]"
               }`}
             />
             <span>{activeDictCount > 0 ? `${activeDictCount} Kamus` : "Kamus Kosong"}</span>
@@ -407,7 +407,7 @@ export default function ProtectedLayout() {
           >
             <span
               className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${
-                activeDictCount > 0 ? "bg-[#52d1a2]" : "bg-[var(--shu)]"
+                activeDictCount > 0 ? "bg-[#52d1a2]" : "bg-[var(--ai)]"
               }`}
             />
             <span lang="ja" className="text-[11px] font-serif font-bold leading-none">
@@ -1188,7 +1188,7 @@ export default function ProtectedLayout() {
                             setNotifOpen(false);
                             handleQuickStartReview();
                           }}
-                          className="text-[11px] font-bold text-[var(--shu)] hover:underline"
+                          className="text-[11px] font-bold text-[var(--kon)] hover:underline"
                         >
                           Mulai review sekarang →
                         </button>

@@ -357,7 +357,7 @@ export default function ReaderPopup({
                   onOpenDictManager();
                 }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12.5px] font-medium text-white cursor-pointer"
-                style={{ background: "var(--shu)" }}
+                style={{ background: "var(--kon)" }}
               >
                 <Icon name="book" size={15} /> Buka Kelola Kamus
               </button>
@@ -761,7 +761,7 @@ export default function ReaderPopup({
             onClick={() => void handleAddToDeck()}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-65 cursor-pointer shrink-0"
             style={{
-              background: isJustAdded ? "var(--ok)" : "var(--shu)",
+              background: isJustAdded ? "var(--ok)" : "var(--kon)",
             }}
           >
             <Icon name={isJustAdded ? "check" : "plus"} size={15} />

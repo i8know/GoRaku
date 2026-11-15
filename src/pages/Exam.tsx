@@ -1216,7 +1216,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               <button
                 type="button"
                 onClick={handleResetCurrentTestSessions}
-                className="px-3 py-1.5 min-h-[36px] rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--shu)] hover:text-[var(--shu)] transition-colors"
+                className="px-3 py-1.5 min-h-[36px] rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--kon)] hover:text-[var(--kon)] transition-colors"
               >
                 Reset Skor
               </button>
@@ -1227,7 +1227,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                   ? "bg-[var(--tsuki)] text-[var(--tinta-2)] border border-[var(--garis)]"
                   : currentExamSummary.scaled.overallPassed
                   ? "bg-[rgba(42,111,91,0.12)] text-[var(--ok)]"
-                  : "bg-[rgba(185,60,34,0.1)] text-[var(--shu)]"
+                  : "bg-[var(--kertas-2)] text-[var(--kon)] border border-[var(--garis)]"
               }`}
             >
               {!currentExamSummary.hasTakenAny
@@ -1422,7 +1422,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                       type="button"
                       disabled={loadingSection}
                       onClick={() => void handleStartSection(currentExamTest, sec, 0)}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--shu)] hover:bg-[#9E321B] text-white shadow-[0_2px_8px_rgba(185,60,34,0.22)] transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       <Icon name="play" size={14} />
                       <span>

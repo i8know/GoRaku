@@ -324,7 +324,7 @@ export default function MiningPage({ notify }: { notify: (m: string) => void }) 
                       onClick={() => void handleCustomCharClick(idx)}
                       className={`cursor-pointer rounded-xs px-0.5 transition-colors ${
                         isHighlighted
-                          ? "bg-[var(--panel)] text-[var(--kon)] font-bold border-b-2 border-[var(--shu)]"
+                          ? "bg-[var(--panel)] text-[var(--kon)] font-bold border-b-2 border-[var(--ai)]"
                           : "hover:bg-white/15"
                       }`}
                     >

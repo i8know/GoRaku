@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icon, Button, PageHead, Tabs } from "../ui";
+import { Icon, Button, PageHead, Tabs, DyeTile, DyeProgress, Hanko } from "../ui";
 import { useAppStore, type DeckItem } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 import { deckUpdatedLabel, liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
+import { dyeStep, jlptDyeStep } from "../lib/dye";
 import { ensureSeeded } from "../lib/deckCards";
 
 const ImportDeckModal = lazy(() => import("../components/ImportDeckModal"));
@@ -18,6 +19,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
   const navigate = useNavigate();
   const decks = useAppStore((s) => s.decks);
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const srsCards = useReviewStore((s) => s.srsCards);
   const newIntroduced = useReviewStore((s) => s.newIntroduced);
 
@@ -31,7 +33,6 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
   const [createOpen, setCreateOpen] = useState(false);
   const [pageDrag, setPageDrag] = useState(false);
   const [expandedParents, setExpandedParents] = useState<Set<string>>(() => new Set());
-  const initialExpandedRef = useRef(false);
   const dragDepth = useRef(0);
 
   // Ensure starter decks are seeded in IndexedDB on first load
@@ -56,13 +57,16 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
     for (const d of decks) {
       const children = subdecksByParent.get(d.id) ?? [];
       if (children.length > 0) {
-        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks));
+        m.set(
+          d.id,
+          aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks, Date.now(), deckLimits),
+        );
       } else {
-        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings, Date.now(), deckLimits));
       }
     }
     return m;
-  }, [decks, subdecksByParent, srsCards, newIntroduced, settings]);
+  }, [decks, subdecksByParent, srsCards, newIntroduced, settings, deckLimits]);
   const st = (d: DeckItem) => stats.get(d.id)!;
 
   // Root decks are top-level decks (no parentId)
@@ -180,6 +184,10 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
   const importedCount = rootDecks.filter(
     (d) => d.source === "apkg" || (subdecksByParent.get(d.id)?.some((c) => c.source === "apkg") ?? false),
   ).length;
+  const firstDueDeck = useMemo(
+    () => rootDecks.find((d) => st(d).due > 0) ?? rootDecks[0],
+    [rootDecks, stats],
+  );
 
   const openImport = (file: File | null = null) => {
     setImportFile(file);
@@ -228,204 +236,301 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
     navigate(`/deck/${id}?add=1`);
   };
 
-  const renderTreeRow = (deck: DeckItem, depth = 0, isLast = true): ReactNode => {
+  // Combined select value for sort + statusFilter
+  const combinedSelectValue =
+    statusFilter === "Semua" ? `sort:${sort}` : `status:${statusFilter}`;
+
+  const handleCombinedSelectChange = (val: string) => {
+    if (val.startsWith("sort:")) {
+      const nextSort = val.replace("sort:", "") as (typeof sorts)[number];
+      setSort(nextSort);
+      setStatusFilter("Semua");
+    } else if (val.startsWith("status:")) {
+      const nextStatus = val.replace("status:", "") as (typeof statusFilters)[number];
+      setStatusFilter(nextStatus);
+    } else if ((sorts as readonly string[]).includes(val)) {
+      setSort(val as (typeof sorts)[number]);
+    }
+  };
+
+  const renderTreeRows = (deck: DeckItem, depth = 0, isLast = true): ReactNode => {
     const s = st(deck);
     const imported = deck.source === "apkg";
     const children = subdecksByParent.get(deck.id) ?? [];
     const isExpanded = expandedParents.has(deck.id);
     const isSubdeck = depth > 0;
+    const lvlCode = extractLevelCode(deck.title) ?? extractLevelCode(deck.subdeckName || "");
+    const tileStep = lvlCode ? jlptDyeStep(lvlCode) : dyeStep(s.progress);
 
     return (
-      <div key={deck.id}>
-        <div
-          className={`dk-list-row ${isSubdeck ? "dk-list-subdeck-row dk-list-subdeck-row-deep" : ""}`}
-        >
-          <div className="dk-list-title-cell" style={{ paddingLeft: `${Math.max(12, depth * 24 + 12)}px` }}>
-            {isSubdeck && (
-              <span className="dk-tree-branch" aria-hidden="true">
-                {isLast ? "└─" : "├─"}
-              </span>
-            )}
-            {children.length > 0 ? (
+      <FragmentRow key={deck.id}>
+        <tr className={isSubdeck ? "is-subdeck" : ""}>
+          {/* 1. Deck */}
+          <td style={{ paddingLeft: `${Math.max(16, depth * 24 + 16)}px` }}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {isSubdeck && (
+                <span className="dk-tree-branch font-mono text-[var(--teks-redup)]" aria-hidden="true">
+                  {isLast ? "└─" : "├─"}
+                </span>
+              )}
+              {children.length > 0 ? (
+                <button
+                  type="button"
+                  className="dk-expand-btn mr-0.5"
+                  onClick={() => toggleExpand(deck.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={isExpanded ? `Tutup sub-deck ${deck.title}` : `Buka sub-deck ${deck.title}`}
+                  title={isExpanded ? "Tutup sub-deck" : "Buka sub-deck"}
+                >
+                  <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
+                </button>
+              ) : isSubdeck ? (
+                <span style={{ width: "16px", display: "inline-block" }} />
+              ) : null}
               <button
                 type="button"
-                className="dk-expand-btn mr-1"
-                onClick={() => toggleExpand(deck.id)}
-                aria-expanded={isExpanded}
-                aria-label={isExpanded ? `Tutup sub-deck ${deck.title}` : `Buka sub-deck ${deck.title}`}
-                title={isExpanded ? "Tutup sub-deck" : "Buka sub-deck"}
-              >
-                <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={14} />
-              </button>
-            ) : isSubdeck ? (
-              <span style={{ width: "16px", display: "inline-block" }} />
-            ) : null}
-            <button
-              type="button"
-              className="flex items-center gap-3 text-left bg-transparent border-0 p-0 min-w-0 cursor-pointer hover:text-[var(--ai)]"
-              aria-expanded={children.length > 0 ? isExpanded : undefined}
-              title={children.length > 0 ? (isExpanded ? "Tekan untuk menutup sub-deck" : "Tekan untuk melihat sub-deck") : `Buka ${deck.title}`}
-              onClick={() => {
-                if (children.length > 0) {
-                  toggleExpand(deck.id);
-                } else {
-                  navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`);
+                className="flex items-center gap-3 text-left bg-transparent border-0 p-0 min-w-0 cursor-pointer hover:text-[var(--ai)]"
+                aria-expanded={children.length > 0 ? isExpanded : undefined}
+                title={
+                  children.length > 0
+                    ? isExpanded
+                      ? "Tekan untuk menutup sub-deck"
+                      : "Tekan untuk melihat sub-deck"
+                    : `Buka ${deck.title}`
                 }
-              }}
-            >
-              <span className={`dk-mini-art deck-art ${deck.color} ${isSubdeck ? "dk-subdeck-mini-art" : ""}`}>
-                <span>{deck.kanji}</span>
-              </span>
-              <span className="min-w-0">
-                <span className="flex items-center gap-1.5 flex-wrap">
-                  <strong>{deck.subdeckName || deck.title}</strong>
-                  {children.length > 0 && (
-                    <span className="dk-subdeck-pill">{children.length} Sub-deck</span>
-                  )}
-                  {isSubdeck && !deck.subdeckName && (
-                    <small className="dk-subdeck-badge-sub">Sub-deck</small>
-                  )}
+                onClick={() => {
+                  if (children.length > 0) {
+                    toggleExpand(deck.id);
+                  } else {
+                    navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`);
+                  }
+                }}
+              >
+                <DyeTile step={tileStep} kanji={deck.kanji} size={isSubdeck ? 30 : 38} />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 flex-wrap">
+                    <strong className="font-serif text-sm text-[var(--tinta)]">
+                      {deck.subdeckName || deck.title}
+                    </strong>
+                    {children.length > 0 && (
+                      <span className="dk-subdeck-pill">{children.length} Sub-deck</span>
+                    )}
+                    {isSubdeck && !deck.subdeckName && (
+                      <small className="dk-subdeck-badge-sub">Sub-deck</small>
+                    )}
+                  </span>
+                  <small className="block text-[11px] text-[var(--teks-redup)]">
+                    {deck.total.toLocaleString("id-ID")} kartu · {deckUpdatedLabel(deck)}
+                  </small>
                 </span>
-                <small>{deckUpdatedLabel(deck)}</small>
-              </span>
-            </button>
-          </div>
-          <div className="dk-list-level">
-            <span>{deck.level}</span>
-            {imported && !isSubdeck && <em className="dk-badge-inline">ANKI</em>}
-          </div>
-          <div className="dk-list-due">
-            <div className="anki-stats-group">
+              </button>
+            </div>
+          </td>
+
+          {/* 2. Level */}
+          <td>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs font-semibold text-[var(--tinta-2)]">{deck.level}</span>
+              {imported && !isSubdeck && <em className="dk-badge-inline">ANKI</em>}
+            </div>
+          </td>
+
+          {/* 3. Hari ini (新 / 習 / 復 dalam nila) */}
+          <td>
+            <div className="inline-flex items-center gap-3 font-mono text-xs whitespace-nowrap">
               <span
-                className={`anki-num anki-num-new ${s.newToday > 0 ? "has-cards" : "zero"}`}
-                title={`${s.newToday} kartu baru hari ini`}
+                className={s.newToday > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                aria-label={`${s.newToday} kartu baru`}
+                title={`${s.newToday} kartu baru`}
               >
-                {s.newToday}
-                <span className="sr-only"> baru</span>
-              </span>
-              <span
-                className={`anki-num anki-num-learn ${s.learning > 0 ? "has-cards" : "zero"}`}
-                title={`${s.learning} kartu dalam proses belajar`}
-              >
-                {s.learning}
-                <span className="sr-only"> belajar</span>
+                新 {s.newToday}
               </span>
               <span
-                className={`anki-num anki-num-due ${s.reviewDue > 0 ? "has-cards" : "zero"}`}
-                title={`${s.reviewDue} kartu jatuh tempo ulasan`}
+                className={s.learning > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                aria-label={`${s.learning} sedang dipelajari`}
+                title={`${s.learning} sedang dipelajari`}
               >
-                {s.reviewDue}
-                <span className="sr-only"> ulasan</span>
+                習 {s.learning}
+              </span>
+              <span
+                className={s.reviewDue > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                aria-label={`${s.reviewDue} ulasan`}
+                title={`${s.reviewDue} ulasan`}
+              >
+                復 {s.reviewDue}
               </span>
             </div>
-          </div>
-          <div className="dk-list-total">
-            <span>{deck.total.toLocaleString("id-ID")}</span>
-          </div>
-          <div className="dk-list-prog">
-            <div className="progress"><i style={{ width: `${s.progress}%` }} /></div>
-            <small>{s.progress}%</small>
-          </div>
-          <div className="dk-list-actions">
-            <Button
-              className="pg-primary dk-list-btn"
-              onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
-              title={
-                children.length > 0
-                  ? `Belajar semua kartu (${s.due > 0 ? `${s.due} tugas` : "sudah selesai"})`
-                  : `Belajar ${deck.subdeckName || deck.title} (${s.due > 0 ? `${s.due} tugas` : "sudah selesai"})`
-              }
-            >
-              {s.due > 0 ? (children.length > 0 ? "Belajar Semua" : "Belajar") : "Buka"}
-            </Button>
-            <button
-              type="button"
-              className="dk-action-icon"
-              aria-label={`Kelola kartu ${deck.subdeckName || deck.title}`}
-              title="Kelola Kartu"
-              onClick={() => navigate(`/deck/${deck.id}?tab=kartu`)}
-            >
-              <Icon name="cards" size={15} />
-            </button>
-            <button
-              type="button"
-              className="dk-action-icon"
-              aria-label={`Pengaturan ${deck.subdeckName || deck.title}`}
-              title="Pengaturan"
-              onClick={() => navigate(`/deck/${deck.id}?tab=pengaturan`)}
-            >
-              <Icon name="settings" size={15} />
-            </button>
-          </div>
-        </div>
+          </td>
 
-        {/* Recursive Sub-decks */}
+          {/* 4. Penguasaan */}
+          <td style={{ minWidth: "150px" }}>
+            {s.progress >= 100 ? (
+              <Hanko char="済" size={40} title="Deck tuntas 100%" />
+            ) : (
+              <DyeProgress percent={s.progress} label={`Penguasaan ${deck.subdeckName || deck.title}`} />
+            )}
+          </td>
+
+          {/* 5. Aksi */}
+          <td>
+            <div className="dk-list-actions flex items-center justify-end gap-1.5">
+              <Button
+                className={s.due > 0 ? "btn-kon dk-list-btn" : "outline-button dk-list-btn"}
+                onClick={() => navigate(s.due > 0 ? `/deck/${deck.id}/review` : `/deck/${deck.id}`)}
+                title={
+                  children.length > 0
+                    ? `Belajar semua kartu (${s.due > 0 ? `${s.due} tugas` : "sudah selesai"})`
+                    : `Belajar ${deck.subdeckName || deck.title} (${s.due > 0 ? `${s.due} tugas` : "sudah selesai"})`
+                }
+              >
+                {s.due > 0 ? (children.length > 0 ? "Belajar Semua" : "Belajar") : "Buka"}
+              </Button>
+              <button
+                type="button"
+                className="dk-action-icon"
+                aria-label={`Kelola kartu ${deck.subdeckName || deck.title}`}
+                title="Kelola Kartu"
+                onClick={() => navigate(`/deck/${deck.id}?tab=kartu`)}
+              >
+                <Icon name="cards" size={15} />
+              </button>
+              <button
+                type="button"
+                className="dk-action-icon"
+                aria-label={`Pengaturan ${deck.subdeckName || deck.title}`}
+                title="Pengaturan"
+                onClick={() => navigate(`/deck/${deck.id}?tab=pengaturan`)}
+              >
+                <Icon name="settings" size={15} />
+              </button>
+            </div>
+          </td>
+        </tr>
+
         {isExpanded &&
           children.map((child, idx) =>
-            renderTreeRow(child, depth + 1, idx === children.length - 1),
+            renderTreeRows(child, depth + 1, idx === children.length - 1),
           )}
-      </div>
+      </FragmentRow>
     );
   };
 
+  const summarySentence = `${decks.length} deck aktif · ${totalCards.toLocaleString("id-ID")} total kartu · ${totalDue.toLocaleString("id-ID")} jatuh tempo hari ini · ${totalCompleted} deck tuntas (${importedCount} Anki).`;
+
   return (
     <>
-      <PageHead eyebrow="KOLEKSI PRIBADI" title="Deck" accent="Saya" copy="Setiap deck adalah ruang belajar — susun, kelola kartu, dan pantau progres secara teratur.">
-        <div className="dk-head-actions">
-          <Button className="outline-button dk-import-btn" onClick={() => openImport()}><Icon name="upload" size={16} /> Impor .apkg</Button>
-          <Button className="pg-primary" onClick={() => setCreateOpen(true)}><Icon name="plus" size={17} /> Buat deck baru</Button>
-        </div>
-      </PageHead>
+      <div className="dk-head-v2">
+        <PageHead
+          eyebrow="KOLEKSI PRIBADI"
+          title="Deck"
+          accent="Saya"
+          copy={summarySentence}
+        >
+          <div className="dk-head-actions flex items-center gap-2 flex-wrap">
+            {totalDue > 0 && firstDueDeck && (
+              <Button
+                className="pg-primary"
+                onClick={() => navigate(`/deck/${firstDueDeck.id}/review`)}
+              >
+                Belajar {totalDue} kartu
+              </Button>
+            )}
+            <Button className="outline-button dk-import-btn" onClick={() => openImport()}>
+              <Icon name="upload" size={16} /> Impor .apkg
+            </Button>
+            <Button className="outline-button" onClick={() => setCreateOpen(true)}>
+              <Icon name="plus" size={17} /> Buat deck baru
+            </Button>
+          </div>
+        </PageHead>
+      </div>
 
-      <section className="pg-stats">
-        <div><strong>{decks.length}</strong><span>deck aktif</span></div>
-        <div><strong>{totalCards.toLocaleString("id-ID")}</strong><span>total kartu</span></div>
-        <div className={totalDue > 0 ? "hot" : ""}><strong>{totalDue.toLocaleString("id-ID")}</strong><span>jatuh tempo hari ini</span></div>
-        <div><strong>{totalCompleted}</strong><span>deck tuntas hari ini ({importedCount} Anki)</span></div>
-      </section>
+      {decks.length === 0 ? (
+        <section className="dk-hero" aria-labelledby="dk-hero-title">
+          <div className="dk-hero-copy">
+            <p className="eyebrow light">IMPOR DARI ANKI</p>
+            <h2 id="dk-hero-title">Bawa deck Anki-mu ke sini.</h2>
+            <p>
+              Core 2k/6k, Kaishi 1.5k, atau deck buatanmu sendiri — lengkap dengan audio, gambar, dan jadwal review. Semua tersimpan aman offline di perangkatmu.
+            </p>
+            <ul>
+              <li>
+                <Icon name="check" size={14} /> Format lama &amp; baru (.anki21b)
+              </li>
+              <li>
+                <Icon name="check" size={14} /> Deteksi field otomatis &amp; offline
+              </li>
+              <li>
+                <Icon name="check" size={14} /> Ekspor kembali kapan saja (CSV/JSON)
+              </li>
+            </ul>
+          </div>
+          <button id="dk-hero-drop" type="button" className="dk-hero-drop" onClick={() => openImport()}>
+            <span className="dk-hero-ico">
+              <Icon name="upload" size={24} />
+            </span>
+            <strong>Tarik file .apkg ke mana saja</strong>
+            <small>atau klik untuk memilih file</small>
+          </button>
+        </section>
+      ) : (
+        <section className="dk-import-compact" aria-label="Impor paket Anki .apkg">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Icon name="upload" size={16} className="text-[var(--ai)] shrink-0" />
+            <span>
+              <strong>Impor dari Anki (.apkg / .colpkg):</strong> tarik berkas ke halaman ini kapan saja, atau pilih berkas lokal beserta audio &amp; jadwalnya.
+            </span>
+          </div>
+          <button
+            id="dk-hero-drop"
+            type="button"
+            className="outline-button"
+            style={{ padding: "6px 12px", fontSize: "12px" }}
+            onClick={() => openImport()}
+          >
+            Pilih file .apkg
+          </button>
+        </section>
+      )}
 
-      <section className="dk-hero" aria-labelledby="dk-hero-title">
-        <div className="dk-hero-copy">
-          <p className="eyebrow light">IMPOR DARI ANKI</p>
-          <h2 id="dk-hero-title">Bawa deck Anki-mu ke sini.</h2>
-          <p>Core 2k/6k, Kaishi 1.5k, atau deck buatanmu sendiri — lengkap dengan audio, gambar, dan jadwal review. Semua tersimpan aman offline di perangkatmu.</p>
-          <ul>
-            <li><Icon name="check" size={14} /> Format lama &amp; baru (.anki21b)</li>
-            <li><Icon name="check" size={14} /> Deteksi field otomatis &amp; offline</li>
-            <li><Icon name="check" size={14} /> Ekspor kembali kapan saja (CSV/JSON)</li>
-          </ul>
-        </div>
-        <button id="dk-hero-drop" type="button" className="dk-hero-drop" onClick={() => openImport()}>
-          <span className="dk-hero-ico"><Icon name="upload" size={24} /></span>
-          <strong>Tarik file .apkg ke mana saja</strong>
-          <small>atau klik untuk memilih file</small>
-        </button>
-      </section>
-
+      {/* SATU BARIS FILTER */}
       <section className="pg-toolbar">
         <div className="dk-toolbar-filters">
           <Tabs items={kinds} value={kind} onChange={setKind} />
-          <div className="dk-subfilter" role="tablist" aria-label="Status review">
-            {statusFilters.map((s) => (
-              <button
-                key={s}
-                type="button"
-                role="tab"
-                aria-selected={statusFilter === s}
-                className={`dk-subfilter-btn ${statusFilter === s ? "on" : ""}`}
-                onClick={() => setStatusFilter(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="pg-toolbar-right">
-          <label className="pg-search"><Icon name="search" size={16} /><input id="deck-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari deck..." /></label>
-          <label className="pg-select"><Icon name="filter" size={15} />
-            <select id="deck-sort" value={sort} onChange={(e) => setSort(e.target.value as (typeof sorts)[number])} aria-label="Urutkan">
-              {sorts.map((s) => <option key={s}>{s}</option>)}
+          <label className="pg-search">
+            <Icon name="search" size={16} />
+            <input
+              id="deck-search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Cari deck..."
+            />
+          </label>
+          <label className="pg-select">
+            <Icon name="filter" size={15} />
+            <select
+              id="deck-sort"
+              value={combinedSelectValue}
+              onChange={(e) => handleCombinedSelectChange(e.target.value)}
+              aria-label="Urutkan dan filter status"
+            >
+              <optgroup label="Urutkan">
+                {sorts.map((s) => (
+                  <option key={`sort:${s}`} value={`sort:${s}`}>
+                    Urut: {s}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Filter Status">
+                {statusFilters.map((stOpt) => (
+                  <option key={`status:${stOpt}`} value={`status:${stOpt}`}>
+                    Status: {stOpt}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </label>
           {viewMode === "list" && allParentIds.length > 0 && (
@@ -482,12 +587,16 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
 
             return (
               <article className={`deck-card dk-card ${isExpanded ? "is-expanded" : ""}`} key={deck.id}>
-                <div className={`deck-art ${deck.color}`}>
+                <div className={`deck-art dye-${dyeStep(s.progress)}`}>
                   <button
                     type="button"
                     className="dk-card-cover-btn"
                     aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
-                    aria-label={displaySubdecks.length > 0 ? `${isExpanded ? "Tutup" : "Buka"} sub-deck ${deck.title}` : `Buka dashboard ${deck.title}`}
+                    aria-label={
+                      displaySubdecks.length > 0
+                        ? `${isExpanded ? "Tutup" : "Buka"} sub-deck ${deck.title}`
+                        : `Buka dashboard ${deck.title}`
+                    }
                     onClick={() => {
                       if (displaySubdecks.length > 0) {
                         toggleExpand(deck.id);
@@ -495,9 +604,16 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                         navigate(`/deck/${deck.id}`);
                       }
                     }}
-                    title={displaySubdecks.length > 0 ? (isExpanded ? "Tutup sub-deck" : "Tekan untuk melihat sub-deck") : `Buka dashboard ${deck.title}`}
+                    title={
+                      displaySubdecks.length > 0
+                        ? isExpanded
+                          ? "Tutup sub-deck"
+                          : "Tekan untuk melihat sub-deck"
+                        : `Buka dashboard ${deck.title}`
+                    }
                   >
-                    <span>{deck.kanji}</span><i />
+                    <span>{deck.kanji}</span>
+                    <i />
                   </button>
                   {imported && <em className="dk-badge">ANKI</em>}
                   {displaySubdecks.length > 0 && (
@@ -551,7 +667,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   <h3 title={deck.title}>
                     <button
                       type="button"
-                      className="text-left bg-transparent border-0 p-0 cursor-pointer hover:text-coral transition-colors"
+                      className="text-left bg-transparent border-0 p-0 cursor-pointer hover:text-[var(--ai)] transition-colors"
                       aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
                       onClick={() => {
                         if (displaySubdecks.length > 0) {
@@ -564,20 +680,39 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                       {deck.title}
                     </button>
                   </h3>
-                  <div className="deck-meta">
-                    <span>
-                      <Icon name="clock" size={15} />{" "}
-                      {s.due > 0
-                        ? `${s.reviewDue} ulasan • ${s.newToday} baru`
-                        : deck.total === 0
-                          ? "Belum ada kartu"
-                          : "Selesai hari ini"}
+                  <div className="deck-meta font-mono text-xs flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={s.newToday > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                        aria-label={`${s.newToday} kartu baru`}
+                      >
+                        新 {s.newToday}
+                      </span>
+                      <span
+                        className={s.learning > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                        aria-label={`${s.learning} sedang dipelajari`}
+                      >
+                        習 {s.learning}
+                      </span>
+                      <span
+                        className={s.reviewDue > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                        aria-label={`${s.reviewDue} ulasan`}
+                      >
+                        復 {s.reviewDue}
+                      </span>
+                    </div>
+                    <span className="font-sans text-[var(--teks-redup)]">
+                      {deck.total.toLocaleString("id-ID")} kartu
                     </span>
-                    <span>{deck.total.toLocaleString("id-ID")} kartu</span>
                   </div>
-                  <div className="progress"><i style={{ width: `${s.progress}%` }} /></div>
+                  <div className="my-2">
+                    {s.progress >= 100 ? (
+                      <Hanko char="済" size={36} title="Deck tuntas 100%" />
+                    ) : (
+                      <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />
+                    )}
+                  </div>
 
-                  {/* Sub-deck Drawer: ONLY appears when pressed/expanded so closed cards stay in normal UI shape! */}
                   {displaySubdecks.length > 0 && isExpanded && (
                     <div className="dk-card-subdecks-wrap">
                       <div className="dk-quick-levels">
@@ -593,9 +728,9 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                               <button
                                 key={c.id}
                                 type="button"
-                                className={`dk-quick-chip ${c.color}`}
+                                className="dk-quick-chip indigo"
                                 onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
-                                title={`Belajar khusus ${c.subdeckName || c.title} (${cs.due > 0 ? `${cs.due} tugas: ${cs.reviewDue} ulas + ${cs.newToday} baru` : "selesai"})`}
+                                title={`Belajar khusus ${c.subdeckName || c.title} (${cs.due > 0 ? `${cs.due} tugas` : "selesai"})`}
                               >
                                 <strong>{lvlLabel}</strong>
                                 <small>{cs.due > 0 ? cs.due : "✓"}</small>
@@ -606,52 +741,41 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                       </div>
 
                       <div className="dk-card-subdecks-drawer">
-                        <div className="anki-legend" style={{ marginBottom: "6px" }} aria-label="Keterangan urutan angka kartu">
-                          <span className="anki-legend-label">Urutan:</span>
-                          <span className="anki-hdr-badge anki-hdr-new">Baru</span>
-                          <span className="anki-hdr-badge anki-hdr-learn">Belajar</span>
-                          <span className="anki-hdr-badge anki-hdr-due">Ulasan</span>
-                        </div>
                         {sortedSubdecks.map((c) => {
                           const cs = st(c);
+                          const cCode = extractLevelCode(c.title) ?? extractLevelCode(c.subdeckName || "") ?? "N3";
                           return (
-                            <div
-                              key={c.id}
-                              className="dk-card-subdeck-item"
-                            >
+                            <div key={c.id} className="dk-card-subdeck-item">
                               <button
                                 type="button"
                                 className="dk-card-subdeck-item-left"
                                 onClick={() => navigate(`/deck/${c.id}`)}
                               >
-                                <span className={`deck-art ${c.color} dk-subdeck-kanji`}>{c.kanji}</span>
+                                <DyeTile step={jlptDyeStep(cCode)} kanji={c.kanji} size={28} />
                                 <span>
                                   <strong>{c.subdeckName || c.title}</strong>
                                   <small>{c.total.toLocaleString("id-ID")} kartu</small>
                                 </span>
                               </button>
                               <div className="dk-card-subdeck-item-right">
-                                <div className="anki-stats-group" style={{ fontSize: "11px", padding: "2px 6px" }}>
+                                <div className="inline-flex items-center gap-2 font-mono text-[11px]">
                                   <span
-                                    className={`anki-num anki-num-new ${cs.newToday > 0 ? "has-cards" : "zero"}`}
-                                    title={`${cs.newToday} baru`}
+                                    className={cs.newToday > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                                    aria-label={`${cs.newToday} kartu baru`}
                                   >
-                                    {cs.newToday}
-                                    <span className="sr-only"> baru</span>
+                                    新 {cs.newToday}
                                   </span>
                                   <span
-                                    className={`anki-num anki-num-learn ${cs.learning > 0 ? "has-cards" : "zero"}`}
-                                    title={`${cs.learning} belajar`}
+                                    className={cs.learning > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                                    aria-label={`${cs.learning} sedang dipelajari`}
                                   >
-                                    {cs.learning}
-                                    <span className="sr-only"> belajar</span>
+                                    習 {cs.learning}
                                   </span>
                                   <span
-                                    className={`anki-num anki-num-due ${cs.reviewDue > 0 ? "has-cards" : "zero"}`}
-                                    title={`${cs.reviewDue} ulasan`}
+                                    className={cs.reviewDue > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                                    aria-label={`${cs.reviewDue} ulasan`}
                                   >
-                                    {cs.reviewDue}
-                                    <span className="sr-only"> ulasan</span>
+                                    復 {cs.reviewDue}
                                   </span>
                                 </div>
                                 <button
@@ -690,38 +814,45 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                         )}
                       </Button>
                     )}
-                    <small>{s.progress}% • {deckUpdatedLabel(deck)}</small>
+                    <small>
+                      {s.progress}% • {deckUpdatedLabel(deck)}
+                    </small>
                   </div>
                 </div>
               </article>
             );
           })}
           <button id="dk-new-import" type="button" className="pg-newdeck dk-newimport" onClick={() => openImport()}>
-            <span><Icon name="upload" size={22} /></span>
+            <span>
+              <Icon name="upload" size={22} />
+            </span>
             <strong>Impor dari Anki</strong>
             <small>File .apkg dengan audio &amp; gambar</small>
           </button>
           <button id="dk-new-deck" type="button" className="pg-newdeck" onClick={() => setCreateOpen(true)}>
-            <span><Icon name="plus" size={22} /></span>
+            <span>
+              <Icon name="plus" size={22} />
+            </span>
             <strong>Deck baru</strong>
             <small>Buat manual atau dari hasil mining</small>
           </button>
         </div>
       ) : (
-        <div className="dk-list-view">
-          <div className="dk-list-view-header">
-            <span>Sampul &amp; Deck</span>
-            <span>Level / Jenis</span>
-            <span className="dk-list-due-hdr">
-              <span className="anki-hdr-badge anki-hdr-new" title="Kartu Baru (New)">Baru</span>
-              <span className="anki-hdr-badge anki-hdr-learn" title="Dalam Belajar (Learn)">Belajar</span>
-              <span className="anki-hdr-badge anki-hdr-due" title="Ulasan Jatuh Tempo (Due)">Ulas</span>
-            </span>
-            <span>Total Kartu</span>
-            <span>Progres</span>
-            <span>Aksi Belajar</span>
-          </div>
-          {list.map((deck) => renderTreeRow(deck, 0, true))}
+        <div className="dk-table-wrap">
+          <table className="dk-semantic-table">
+            <thead>
+              <tr>
+                <th scope="col">Deck</th>
+                <th scope="col">Level</th>
+                <th scope="col">Hari ini</th>
+                <th scope="col">Penguasaan</th>
+                <th scope="col" className="text-right">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody>{list.map((deck) => renderTreeRows(deck, 0, true))}</tbody>
+          </table>
         </div>
       )}
 
@@ -733,7 +864,11 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
 
       {pageDrag && (
         <div className="dk-drag-overlay" aria-hidden="true">
-          <div><Icon name="upload" size={34} /><strong>Lepaskan untuk mengimpor deck</strong><small>.apkg / .colpkg</small></div>
+          <div>
+            <Icon name="upload" size={34} />
+            <strong>Lepaskan untuk mengimpor deck</strong>
+            <small>.apkg / .colpkg</small>
+          </div>
         </div>
       )}
 
@@ -741,9 +876,15 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
         <Suspense fallback={null}>
           <ImportDeckModal
             initialFile={importFile}
-            onClose={() => { setImportOpen(false); setImportFile(null); }}
+            onClose={() => {
+              setImportOpen(false);
+              setImportFile(null);
+            }}
             onImported={(_id, title) => notify(`Deck "${title}" berhasil diimpor`)}
-            onStudy={(id) => { setImportOpen(false); navigate(`/deck/${id}/review`); }}
+            onStudy={(id) => {
+              setImportOpen(false);
+              navigate(`/deck/${id}/review`);
+            }}
           />
         </Suspense>
       )}
@@ -753,10 +894,17 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
           <DeckFormModal
             onClose={() => setCreateOpen(false)}
             onCreated={handleCreated}
-            onImport={() => { setCreateOpen(false); openImport(); }}
+            onImport={() => {
+              setCreateOpen(false);
+              openImport();
+            }}
           />
         </Suspense>
       )}
     </>
   );
+}
+
+function FragmentRow({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Icon, Button } from "../ui";
+import { Icon, Button, Hanko } from "../ui";
 import { limitsFor, orderNewCards, useAppStore } from "../store/useAppStore";
 import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
@@ -318,41 +318,62 @@ export default function ReviewPage() {
 
     return (
       <div className="review-complete">
-        <div className="review-complete-content">
-          <div className="review-complete-icon">
-            <Icon name="check" size={48} />
-          </div>
-          <h2>{nothingToDo ? "Tidak ada kartu hari ini" : "Sesi selesai! お疲れ様でした！"}</h2>
-          <p>
-            {nothingToDo
-              ? `Semua kartu di "${deck.title}" sudah kamu kerjakan. Kembali lagi besok, ya.`
-              : `Kamu telah menyelesaikan ${reviewed} kartu hari ini dengan penuh konsistensi.`}
-          </p>
-          {remainingUnlearned.length > 0 && (
-            <div className="review-complete-actions" style={{ marginBottom: 12 }}>
-              {([5, 10, 20] as const).map((n) => (
-                <Button
-                  key={n}
-                  className="outline-button"
-                  onClick={() => handleLearnMore(n)}
-                >
-                  <Icon name="plus" size={16} /> Pelajari lebih +{n} kartu baru
-                </Button>
-              ))}
+        <div className="review-complete-content review-complete-v2">
+          <div className="review-complete-v2__banner">
+            <div className="review-complete-v2__seigaiha motif-seigaiha" aria-hidden="true" />
+            <div className="relative z-10">
+              <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[var(--mizu)] m-0 mb-1">
+                {nothingToDo ? "本日の学習完了 • REISTIRAHAT" : "復習完了 • SESI TUNTAS"}
+              </p>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold text-white m-0">
+                {nothingToDo ? "Tidak ada kartu hari ini" : "Sesi selesai! お疲れ様でした！"}
+              </h2>
             </div>
-          )}
-          <div className="review-complete-actions">
-            {history.length > 0 && (
-              <Button className="outline-button" onClick={handleUndo}>
-                <Icon name="refresh" size={16} /> Batalkan kartu terakhir
-              </Button>
+          </div>
+
+          <div className="review-complete-v2__body">
+            {reviewed > 0 ? (
+              <div className="mb-5">
+                <Hanko char="済" size={96} title={`Sesi selesai: ${reviewed} kartu diulas`} />
+              </div>
+            ) : (
+              <div className="mb-4 w-12 h-12 rounded-md border border-[var(--garis)] bg-[var(--kertas-2)] grid place-items-center text-[var(--kon)]">
+                <Icon name="check" size={24} />
+              </div>
             )}
-            <Button className="primary-light" onClick={() => navigate("/beranda")}>
-              <Icon name="home" size={16} /> Ke Beranda
-            </Button>
-            <Button className="outline-button" onClick={() => navigate("/deck")}>
-              <Icon name="deck" size={16} /> Lihat Deck Saya
-            </Button>
+
+            <p className="text-sm text-[var(--tinta-2)] max-w-md mb-6">
+              {nothingToDo
+                ? `Semua kartu di "${deck.title}" sudah kamu kerjakan. Kembali lagi besok, ya.`
+                : `Kamu telah menyelesaikan ${reviewed} kartu pada deck "${deck.title}" hari ini dengan penuh konsistensi.`}
+            </p>
+
+            {remainingUnlearned.length > 0 && (
+              <div className="review-complete-actions" style={{ marginBottom: 12 }}>
+                {([5, 10, 20] as const).map((n) => (
+                  <Button
+                    key={n}
+                    className="outline-button"
+                    onClick={() => handleLearnMore(n)}
+                  >
+                    <Icon name="plus" size={16} /> Pelajari lebih +{n} kartu baru
+                  </Button>
+                ))}
+              </div>
+            )}
+            <div className="review-complete-actions">
+              {history.length > 0 && (
+                <Button className="outline-button" onClick={handleUndo}>
+                  <Icon name="refresh" size={16} /> Batalkan kartu terakhir
+                </Button>
+              )}
+              <Button className="btn-kon" onClick={() => navigate("/beranda")}>
+                <Icon name="home" size={16} /> Ke Beranda
+              </Button>
+              <Button className="outline-button" onClick={() => navigate("/deck")}>
+                <Icon name="deck" size={16} /> Lihat Deck Saya
+              </Button>
+            </div>
           </div>
         </div>
       </div>
