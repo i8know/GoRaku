@@ -462,10 +462,13 @@ export default function App() {
                                   key={c.id}
                                   type="button"
                                   className="dk-quick-chip indigo"
+                                  aria-label={`Belajar ${c.subdeckName || c.title}: ${
+                                    cs.due > 0 ? `${cs.due} kartu jatuh tempo` : "selesai"
+                                  }`}
                                   onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
                                 >
                                   <strong>{lvlLabel}</strong>
-                                  <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                                  <small aria-hidden="true">{cs.due > 0 ? cs.due : "✓"}</small>
                                 </button>
                               );
                             })}
@@ -486,7 +489,9 @@ export default function App() {
                                   <span>
                                     <strong>{c.subdeckName || c.title}</strong>
                                     <small className="font-mono">
-                                      新 {cs.newToday} · 復 {cs.reviewDue} · {c.total.toLocaleString("id-ID")} kartu
+                                      <span aria-label={`${cs.newToday} kartu baru`}>新 {cs.newToday}</span> ·{" "}
+                                      <span aria-label={`${cs.reviewDue} ulasan jatuh tempo`}>復 {cs.reviewDue}</span> ·{" "}
+                                      <span>{c.total.toLocaleString("id-ID")} kartu</span>
                                     </small>
                                   </span>
                                 </button>

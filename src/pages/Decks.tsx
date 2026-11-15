@@ -97,6 +97,26 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
         if (e.key === "Escape") {
           e.preventDefault();
           setFilterSheetOpen(false);
+          return;
+        }
+        if (e.key === "Tab") {
+          const sheet = document.getElementById("dk-filter-sheet");
+          if (!sheet) return;
+          const focusables = Array.from(
+            sheet.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          );
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
         }
       };
       document.addEventListener("keydown", onKeyDown);
@@ -914,10 +934,13 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                 type="button"
                                 className="dk-quick-chip indigo"
                                 onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
+                                aria-label={`Belajar khusus ${c.subdeckName || c.title}: ${
+                                  cs.due > 0 ? `${cs.due} kartu jatuh tempo` : "selesai"
+                                }`}
                                 title={`Belajar khusus ${c.subdeckName || c.title} (${cs.due > 0 ? `${cs.due} tugas` : "selesai"})`}
                               >
                                 <strong>{lvlLabel}</strong>
-                                <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                                <small aria-hidden="true">{cs.due > 0 ? cs.due : "✓"}</small>
                               </button>
                             );
                           })}

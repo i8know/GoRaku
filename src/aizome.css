@@ -5,6 +5,7 @@
   --mizu: #BCD6E2;
   --mizu-soft: #DCE8F0;
   --tsuki: #EDF2F5;
+  --kertas-2: #EDF2F5;
   --panel: #F8FAFB;
   --garis: #C5D3DB;
   --tinta: #14202B;
@@ -72,12 +73,26 @@ select {
 }
 
 button:focus-visible,
+summary:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--ai);
+  outline-offset: 2px;
+}
+
+.pg-search:has(input:focus-visible),
+.pg-select:has(select:focus-visible),
+.searchbox:has(input:focus-visible) {
+  outline: 2px solid var(--ai);
+  outline-offset: 2px;
+}
+
+.beranda-hero-v2 :focus-visible,
+.landing-dark :focus-visible {
+  outline: 2px solid var(--mizu);
   outline-offset: 2px;
 }
 

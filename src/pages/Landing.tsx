@@ -883,9 +883,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5 font-mono text-xs shrink-0">
-                  <span className="text-white/90">新 40</span>
-                  <span className="text-white/85">習 18</span>
-                  <span className="text-[var(--mizu)] font-bold">復 258</span>
+                  <span className="text-white/90" aria-label="40 kartu baru">新 40</span>
+                  <span className="text-white/85" aria-label="18 sedang dipelajari">習 18</span>
+                  <span className="text-[var(--mizu)] font-bold" aria-label="258 ulasan jatuh tempo">復 258</span>
                 </div>
               </button>
 
@@ -915,13 +915,22 @@ export default function LandingPage() {
                         </div>
 
                         <div className="flex items-center gap-2.5 shrink-0 font-mono text-xs">
-                          <span className={sub.newCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}>
+                          <span
+                            className={sub.newCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                            aria-label={`${sub.newCount} kartu baru`}
+                          >
                             新 {sub.newCount}
                           </span>
-                          <span className={sub.learnCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}>
+                          <span
+                            className={sub.learnCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                            aria-label={`${sub.learnCount} sedang dipelajari`}
+                          >
                             習 {sub.learnCount}
                           </span>
-                          <span className={sub.dueCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}>
+                          <span
+                            className={sub.dueCount > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
+                            aria-label={`${sub.dueCount} ulasan jatuh tempo`}
+                          >
                             復 {sub.dueCount}
                           </span>
                         </div>
