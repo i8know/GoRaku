@@ -10,37 +10,18 @@ import {
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
 import { loadHydratedSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
-import { initCard, type SRSCard } from "../lib/srs";
+import {
+  removeDrillCardByKey,
+  type ReviewSessionCard,
+  type ReviewUndoItem,
+} from "../lib/reviewSession";
+import { initCard } from "../lib/srs";
 import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
 
-type ReviewCard = {
-  id: string;
-  deckId?: string;
-  subdeck?: string;
-  word: string;
-  reading: string;
-  /** Inline HTML (sanitized for imported decks). */
-  meaning: string;
-  sentence: string;
-  translation: string;
-  audio?: string;
-  sentenceAudio?: string;
-  image?: string;
-  /** True when re-queued inside the same session after "Lupa" (in-session drill). */
-  isDrill?: boolean;
-};
-
-interface UndoHistoryItem {
-  pos: number;
-  cardId: string;
-  deckId?: string;
-  prevSrsCard: SRSCard | undefined;
-  wasNew: boolean;
-  wasRequeued: boolean;
-  wasDrill: boolean;
-}
+type ReviewCard = ReviewSessionCard;
+type UndoHistoryItem = ReviewUndoItem;
 
 function formatInterval(days: number) {
   if (days < 30) return `${days} hari`;
@@ -76,6 +57,7 @@ export default function ReviewPage() {
   const [media, setMedia] = useState<{ audio?: string; sentenceAudio?: string; image?: string }>({});
   const [playing, setPlaying] = useState<"word" | "sentence" | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const drillSeqRef = useRef(0);
 
   const card = queue && pos < queue.length ? queue[pos] : undefined;
   const srsCard = useReviewStore((s) => {
@@ -186,6 +168,9 @@ export default function ReviewPage() {
       const wasNew = !prevSrsCard;
       const wasDrill = Boolean(card.isDrill);
       const wasRequeued = quality === 0;
+      const requeuedDrillKey = wasRequeued
+        ? `drill-${++drillSeqRef.current}-${targetDeckId}-${card.id}`
+        : undefined;
 
       setHistory((h) => [
         ...h,
@@ -197,13 +182,18 @@ export default function ReviewPage() {
           wasNew,
           wasRequeued,
           wasDrill,
+          requeuedDrillKey,
         },
       ]);
 
       reviewCardAction(targetDeckId, card.id, quality, { drill: wasDrill });
       setReviewed((r) => r + 1);
       // "Lupa" puts the card back at the end of this session as a drill (does not alter FSRS state on second pass).
-      if (wasRequeued) setQueue((q) => (q ? [...q, { ...card, isDrill: true }] : q));
+      if (wasRequeued) {
+        setQueue((q) =>
+          q ? [...q, { ...card, isDrill: true, drillKey: requeuedDrillKey }] : q,
+        );
+      }
       setShowAnswer(false);
       setPos((p) => p + 1);
     },
@@ -218,7 +208,7 @@ export default function ReviewPage() {
       drill: last.wasDrill,
     });
     if (last.wasRequeued) {
-      setQueue((q) => (q && q.length > 0 ? q.slice(0, -1) : q));
+      setQueue((q) => (q ? removeDrillCardByKey(q, last.requeuedDrillKey) : q));
     }
     setHistory((h) => h.slice(0, -1));
     setReviewed((r) => Math.max(0, r - 1));
