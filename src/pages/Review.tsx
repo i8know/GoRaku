@@ -2,10 +2,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon, Button, Hanko } from "../ui";
 import { useAppStore } from "../store/useAppStore";
-import { useReviewStore } from "../store/useReviewStore";
+import {
+  useReviewStore,
+  useReviewStoreHydrated,
+  waitForReviewStoreHydration,
+} from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
-import { buildSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
+import { loadHydratedSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
 import { initCard, type SRSCard } from "../lib/srs";
 import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
@@ -61,6 +65,7 @@ export default function ReviewPage() {
   const reviewCardAction = useReviewStore((s) => s.reviewCardAction);
   const restoreCardState = useReviewStore((s) => s.restoreCardState);
   const addExtraNewToday = useReviewStore((s) => s.addExtraNewToday);
+  const reviewHydrated = useReviewStoreHydrated();
 
   const [allCards, setAllCards] = useState<StoredCard[]>([]);
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
@@ -79,32 +84,29 @@ export default function ReviewPage() {
     return targetDeckId ? s.srsCards[targetDeckId]?.[card.id] : undefined;
   });
 
-  // Build the session queue once: due reviews first, then today's new cards.
+  // Build the session queue once after review store hydration: due reviews first, then today's new cards.
   useEffect(() => {
-    if (!deck) return;
+    if (!deck || !reviewHydrated) return;
     let alive = true;
-    loadDeckCards(deck.id)
-      .then((cards) => {
+    loadHydratedSessionQueue({
+      deckId: deck.id,
+      waitForHydration: waitForReviewStoreHydration,
+      loadCards: loadDeckCards,
+      getReviewState: () => useReviewStore.getState(),
+      settings,
+      deckLimits,
+    })
+      .then(({ cards, queue: nextQueue }) => {
         if (!alive) return;
         setAllCards(cards);
-        const { srsCards, newIntroduced } = useReviewStore.getState();
-        setQueue(
-          buildSessionQueue({
-            cards,
-            srsCards,
-            newIntroduced,
-            settings,
-            deckLimits,
-            rootDeckId: deck.id,
-          }),
-        );
+        setQueue(nextQueue);
       })
       .catch(() => alive && setQueue([]));
     return () => {
       alive = false;
     };
     // Queue is intentionally built once per deck; SRS updates during the session must not reshuffle it.
-  }, [deck?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [deck?.id, reviewHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Resolve media blobs for the current card (supports both .apkg media and manga bubble crops).
   useEffect(() => {

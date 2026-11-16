@@ -4,6 +4,10 @@ import {
   replaceAllReviewLogs,
   type ReviewLogEntry as ReviewLogRecord,
 } from "./deckDb";
+import {
+  flushReviewStorageWrites,
+  registerReviewBackupExporter,
+} from "./reviewStorage";
 import type { SRSCard } from "./srs";
 import { normalizeStudyDayKey } from "./studyDay";
 import {
@@ -99,7 +103,12 @@ function isValidReviewLog(val: unknown): val is ReviewLogRecord {
 export async function exportScheduleBackup(): Promise<ScheduleBackupData> {
   await flushReviewLogs();
   const state = useReviewStore.getState();
-  const logs = await getAllReviewLogs();
+  let logs: ReviewLogRecord[] = [];
+  try {
+    logs = await getAllReviewLogs();
+  } catch (err) {
+    console.warn("Gagal membaca reviewLogs saat ekspor cadangan, melanjutkan tanpa log:", err);
+  }
 
   return {
     version: 1,
@@ -117,6 +126,22 @@ export async function exportScheduleBackupJson(): Promise<string> {
   const payload = await exportScheduleBackup();
   return JSON.stringify(payload, null, 2);
 }
+
+/** Mengunduh berkas JSON cadangan jadwal belajar dari state store saat ini (termasuk in-memory saat penyimpanan gagal). */
+export async function downloadScheduleBackupJson(): Promise<void> {
+  const json = await exportScheduleBackupJson();
+  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `goraku-jadwal-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+registerReviewBackupExporter(downloadScheduleBackupJson);
 
 /**
  * Memvalidasi dan mengimpor cadangan jadwal belajar (JSON string atau objek).
@@ -250,6 +275,7 @@ export async function importScheduleBackup(
     await replaceAllReviewLogs(validatedLogs);
     await flushReviewLogs();
   }
+  await flushReviewStorageWrites();
 
   return {
     cardsCount,

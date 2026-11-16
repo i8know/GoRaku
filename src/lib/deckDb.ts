@@ -34,8 +34,15 @@ const DB_NAME = "ma-immersion-decks";
 const CARDS = "cards";
 const MEDIA = "media";
 
+export interface KVRecord {
+  key: string;
+  value: string;
+  updatedAt: number;
+}
+
 export class DeckDatabase extends Dexie {
   reviewLogs!: Table<ReviewLogEntry, number>;
+  kv!: Table<KVRecord, string>;
 
   constructor(dbName = DB_NAME) {
     super(dbName);
@@ -60,15 +67,50 @@ export class DeckDatabase extends Dexie {
       .upgrade(() => {
         // Safe upgrade: existing cards and media stores remain intact while adding reviewLogs.
       });
+
+    this.version(3)
+      .stores({
+        cards: "",
+        media: "",
+        reviewLogs: "++id, deckId, cardId, reviewedAt, [deckId+cardId]",
+        kv: "key",
+      })
+      .upgrade(() => {
+        // Safe upgrade: existing cards, media, and reviewLogs remain intact while adding kv store.
+      });
   }
 }
 
 export const deckDexie = new DeckDatabase();
 
+export async function ensureDeckDbOpen(): Promise<void> {
+  // Selalu panggil deckDexie.open() agar pemanggil serentak tetap menunggu dbReadyPromise
+  // hingga upgrade versi selesai (isOpen() bisa bernilai true saat onupgradeneeded masih berjalan).
+  await deckDexie.open();
+}
+
+export async function getKvValue(keyName: string): Promise<string | undefined> {
+  await ensureDeckDbOpen();
+  const row = await deckDexie.kv.get(keyName);
+  return row?.value;
+}
+
+export async function putKvValue(keyName: string, value: string): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.kv.put({
+    key: keyName,
+    value,
+    updatedAt: Date.now(),
+  });
+}
+
+export async function deleteKvValue(keyName: string): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.kv.delete(keyName);
+}
+
 async function openDb(): Promise<IDBDatabase> {
-  if (!deckDexie.isOpen()) {
-    await deckDexie.open();
-  }
+  await ensureDeckDbOpen();
   return deckDexie.backendDB();
 }
 

@@ -5,8 +5,9 @@ import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { clearAllReviewLogs } from "../lib/deckDb";
+import { flushReviewStorageWrites } from "../lib/reviewStorage";
 import {
-  exportScheduleBackupJson,
+  downloadScheduleBackupJson,
   importScheduleBackup,
 } from "../lib/scheduleBackup";
 
@@ -40,16 +41,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
 
   const handleExportSchedule = async () => {
     try {
-      const json = await exportScheduleBackupJson();
-      const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `goraku-jadwal-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      await downloadScheduleBackupJson();
       notify("Jadwal belajar diekspor sebagai JSON");
     } catch {
       notify("Gagal mengekspor jadwal belajar");
@@ -198,6 +190,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
                   className="outline-button warn"
                   onClick={() => {
                     useReviewStore.setState({ srsCards: {}, newIntroduced: {}, activity: {} });
+                    void flushReviewStorageWrites();
                     void clearAllReviewLogs();
                     setConfirmReset(false);
                     notify("Semua progres ulasan kartu berhasil direset");

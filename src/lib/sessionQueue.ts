@@ -145,3 +145,38 @@ export function selectLearnMoreBatch({
 
   return { batch, extraByGroup };
 }
+
+export interface LoadHydratedSessionQueueParams {
+  deckId: string;
+  waitForHydration: () => Promise<void>;
+  loadCards: (deckId: string) => Promise<StoredCard[]>;
+  getReviewState: () => {
+    srsCards: Record<string, Record<string, SRSCard> | undefined>;
+    newIntroduced: Record<string, NewIntroducedEntry | undefined>;
+  };
+  settings: SessionQueueSettings;
+  deckLimits?: Record<string, DeckLimitOverride>;
+  now?: Date | number;
+}
+
+/**
+ * Menunggu hidrasi store review selesai lebih dulu sebelum memuat kartu dan membangun
+ * antrean sesi, sehingga sesi yang dimulai sebelum hidrasi tidak membaca state kosong.
+ */
+export async function loadHydratedSessionQueue(
+  params: LoadHydratedSessionQueueParams,
+): Promise<{ cards: StoredCard[]; queue: StoredCard[] }> {
+  await params.waitForHydration();
+  const cards = await params.loadCards(params.deckId);
+  const { srsCards, newIntroduced } = params.getReviewState();
+  const queue = buildSessionQueue({
+    cards,
+    srsCards,
+    newIntroduced,
+    settings: params.settings,
+    deckLimits: params.deckLimits,
+    rootDeckId: params.deckId,
+    now: params.now,
+  });
+  return { cards, queue };
+}
