@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon, Button, Hanko } from "../ui";
-import { limitsFor, orderNewCards, useAppStore } from "../store/useAppStore";
-import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
+import { useAppStore } from "../store/useAppStore";
+import { useReviewStore } from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
-import { initCard, isDue, type SRSCard } from "../lib/srs";
+import { buildSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
+import { initCard, type SRSCard } from "../lib/srs";
 import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
@@ -87,40 +88,16 @@ export default function ReviewPage() {
         if (!alive) return;
         setAllCards(cards);
         const { srsCards, newIntroduced } = useReviewStore.getState();
-        const getCardSrs = (c: StoredCard): SRSCard | undefined => {
-          const targetDeckId = c.deckId || deck.id;
-          return targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
-        };
-
-        const limits = limitsFor(deck.id, settings, deckLimits);
-
-        const due = cards
-          .filter((c) => {
-            const sc = getCardSrs(c);
-            return sc && isDue(sc);
-          })
-          .sort((a, b) => (getCardSrs(a)?.nextReview ?? 0) - (getCardSrs(b)?.nextReview ?? 0))
-          .slice(0, limits.maxReview);
-
-        const unlearned = cards.filter((c) => !getCardSrs(c));
-        const orderedFresh = orderNewCards(
-          unlearned,
-          deck.id,
-          settings.newOrder ?? "urutan",
-          Date.now(),
-          settings.dayStartHour,
+        setQueue(
+          buildSessionQueue({
+            cards,
+            srsCards,
+            newIntroduced,
+            settings,
+            deckLimits,
+            rootDeckId: deck.id,
+          }),
         );
-        const fresh = orderedFresh.slice(
-          0,
-          newCardsLeftToday(
-            newIntroduced[deck.id],
-            limits.newCards,
-            Date.now(),
-            settings.dayStartHour,
-          ),
-        );
-
-        setQueue([...due, ...fresh]);
       })
       .catch(() => alive && setQueue([]));
     return () => {
@@ -294,25 +271,27 @@ export default function ReviewPage() {
   if (!card) {
     const nothingToDo = queue.length === 0;
     const { srsCards } = useReviewStore.getState();
-    const queuedIds = new Set(queue.map((q) => q.id));
+    const queuedKeys = new Set(queue.map((q) => `${q.deckId || deck.id}::${q.id}`));
     const remainingUnlearned = allCards.filter((c) => {
       const targetDeckId = c.deckId || deck.id;
       const sc = targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
-      return !sc && !queuedIds.has(c.id);
+      return !sc && !queuedKeys.has(`${targetDeckId}::${c.id}`);
     });
 
     const handleLearnMore = (extraAmount: number) => {
-      addExtraNewToday(deck.id, extraAmount, Date.now(), settings.dayStartHour);
-      const ordered = orderNewCards(
+      const now = Date.now();
+      const { batch, extraByGroup } = selectLearnMoreBatch({
         remainingUnlearned,
-        deck.id,
-        settings.newOrder ?? "urutan",
-        Date.now(),
-        settings.dayStartHour,
-      );
-      const nextBatch = ordered.slice(0, extraAmount);
-      if (nextBatch.length > 0) {
-        setQueue((prev) => [...(prev ?? []), ...nextBatch]);
+        amount: extraAmount,
+        rootDeckId: deck.id,
+        settings,
+        now,
+      });
+      for (const [groupId, count] of Object.entries(extraByGroup)) {
+        addExtraNewToday(groupId, count, now, settings.dayStartHour);
+      }
+      if (batch.length > 0) {
+        setQueue((prev) => [...(prev ?? []), ...batch]);
       }
     };
 
