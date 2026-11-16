@@ -1,9 +1,11 @@
 import type { StateStorage } from "zustand/middleware";
 import {
   deckDexie,
+  deleteKvSyncIfOpen,
   deleteKvValue,
   ensureDeckDbOpen,
   getKvValue,
+  putKvSyncIfOpen,
   putKvValue,
 } from "./deckDb";
 import { useToastStore } from "../store/useToastStore";
@@ -291,13 +293,60 @@ export function createReviewPersistStorage(
     await writeChain;
   };
 
-  const onVisibilityChange = () => {
-    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+  const hasCustomIdbHandlers =
+    opts.idbPut !== undefined || opts.idbDelete !== undefined;
+
+  const flushSyncForUnload = () => {
+    if (disposed || pendingOps.size === 0) return;
+    if (backendMode === "localStorage") {
+      for (const [key, op] of [...pendingOps.entries()]) {
+        clearTimersForKey(key);
+        pendingOps.delete(key);
+        try {
+          writeLocalOrThrow(key, op);
+          retryCounts.set(key, 0);
+          toastShownForFailure = false;
+        } catch (err) {
+          if (!pendingOps.has(key)) pendingOps.set(key, op);
+          console.error("Gagal menyimpan progres review (sinkron):", err);
+          opts.onWriteError?.(err);
+          triggerWriteErrorToast();
+        }
+      }
+      return;
+    }
+
+    if (backendMode === "idb" && !hasCustomIdbHandlers) {
+      for (const [key, op] of [...pendingOps.entries()]) {
+        clearTimersForKey(key);
+        const onSyncErr = (err: unknown) => {
+          if (!pendingOps.has(key)) pendingOps.set(key, op);
+          console.error("Gagal menyimpan progres review (pagehide/visibility):", err);
+          opts.onWriteError?.(err);
+          triggerWriteErrorToast();
+        };
+        const dispatched =
+          op.type === "set"
+            ? putKvSyncIfOpen(key, op.value, onSyncErr)
+            : deleteKvSyncIfOpen(key, onSyncErr);
+        if (dispatched) {
+          pendingOps.delete(key);
+        }
+      }
+    }
+
+    if (pendingOps.size > 0) {
       void flush();
     }
   };
+
+  const onVisibilityChange = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      flushSyncForUnload();
+    }
+  };
   const onPageHide = () => {
-    void flush();
+    flushSyncForUnload();
   };
 
   if (typeof document !== "undefined" && typeof document.addEventListener === "function") {

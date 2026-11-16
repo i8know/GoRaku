@@ -109,6 +109,55 @@ export async function deleteKvValue(keyName: string): Promise<void> {
   await deckDexie.kv.delete(keyName);
 }
 
+function mutateKvSyncIfOpen(
+  op: "put" | "delete",
+  keyName: string,
+  value?: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  if (!deckDexie.isOpen()) return false;
+  try {
+    const db = deckDexie.backendDB();
+    if (!db) return false;
+    const tx = db.transaction("kv", "readwrite");
+    if (onError) {
+      tx.onabort = () => onError(tx.error ?? new Error("Transaksi sinkron kv dibatalkan"));
+      tx.onerror = () => onError(tx.error ?? new Error("Transaksi sinkron kv gagal"));
+    }
+    const store = tx.objectStore("kv");
+    if (op === "put" && value !== undefined) {
+      store.put({ key: keyName, value, updatedAt: Date.now() });
+    } else {
+      store.delete(keyName);
+    }
+    const maybeCommit = (tx as IDBTransaction & { commit?: () => void }).commit;
+    if (typeof maybeCommit === "function") maybeCommit.call(tx);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Mengirim transaksi `put` IndexedDB secara sinkron bila koneksi Dexie sudah terbuka penuh.
+ * Dipakai pada `pagehide`/`visibilitychange` agar antrean tulis yang masih menunggu debounce
+ * sempat terkirim sebelum dokumen ditutup/dimuat ulang.
+ */
+export function putKvSyncIfOpen(
+  keyName: string,
+  value: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  return mutateKvSyncIfOpen("put", keyName, value, onError);
+}
+
+export function deleteKvSyncIfOpen(
+  keyName: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  return mutateKvSyncIfOpen("delete", keyName, undefined, onError);
+}
+
 async function openDb(): Promise<IDBDatabase> {
   await ensureDeckDbOpen();
   return deckDexie.backendDB();
