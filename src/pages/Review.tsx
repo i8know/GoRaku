@@ -11,30 +11,44 @@ import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
 import { loadHydratedSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
 import {
+  classifyReviewKeyEvent,
+  computeSessionProgress,
+  countUniqueReviewedCards,
+  getGradeButtonHint,
   removeDrillCardByKey,
+  REVIEW_GRADES,
   type ReviewSessionCard,
   type ReviewUndoItem,
 } from "../lib/reviewSession";
 import { initCard } from "../lib/srs";
-import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
+import { previewIntervals, type FsrsGrade } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
 
 type ReviewCard = ReviewSessionCard;
 type UndoHistoryItem = ReviewUndoItem;
 
-function formatInterval(days: number) {
-  if (days < 30) return `${days} hari`;
-  if (days < 365) return `${(days / 30).toFixed(days < 60 ? 1 : 0)} bln`;
-  return `${(days / 365).toFixed(1)} thn`;
+export function ReviewGradeButtons({
+  isDrill,
+  intervals,
+  onGrade,
+}: {
+  isDrill: boolean;
+  intervals: Record<FsrsGrade, number>;
+  onGrade: (quality: number) => void;
+}) {
+  return (
+    <div className="review-buttons">
+      {REVIEW_GRADES.map((g, i) => (
+        <Button key={g.q} className={`review-btn review-btn-${g.cls}`} onClick={() => onGrade(g.q)}>
+          <strong>{g.label}</strong>
+          <small>{getGradeButtonHint(g.q, isDrill, intervals)}</small>
+          <kbd className="rv-kbd">{i + 1}</kbd>
+        </Button>
+      ))}
+    </div>
+  );
 }
-
-const GRADES = [
-  { q: 0, label: "Lupa", cls: "again" },
-  { q: 2, label: "Sulit", cls: "hard" },
-  { q: 4, label: "Baik", cls: "good" },
-  { q: 5, label: "Mudah", cls: "easy" },
-] as const;
 
 export default function ReviewPage() {
   const { deckId } = useParams<{ deckId: string }>();
@@ -52,7 +66,6 @@ export default function ReviewPage() {
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [pos, setPos] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [reviewed, setReviewed] = useState(0);
   const [history, setHistory] = useState<UndoHistoryItem[]>([]);
   const [media, setMedia] = useState<{ audio?: string; sentenceAudio?: string; image?: string }>({});
   const [playing, setPlaying] = useState<"word" | "sentence" | null>(null);
@@ -187,7 +200,6 @@ export default function ReviewPage() {
       ]);
 
       reviewCardAction(targetDeckId, card.id, quality, { drill: wasDrill });
-      setReviewed((r) => r + 1);
       // "Lupa" puts the card back at the end of this session as a drill (does not alter FSRS state on second pass).
       if (wasRequeued) {
         setQueue((q) =>
@@ -211,27 +223,41 @@ export default function ReviewPage() {
       setQueue((q) => (q ? removeDrillCardByKey(q, last.requeuedDrillKey) : q));
     }
     setHistory((h) => h.slice(0, -1));
-    setReviewed((r) => Math.max(0, r - 1));
     setPos(last.pos);
     setShowAnswer(true);
   }, [history, deckId, restoreCardState]);
 
-  // Keyboard: Space/Enter reveals, 1–4 grades, R plays audio, Ctrl+Z / Z undoes.
+  // Keyboard: Space/Enter reveals, 1–4 grades (tanpa repeat/modifier), R plays audio, Ctrl/Cmd+Z undoes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.closest("input, textarea, select")) return;
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+      const target = e.target as HTMLElement | null;
+      const inEditableTarget = Boolean(
+        target &&
+          (target.isContentEditable ||
+            (typeof target.closest === "function" &&
+              target.closest("input, textarea, select, [contenteditable]"))),
+      );
+      const action = classifyReviewKeyEvent({
+        key: e.key,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        repeat: e.repeat,
+        isComposing: e.isComposing,
+        hasCard: Boolean(card),
+        showAnswer,
+        inEditableTarget,
+      });
+      if (action.type === "undo") {
         e.preventDefault();
         handleUndo();
-        return;
-      }
-      if (!card) return;
-      if (!showAnswer && (e.key === " " || e.key === "Enter")) {
+      } else if (action.type === "reveal") {
         e.preventDefault();
         setShowAnswer(true);
-      } else if (showAnswer && ["1", "2", "3", "4"].includes(e.key)) {
-        answer(GRADES[Number(e.key) - 1].q);
-      } else if (e.key.toLowerCase() === "r") {
+      } else if (action.type === "grade") {
+        answer(REVIEW_GRADES[action.gradeIndex].q);
+      } else if (action.type === "play-word") {
         play("word");
       }
     };
@@ -259,6 +285,8 @@ export default function ReviewPage() {
       </div>
     );
   }
+
+  const uniqueReviewed = countUniqueReviewedCards(history, deckId);
 
   if (!card) {
     const nothingToDo = queue.length === 0;
@@ -303,7 +331,7 @@ export default function ReviewPage() {
           </div>
 
           <div className="review-complete-v2__body">
-            {reviewed > 0 ? (
+            {uniqueReviewed > 0 ? (
               <div className="mb-5">
                 <Hanko char="済" size={96} />
               </div>
@@ -316,7 +344,7 @@ export default function ReviewPage() {
             <p className="text-sm text-[var(--tinta-2)] max-w-md mb-6">
               {nothingToDo
                 ? `Semua kartu di "${deck.title}" sudah kamu kerjakan. Kembali lagi besok, ya.`
-                : `Kamu telah menyelesaikan ${reviewed} kartu pada deck "${deck.title}" hari ini dengan penuh konsistensi.`}
+                : `Kamu telah menyelesaikan ${uniqueReviewed} kartu pada deck "${deck.title}" hari ini dengan penuh konsistensi.`}
             </p>
 
             {remainingUnlearned.length > 0 && (
@@ -353,6 +381,7 @@ export default function ReviewPage() {
 
   const base = srsCard ?? initCard(card.id);
   const isNewCard = !srsCard;
+  const sessionProgress = computeSessionProgress(queue, pos);
   const intervals = previewIntervals(base, Date.now(), {
     desiredRetention: settings.desiredRetention,
   });
@@ -365,7 +394,7 @@ export default function ReviewPage() {
         </Button>
 
         <div className="review-progress-bar">
-          <div className="review-progress-fill" style={{ width: `${(pos / queue.length) * 100}%` }} />
+          <div className="review-progress-fill" style={{ width: `${sessionProgress.progressPct}%` }} />
         </div>
 
         <div className="flex items-center gap-2">
@@ -405,7 +434,12 @@ export default function ReviewPage() {
             <Icon name="volume" size={14} />
           </button>
 
-          <span className="review-count">{pos + 1} / {queue.length}</span>
+          <span className="review-count">
+            {sessionProgress.currentStep} / {sessionProgress.totalBase}
+            {sessionProgress.remainingDrills > 0 && (
+              <small className="ml-1.5 text-[11px] opacity-75">+{sessionProgress.remainingDrills} ulangan</small>
+            )}
+          </span>
         </div>
       </div>
 
@@ -450,15 +484,11 @@ export default function ReviewPage() {
         ) : (
           <div className="review-actions">
             <p className="review-prompt">Seberapa baik kamu mengingat kata ini?</p>
-            <div className="review-buttons">
-              {GRADES.map((g, i) => (
-                <Button key={g.q} className={`review-btn review-btn-${g.cls}`} onClick={() => answer(g.q)}>
-                  <strong>{g.label}</strong>
-                  <small>{g.q === 0 ? "Ulangi lagi" : formatInterval(intervals[qualityToRating(g.q)])}</small>
-                  <kbd className="rv-kbd">{i + 1}</kbd>
-                </Button>
-              ))}
-            </div>
+            <ReviewGradeButtons
+              isDrill={Boolean(card.isDrill)}
+              intervals={intervals}
+              onGrade={answer}
+            />
           </div>
         )}
       </div>
