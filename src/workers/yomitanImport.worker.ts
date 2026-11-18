@@ -10,6 +10,10 @@ import {
   type TermRecord,
 } from "../lib/lexiconDb";
 import {
+  MAX_YOMITAN_ENTRY_BYTES,
+  MAX_YOMITAN_TOTAL_BYTES,
+} from "../lib/archiveLimits";
+import {
   extractZipEntryJson,
   indexYomitanZip,
   parseTagBankRow,
@@ -109,7 +113,7 @@ function classifyError(err: unknown): {
   if (/sudah terpasang/i.test(msg)) {
     return { code: "DUPLICATE_DICT", message: msg };
   }
-  if (/bukan json|gagal mendekompresi|header lokal/i.test(msg)) {
+  if (/bukan json|gagal mendekompresi|header lokal|batas aman/i.test(msg)) {
     return { code: "CORRUPT_DATA", message: msg };
   }
   return {
@@ -158,6 +162,7 @@ async function handleImport(
 
     const zipBytes = new Uint8Array(buffer);
     const entries = indexYomitanZip(zipBytes);
+    const archiveBudget = { remaining: MAX_YOMITAN_TOTAL_BYTES };
 
     const indexEntry = entries.get("index.json");
     if (!indexEntry) {
@@ -166,7 +171,7 @@ async function handleImport(
       );
     }
 
-    const rawIndex = extractZipEntryJson(zipBytes, indexEntry);
+    const rawIndex = extractZipEntryJson(zipBytes, indexEntry, MAX_YOMITAN_ENTRY_BYTES, archiveBudget);
     const existingDicts = await listDictionaries(lexiconDb);
     const parsedMeta = parseYomitanIndex(rawIndex, existingDicts.length + 1);
 
@@ -241,7 +246,7 @@ async function handleImport(
       }
 
       const entry = entries.get(fileName)!;
-      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry);
+      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry, MAX_YOMITAN_ENTRY_BYTES, archiveBudget);
       if (Array.isArray(rows)) {
         const batch: TagRecord[] = [];
         for (const row of rows) {
@@ -285,7 +290,7 @@ async function handleImport(
       }
 
       const entry = entries.get(fileName)!;
-      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry);
+      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry, MAX_YOMITAN_ENTRY_BYTES, archiveBudget);
       if (!Array.isArray(rows)) {
         throw new Error(`Isi berkas "${fileName}" bukan array JSON yang valid.`);
       }
@@ -366,7 +371,7 @@ async function handleImport(
       }
 
       const entry = entries.get(fileName)!;
-      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry);
+      const rows = extractZipEntryJson<unknown[]>(zipBytes, entry, MAX_YOMITAN_ENTRY_BYTES, archiveBudget);
       if (Array.isArray(rows)) {
         const batch: TermMetaRecord[] = [];
         for (const row of rows) {

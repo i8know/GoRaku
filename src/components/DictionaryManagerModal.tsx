@@ -6,6 +6,7 @@ import {
   updateDictionaryPriorities,
   type DictionaryRecord,
 } from "../lib/lexiconDb";
+import { sanitizeHttpUrl } from "../lib/archiveLimits";
 import { Icon } from "../ui";
 import type {
   YomitanImportStage,
@@ -764,17 +765,20 @@ export default function DictionaryManagerModal({
                                   ? "Sembunyikan Atribusi & Metadata"
                                   : "Lihat Atribusi & Lisensi"}
                               </button>
-                              {dict.url && (
-                                <a
-                                  href={dict.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="underline"
-                                  style={{ color: "var(--tinta-2)" }}
-                                >
-                                  Situs Sumber
-                                </a>
-                              )}
+                              {(() => {
+                                const safeUrl = sanitizeHttpUrl(dict.url);
+                                return safeUrl ? (
+                                  <a
+                                    href={safeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline"
+                                    style={{ color: "var(--tinta-2)" }}
+                                  >
+                                    Situs Sumber
+                                  </a>
+                                ) : null;
+                              })()}
                             </div>
 
                             {showAttr && (
