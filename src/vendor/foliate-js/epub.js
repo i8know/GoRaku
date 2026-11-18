@@ -765,10 +765,10 @@ class Loader {
         const { href, mediaType } = item
 
         const isScript = MIME.JS.test(item.mediaType)
-        const detail = { type: mediaType, isScript, allow: true}
+        const detail = { type: mediaType, isScript, allow: !isScript }
         const event = new CustomEvent('load', { detail })
         this.eventTarget.dispatchEvent(event)
-        const allow = await event.detail.allow
+        const allow = !isScript && await event.detail.allow
         if (!allow) return null
 
         const parent = parents.at(-1)
@@ -810,7 +810,7 @@ class Loader {
         // break things like iframes (because you don't want to replace links)
         // or text that just happen to be paths
 
-        // parse and replace in HTML
+        // parse, sanitize, and replace in HTML
         if ([MIME.XHTML, MIME.HTML, MIME.SVG].includes(mediaType)) {
             let doc = new DOMParser().parseFromString(str, mediaType)
             // change to HTML if it's not valid XHTML
@@ -819,6 +819,37 @@ class Loader {
                 console.warn(doc.querySelector('parsererror')?.innerText ?? 'Invalid XHTML')
                 item.mediaType = MIME.HTML
                 doc = new DOMParser().parseFromString(str, item.mediaType)
+            }
+            // Strip active/dangerous elements before resolving or serializing subresources
+            for (const el of doc.querySelectorAll('script, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link[as="script" i]')) {
+                el.remove()
+            }
+            for (const el of doc.querySelectorAll('set, animate')) {
+                const attrName = el.getAttribute('attributeName') ?? ''
+                if (/^on|^href$|^xlink:href$/i.test(attrName)) el.remove()
+            }
+            const isDangerousUri = val => {
+                if (typeof val !== 'string') return false
+                const norm = val.replace(/[\u0000-\u0020\u007f]+/g, '')
+                return /^(?:javascript|vbscript):|^data:(?:text\/html|application\/xhtml\+xml)/i.test(norm)
+            }
+            const uriAttrs = ['href', 'src', 'poster', 'data', 'action', 'formaction', 'background', 'srcset']
+            for (const el of doc.querySelectorAll('*')) {
+                for (const attr of Array.from(el.attributes)) {
+                    const name = attr.name.toLowerCase()
+                    if (name.startsWith('on')) {
+                        el.removeAttributeNode(attr)
+                        continue
+                    }
+                    const hasBadUri = name === 'srcset'
+                        ? attr.value.split(',').some(part => isDangerousUri(part.trim()))
+                        : uriAttrs.includes(name) && isDangerousUri(attr.value)
+                    if (hasBadUri) {
+                        el.removeAttributeNode(attr)
+                    } else if (attr.namespaceURI === NS.XLINK && attr.localName === 'href' && isDangerousUri(attr.value)) {
+                        el.removeAttributeNS(NS.XLINK, 'href')
+                    }
+                }
             }
             // replace hrefs in XML processing instructions
             // this is mainly for SVGs that use xml-stylesheet
@@ -851,14 +882,32 @@ class Loader {
                     /(\s*)(.+?)\s*((?:\s[\d.]+[wx])+\s*(?:,|$)|,\s+|$)/g,
                     (_, p1, p2, p3) => this.loadHref(p2, href, parents)
                         .then(p2 => `${p1}${p2}${p3}`)))
-            // replace inline styles
+            // replace and sanitize inline styles
+            const sanitizeCssText = css => css
+                .replace(/expression\s*\(/gi, 'invalid(')
+                .replace(/-moz-binding\s*:/gi, '-invalid-binding:')
+                .replace(/@import\b[^;]*;?/gi, '')
+                .replace(/url\(\s*["']?\s*(?:javascript|vbscript|data\s*:\s*(?:text\/html|application\/xhtml\+xml))[^)]*\)/gi, 'url("about:invalid")')
             for (const el of doc.querySelectorAll('style'))
                 if (el.textContent) el.textContent =
-                    await this.replaceCSS(el.textContent, href, parents)
+                    sanitizeCssText(await this.replaceCSS(el.textContent, href, parents))
             for (const el of doc.querySelectorAll('[style]'))
                 el.setAttribute('style',
-                    await this.replaceCSS(el.getAttribute('style'), href, parents))
-            // TODO: replace inline scripts? probably not worth the trouble
+                    sanitizeCssText(await this.replaceCSS(el.getAttribute('style'), href, parents)))
+            // Enforce strict iframe document CSP blocking scripts and plugins
+            if ([MIME.XHTML, MIME.HTML].includes(item.mediaType) && doc.documentElement) {
+                const ns = doc.documentElement.namespaceURI
+                const meta = ns && item.mediaType === MIME.XHTML
+                    ? doc.createElementNS(ns, 'meta')
+                    : doc.createElement('meta')
+                meta.setAttribute('http-equiv', 'Content-Security-Policy')
+                meta.setAttribute(
+                    'content',
+                    "default-src 'none'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' blob: data:; style-src 'self' 'unsafe-inline' blob: data:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';",
+                )
+                const head = doc.querySelector('head') ?? doc.documentElement
+                head.prepend(meta)
+            }
             const result = new XMLSerializer().serializeToString(doc)
             return this.createURL(href, result, item.mediaType, parent)
         }

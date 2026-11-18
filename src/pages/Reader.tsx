@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DictionaryManagerModal from "../components/DictionaryManagerModal";
 import ReaderPopup from "../components/ReaderPopup";
+import { sanitizeHttpUrl } from "../lib/archiveLimits";
 import {
   decodeTxtBytes,
   getNovelWithBlob,
@@ -396,6 +397,14 @@ export default function ReaderPage({
             buildEpubStyles(theme, fontSize, writingMode, showFurigana),
           );
         }
+
+        viewEl.addEventListener("external-link", ((
+          e: CustomEvent<{ href_?: string }>,
+        ) => {
+          if (!sanitizeHttpUrl(e.detail?.href_)) {
+            e.preventDefault();
+          }
+        }) as EventListener);
 
         viewEl.addEventListener("load", ((
           e: CustomEvent<{ doc: Document; index: number }>,
