@@ -81,6 +81,112 @@ export function sanitizeInline(html: string): string {
   return s.trim();
 }
 
+const RICH_ALLOWED = new Set([
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "br",
+  "hr",
+  "ruby",
+  "rt",
+  "rp",
+  "sub",
+  "sup",
+  "div",
+  "p",
+  "span",
+  "h3",
+  "h4",
+  "blockquote",
+  "ul",
+  "ol",
+  "li",
+  "table",
+  "thead",
+  "tbody",
+  "tfoot",
+  "tr",
+  "th",
+  "td",
+]);
+const RICH_VOID = new Set(["br", "hr"]);
+const RICH_BLOCK_STRIP_RE =
+  /<(script|style|head|title|svg|math|iframe|object|embed|form|template|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->/gi;
+const RICH_TAG_AT_START = /^<(\/?)([a-zA-Z][a-zA-Z0-9]*)(?:\s+([^<>]*?))?\s*(\/?)>/;
+const RICH_ATTR_RE = /\b(class|rowspan|colspan|lang|dir)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+
+function sanitizeRichAttrs(rawAttrs: string): string {
+  if (!rawAttrs) return "";
+  const safeParts: string[] = [];
+  for (const m of rawAttrs.matchAll(RICH_ATTR_RE)) {
+    const name = m[1].toLowerCase();
+    const rawVal = (m[2] ?? m[3] ?? m[4] ?? "").trim();
+    if (!rawVal) continue;
+    if (name === "class") {
+      if (!/["<>`=]/.test(rawVal)) {
+        safeParts.push(`class="${rawVal}"`);
+      }
+    } else if (name === "rowspan" || name === "colspan") {
+      if (/^\d{1,3}$/.test(rawVal)) {
+        safeParts.push(`${name}="${rawVal}"`);
+      }
+    } else if (name === "lang") {
+      if (/^[a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*$/.test(rawVal)) {
+        safeParts.push(`lang="${rawVal}"`);
+      }
+    } else if (name === "dir") {
+      const lower = rawVal.toLowerCase();
+      if (lower === "ltr" || lower === "rtl" || lower === "auto") {
+        safeParts.push(`dir="${lower}"`);
+      }
+    }
+  }
+  return safeParts.length > 0 ? ` ${safeParts.join(" ")}` : "";
+}
+
+/**
+ * Sanitasi HTML wacana/bacaan (Dokkai) dengan allowlist tag blok, tabel, dan atribut gaya aman.
+ * Setiap `<` yang bukan tag tervalidasi diubah menjadi `&lt;`.
+ */
+export function sanitizeRichHtml(html: string): string {
+  const cleaned = html.replace(RICH_BLOCK_STRIP_RE, "");
+  let out = "";
+  let pos = 0;
+
+  while (pos < cleaned.length) {
+    const idx = cleaned.indexOf("<", pos);
+    if (idx === -1) {
+      out += cleaned.slice(pos);
+      break;
+    }
+    out += cleaned.slice(pos, idx);
+    const match = RICH_TAG_AT_START.exec(cleaned.slice(idx));
+    if (!match) {
+      out += "&lt;";
+      pos = idx + 1;
+      continue;
+    }
+    pos = idx + match[0].length;
+    const slash = match[1];
+    const tag = match[2].toLowerCase();
+    const rawAttrs = match[3] ?? "";
+    if (!RICH_ALLOWED.has(tag)) continue;
+    if (slash) {
+      if (!RICH_VOID.has(tag)) out += `</${tag}>`;
+      continue;
+    }
+    if (RICH_VOID.has(tag)) {
+      out += `<${tag}>`;
+      continue;
+    }
+    out += `<${tag}${sanitizeRichAttrs(rawAttrs)}>`;
+  }
+
+  return out.trim();
+}
+
 // Anki furigana syntax: ` 漢字[かんじ]` (a leading space separates the base from preceding text).
 const FURI_RE = / ?([^ <>[\]]+?)\[([^[\]<>]+?)\]/g;
 const HAS_FURI = /[^\s<>[\]]\[[^[\]<>]+\]/;

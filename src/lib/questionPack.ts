@@ -1,3 +1,5 @@
+import { sanitizeInline, sanitizeRichHtml } from "./ankiText";
+
 /**
  * Skema data & utilitas validasi QuestionPack untuk Latihan/Ujian JLPT N5 Orisinal.
  */
@@ -186,6 +188,28 @@ export function validateQuestionPack(pack: QuestionPack): { valid: boolean; erro
   return {
     valid: errors.length === 0,
     errors,
+  };
+}
+
+/**
+ * Membersihkan field HTML pada item soal (terutama dari paket impor JSON eksternal)
+ * sebelum disimpan atau dirender.
+ */
+export function sanitizeQuestionItem(q: QuestionItem): QuestionItem {
+  return {
+    ...q,
+    prompt: sanitizeInline(q.prompt),
+    passageHtml: typeof q.passageHtml === "string" ? sanitizeRichHtml(q.passageHtml) : undefined,
+  };
+}
+
+/**
+ * Membersihkan seluruh field HTML pada QuestionPack secara non-mutatif.
+ */
+export function sanitizeQuestionPack(pack: QuestionPack): QuestionPack {
+  return {
+    ...pack,
+    questions: pack.questions.map(sanitizeQuestionItem),
   };
 }
 

@@ -4,6 +4,7 @@ import {
   buildCardDuplicateKey,
   getDeckDuplicateKeys,
 } from "../lib/deckCards";
+import { sanitizeInline } from "../lib/ankiText";
 import type { LookupResultItem } from "../lib/dictionaryLookup";
 import type { ExtractedSentence } from "../lib/sentenceExtractor";
 import { speakJapanese } from "../lib/tts";
@@ -616,7 +617,7 @@ export default function ReaderPopup({
                     <p
                       lang="ja"
                       className="text-[13px] leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: customSentenceHtml }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeInline(customSentenceHtml) }}
                     />
                   ) : (
                     <div className="space-y-2 pt-1">
