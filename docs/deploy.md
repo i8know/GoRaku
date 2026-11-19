@@ -33,8 +33,8 @@ GoRaku adalah aplikasi statis murni (React 19 + Vite 8 + IndexedDB/Dexie + WebAs
 
 ### Mengapa Opsi A (Tetap Menggunakan Git LFS + Pemeriksaan Ketat) Dipilih
 
-1. **Bukti Repositori:** Berkas `.gitattributes` telah melacak `*.wasm` dan `*.gz` menggunakan Git LFS sejak riwayat commit awal di `main` dan branch fitur. Seluruh 9 berkas biner di `public/tesseract/` (`3` berkas `.wasm` dan `6` berkas `.traineddata.gz`, total ~21,7 MB tak terkompresi / ~12 MB objek LFS unik) sudah tersimpan sebagai objek LFS di riwayat Git yang telah dipublikasikan.
-2. **Risiko Opsi B:** Mencabut pelacakan LFS pada `public/tesseract/**` tanpa menulis ulang riwayat (`git lfs migrate export --everything`) tetap meninggalkan objek LFS lama di riwayat commit sekaligus menambah ~22 MB biner langsung ke objek Git standar. Menulis ulang riwayat (`--everything`) akan merusak histori branch yang sudah di-push.
+1. **Bukti Repositori:** Berkas `.gitattributes` telah melacak `*.wasm` dan `*.gz` menggunakan Git LFS sejak riwayat commit awal di `main` dan branch fitur. Seluruh 9 berkas biner di `public/tesseract/` (`3` berkas `.wasm` dan `6` berkas `.traineddata.gz`, total ~18,8 MiB / ~19,7 MB di disk; ~15,4 MiB / ~16,2 MB objek LFS unik karena `fast/` identik dengan root `lang-data/`) sudah tersimpan sebagai objek LFS di riwayat Git yang telah dipublikasikan.
+2. **Risiko Opsi B:** Mencabut pelacakan LFS pada `public/tesseract/**` tanpa menulis ulang riwayat tetap meninggalkan objek LFS lama di riwayat commit sekaligus menambah ~18,8 MiB (~19,7 MB) biner langsung ke objek Git standar; sebaliknya menjalankan `git lfs migrate export --everything` untuk menulis ulang riwayat akan mengubah hash commit dan merusak histori branch yang sudah dipublikasikan.
 3. **Mitigasi Berlapis pada Opsi A:**
    - **Pemeriksa Build (`tools/checkLfsAssets.mjs`):** Memeriksa `public/` dan `dist/` setelah build untuk memastikan tidak ada berkas yang diawali pointer Git LFS (`version https://git-lfs.github.com/spec`), seluruh `tesseract/*.wasm` diawali magic bytes WebAssembly (`00 61 73 6d`), dan seluruh `*.gz` diawali magic bytes GZIP (`1f 8b`).
      - `npm run verify` menjalankan `node tools/checkLfsAssets.mjs` (mode peringatan ramah kontributor lokal bila belum menjalankan `git lfs pull`).
@@ -42,7 +42,7 @@ GoRaku adalah aplikasi statis murni (React 19 + Vite 8 + IndexedDB/Dexie + WebAs
    - **Pelindung Runtime (`src/lib/ocr/tesseractProvider.ts`):** Fungsi `verifyOcrRuntimeAssets()` memeriksa magic bytes WASM (`00 61 73 6d`) dan GZIP (`1f 8b`) sebelum worker Tesseract dijalankan, ditambah `errorHandler` pada `createWorker`. Jika aset gagal dimuat atau berupa pointer LFS 132-byte, aplikasi menampilkan toast **"Data OCR tidak dapat dimuat. Pastikan aset /tesseract terpasang dengan benar."** dan tidak menggantung secara diam-diam.
 
 ### Mengapa `ci.yml` Tidak Menggunakan `lfs: true`
-Workflow verifikasi PR (`.github/workflows/ci.yml`) sengaja **tidak** menyetel `lfs: true` karena `tsc`, `vitest`, dan `vite build` tidak memerlukan pengunduhan 12 MB biner LFS agar lulus. Hal ini menghemat kuota bandwidth bulanan Git LFS pemilik repositori pada setiap push PR. Sebaliknya, `.github/workflows/deploy-pages.yml` wajib menyetel `lfs: true` dan memvalidasinya dengan `--strict`.
+Workflow verifikasi PR (`.github/workflows/ci.yml`) sengaja **tidak** menyetel `lfs: true` karena `tsc`, `vitest`, dan `vite build` tidak memerlukan pengunduhan 15,4 MiB (~16,2 MB) objek LFS agar lulus. Hal ini menghemat kuota bandwidth bulanan Git LFS pemilik repositori pada setiap push PR. Sebaliknya, `.github/workflows/deploy-pages.yml` wajib menyetel `lfs: true` dan memvalidasinya dengan `--strict`.
 
 ---
 
@@ -61,12 +61,12 @@ Workflow verifikasi PR (`.github/workflows/ci.yml`) sengaja **tidak** menyetel `
 
 #### Catatan Kuota Bandwidth Git LFS di GitHub
 - Akun GitHub gratis mendapatkan kuota penyimpanan LFS **1 GB** dan bandwidth LFS **1 GB/bulan**.
-- Setiap kali workflow `deploy-pages.yml` berjalan, runner GitHub Actions mengunduh sekitar **12–22 MB** aset LFS saat checkout.
+- Setiap kali workflow `deploy-pages.yml` berjalan, runner GitHub Actions mengunduh sekitar **15,4 MiB (~16,2 MB)** objek LFS unik saat checkout.
 - **Pengunjung situs GitHub Pages tidak memakan kuota bandwidth Git LFS**, karena pengunjung mengunduh berkas statis dari CDN GitHub Pages (hasil artefak `dist/`), bukan dari server Git LFS.
 
 #### Menggunakan Custom Domain di GitHub Pages
 Jika Anda memasang domain kustom (mis. `goraku.example.com`) di **Settings → Pages → Custom domain**:
-1.Aplikasi akan disajikan di root domain (`/`), bukan di `/<nama-repo>/`.
+1. Aplikasi akan disajikan di root domain (`/`), bukan di `/<nama-repo>/`.
 2. Ubah variabel `APP_BASE_PATH` pada `.github/workflows/deploy-pages.yml` dari `/${{ github.event.repository.name }}/` menjadi `/`.
 
 #### Mengaktifkan Pengindeksan Mesin Pencari (SEO)
@@ -81,7 +81,7 @@ Jika situs sudah siap dipublikasikan ke mesin pencari, tambahkan `ALLOW_INDEX: "
    - **Framework Preset:** Vite
    - **Build Command:** `npm run build && node tools/checkLfsAssets.mjs --strict`
    - **Output Directory:** `dist`
-3. Berkas `vercel.json` di root repositori secara otomatis mengatur rewrite SPA ke `/index.html` dan header `Cache-Control` (`immutable` 1 tahun untuk `/assets/*` dan `/tesseract/*`, serta `max-age=0, must-revalidate` untuk `/index.html`).
+3. Berkas `vercel.json` di root repositori secara otomatis mengatur rewrite SPA ke `/index.html` dan header `Cache-Control` (`immutable` 1 tahun untuk `/assets/*` dan `/tesseract/*`, serta `no-cache, must-revalidate` untuk `/index.html` dan `/`).
 4. *(Alternatif tanpa Git LFS di Vercel)*: Unduh artefak `github-pages` dari GitHub Actions atau jalankan `vercel deploy --prebuilt` dari runner GitHub Actions yang sudah melakukan checkout dengan `lfs: true`.
 
 ---
@@ -92,6 +92,8 @@ Jika situs sudah siap dipublikasikan ke mesin pencari, tambahkan `ALLOW_INDEX: "
 2. Pastikan konfigurasi build:
    - **Build command:** `npm run build && node tools/checkLfsAssets.mjs --strict`
    - **Publish directory:** `dist`
+   - Berkas `.gitattributes` melacak `*.wasm` dan `*.gz` menggunakan Git LFS.
+   - Pastikan berkas di `public/tesseract/` (total ~30,05 MiB keseluruhan folder `public/tesseract/` termasuk berkas JS, atau ~15,4 MiB objek LFS unik) ikut terunduh saat checkout.
 3. Berkas `public/_redirects` (`/*  /index.html  200`) otomatis disalin ke `dist/_redirects` saat build untuk menangani semua deep link SPA.
 
 ---

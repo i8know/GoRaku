@@ -117,8 +117,10 @@ function figmaSiteConfiguration(
   return {
     name: 'figma-site-configuration',
     configureServer(server) {
+      const robotsUrlPath = resolveBaseAssetHref('/robots.txt', basePath)
       server.middlewares.use((req, res, next) => {
-        if (!robotsTxt || req.url?.split('?')[0] !== '/robots.txt') return next()
+        const reqPath = req.url?.split('?')[0]
+        if (!robotsTxt || (reqPath !== '/robots.txt' && reqPath !== robotsUrlPath)) return next()
 
         res.setHeader('Content-Type', 'text/plain; charset=utf-8')
         res.end(robotsTxt)
