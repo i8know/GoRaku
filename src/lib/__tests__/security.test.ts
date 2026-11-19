@@ -9,14 +9,19 @@ import {
   sanitizeHttpUrl,
 } from "../archiveLimits";
 import { extractZipEntry, indexZipEntries } from "../apkg";
+import { addNovelFile } from "../bookStorage";
+import { neutralizeCsvCell } from "../deckCards";
 import { sanitizeQuestionPack, type QuestionPack } from "../questionPack";
 import { getQuestionPack, importQuestionPackFromJson } from "../questionPackStorage";
+import { importScheduleBackup } from "../scheduleBackup";
 import {
   extractZipEntryBytes,
   indexYomitanZip,
   parseYomitanIndex,
 } from "../yomitanParser";
 import { renderQuestionPrompt } from "../../components/jlpt/furiganaHelper";
+import { limitsFor } from "../../store/useAppStore";
+import { useReviewStore } from "../../store/useReviewStore";
 
 function buildDeflateZipWithClaimedSize(
   fileName: string,
@@ -232,5 +237,41 @@ describe("Regresi Keamanan: Sanitasi HTML, QuestionPack, URI Kamus, dan Batas Ar
     expect(new TextDecoder().decode(extractZipEntry(z, apkgIdx, "index.json"))).toBe(
       '{"title":"Root"}',
     );
+  });
+
+  it("7. importScheduleBackup dan limitsFor menolak kunci prototype (__proto__, constructor, prototype)", async () => {
+    const protoPayload =
+      '{"srsCards":{"__proto__":{"c1":{"id":"c1","easeFactor":2.5,"interval":1,"repetitions":1,"nextReview":1000}}}}';
+    await expect(importScheduleBackup(protoPayload)).rejects.toThrow(/tidak diizinkan/i);
+    expect(Object.getPrototypeOf(useReviewStore.getState().srsCards)).toBe(Object.prototype);
+
+    const cardProtoPayload =
+      '{"srsCards":{"deck1":{"constructor":{"id":"c1","easeFactor":2.5,"interval":1,"repetitions":1,"nextReview":1000}}}}';
+    await expect(importScheduleBackup(cardProtoPayload)).rejects.toThrow(/tidak diizinkan/i);
+
+    expect(limitsFor("toString", { newCards: 15, maxReview: 120 }, {})).toEqual({
+      newCards: 15,
+      maxReview: 120,
+    });
+    expect(limitsFor("__proto__", { newCards: 15, maxReview: 120 }, {})).toEqual({
+      newCards: 15,
+      maxReview: 120,
+    });
+  });
+
+  it("8. neutralizeCsvCell mencegah CSV Formula Injection (=, +, -, @, tab, CR)", () => {
+    expect(neutralizeCsvCell("=CMD|' /C calc'!A0")).toBe("'=CMD|' /C calc'!A0");
+    expect(neutralizeCsvCell("+SUM(1,2)")).toBe("'+SUM(1,2)");
+    expect(neutralizeCsvCell("-1+2")).toBe("'-1+2");
+    expect(neutralizeCsvCell("@SUM(A1)")).toBe("'@SUM(A1)");
+    expect(neutralizeCsvCell("\t=1")).toBe("'\t=1");
+    expect(neutralizeCsvCell("猫 (ねこ)")).toBe("猫 (ねこ)");
+  });
+
+  it("9. addNovelFile menolak berkas non-ZIP yang menyamar sebagai .epub (anti format-sniffing bypass)", async () => {
+    const fakeMobiAsEpub = new File(["BOOKMOBI-fake-payload"], "disguised.epub", {
+      type: "application/epub+zip",
+    });
+    await expect(addNovelFile(fakeMobiAsEpub)).rejects.toThrow(/bukan arsip EPUB \(ZIP\) yang valid/i);
   });
 });
