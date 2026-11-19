@@ -1,4 +1,5 @@
 import Dexie, { type Table } from "dexie";
+import { getLexiconDbName } from "./userStorageScope";
 
 /**
  * Metadata kamus berformat Yomitan (dari index.json).
@@ -152,7 +153,7 @@ export class LexiconDatabase extends Dexie {
   mangaPages!: Table<MangaPageRecord, [string, string]>;
   ocrCache!: Table<OcrCacheRecord, number>;
 
-  constructor(dbName = "ma-immersion-lexicon") {
+  constructor(dbName = getLexiconDbName()) {
     super(dbName);
 
     this.version(1).stores({
@@ -193,7 +194,21 @@ export class LexiconDatabase extends Dexie {
   }
 }
 
-export const lexiconDb = new LexiconDatabase();
+export let lexiconDb = new LexiconDatabase(getLexiconDbName());
+
+/**
+ * Mengganti instance Dexie leksikon/buku agar mengarah ke basis data terisolasi milik pengguna aktif.
+ */
+export function switchLexiconDatabaseScope(userId: string | null): void {
+  const targetName = getLexiconDbName(userId);
+  if (lexiconDb.name === targetName) return;
+  try {
+    lexiconDb.close();
+  } catch {
+    // Abaikan galat saat menutup instance lama
+  }
+  lexiconDb = new LexiconDatabase(targetName);
+}
 
 /**
  * Mengambil seluruh daftar kamus terurut berdasarkan `priority` (kecil ke besar).

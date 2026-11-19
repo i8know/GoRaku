@@ -17,6 +17,7 @@ import type {
 import { renderJapanese, ROLE_LABELS, ROLES, toPlain, type FieldMapping, type Role } from "../lib/ankiText";
 import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
 import { speakJapanese } from "../lib/tts";
+import { getActiveStorageUserId } from "../lib/userStorageScope";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -160,6 +161,10 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
       const w = new Worker(new URL("../workers/apkgImport.worker.ts", import.meta.url), {
         type: "module",
       });
+      w.postMessage({
+        type: "set-user-scope",
+        userId: getActiveStorageUserId(),
+      } satisfies WorkerRequest);
 
       w.onmessage = (e: MessageEvent<WorkerResponse>) => {
         const msg = e.data;
@@ -578,6 +583,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
     postToWorker({
       type: "commit-import",
       options: {
+        userId: getActiveStorageUserId(),
         deckId,
         isNewDeck: isNew,
         selectedDeckIds: [...selectedDecks],

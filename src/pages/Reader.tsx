@@ -24,6 +24,13 @@ import {
   resolveClickCharacterPosition,
   type ExtractedSentence,
 } from "../lib/sentenceExtractor";
+import {
+  getScopedStorageItem,
+  LEGACY_READER_FLOW_KEY,
+  LEGACY_READER_FONTSIZE_KEY,
+  LEGACY_READER_THEME_KEY,
+  setScopedStorageItem,
+} from "../lib/userStorageScope";
 import { Button, Icon } from "../ui";
 import type {
   FoliateRelocateDetail,
@@ -130,15 +137,15 @@ export default function ReaderPage({
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Preferensi Pembaca (disimpan di localStorage)
+  // Preferensi Pembaca (disimpan per pengguna di localStorage)
   const [theme, setTheme] = useState<ReaderTheme>(
-    () => (localStorage.getItem("ma-reader-theme") as ReaderTheme) || "light",
+    () => (getScopedStorageItem(LEGACY_READER_THEME_KEY) as ReaderTheme) || "light",
   );
   const [fontSize, setFontSize] = useState<number>(
-    () => Number(localStorage.getItem("ma-reader-fontsize")) || 19,
+    () => Number(getScopedStorageItem(LEGACY_READER_FONTSIZE_KEY)) || 19,
   );
   const [flow, setFlow] = useState<ReaderFlow>(
-    () => (localStorage.getItem("ma-reader-flow") as ReaderFlow) || "paginated",
+    () => (getScopedStorageItem(LEGACY_READER_FLOW_KEY) as ReaderFlow) || "paginated",
   );
   const [writingMode, setWritingMode] = useState<ReaderWritingMode>("auto");
   const [showFurigana, setShowFurigana] = useState(true);
@@ -168,15 +175,15 @@ export default function ReaderPage({
   const foliateViewRef = useRef<FoliateViewElement | null>(null);
 
   useEffect(() => {
-    localStorage.setItem("ma-reader-theme", theme);
+    setScopedStorageItem(LEGACY_READER_THEME_KEY, theme);
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem("ma-reader-fontsize", String(fontSize));
+    setScopedStorageItem(LEGACY_READER_FONTSIZE_KEY, String(fontSize));
   }, [fontSize]);
 
   useEffect(() => {
-    localStorage.setItem("ma-reader-flow", flow);
+    setScopedStorageItem(LEGACY_READER_FLOW_KEY, flow);
   }, [flow]);
 
   useEffect(() => {

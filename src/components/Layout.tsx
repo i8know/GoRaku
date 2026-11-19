@@ -11,11 +11,16 @@ import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
 import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+import {
+  getScopedStorageItem,
+  LEGACY_SIDEBAR_COLLAPSED_KEY,
+  setScopedStorageItem,
+} from "../lib/userStorageScope";
 
 const CommandPaletteModal = lazy(() => import("./CommandPaletteModal"));
 const DictionaryManagerModal = lazy(() => import("./DictionaryManagerModal"));
 
-const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
+const SIDEBAR_COLLAPSED_KEY = LEGACY_SIDEBAR_COLLAPSED_KEY;
 
 const navItems = [
   { label: "Beranda", shortLabel: "Beranda", kanji: "家", jp: "学習・概要", path: "/beranda", icon: "home" as const },
@@ -83,14 +88,10 @@ export default function ProtectedLayout() {
     navigate("/", { replace: true });
   };
 
-  // User's manual sidebar collapse preference
-  const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
+  // User's manual sidebar collapse preference (disimpan per pengguna)
+  const [userCollapsed, setUserCollapsed] = useState<boolean>(
+    () => getScopedStorageItem(SIDEBAR_COLLAPSED_KEY) === "1",
+  );
   // Allow user to override auto-collapse while inside Reader or Review
   const [focusOverrideExpanded, setFocusOverrideExpanded] = useState(false);
   const [quickOpen, setQuickOpen] = useState(true);
@@ -142,11 +143,7 @@ export default function ProtectedLayout() {
     }
     setUserCollapsed((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-      } catch {
-        // ignore storage errors
-      }
+      setScopedStorageItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
       return next;
     });
   };

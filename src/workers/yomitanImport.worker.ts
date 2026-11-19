@@ -4,6 +4,7 @@ import {
   deleteDictionaryCascade,
   lexiconDb,
   listDictionaries,
+  switchLexiconDatabaseScope,
   type DictionaryRecord,
   type TagRecord,
   type TermMetaRecord,
@@ -29,6 +30,7 @@ export type YomitanWorkerRequest =
       buffer: ArrayBuffer;
       fileName: string;
       replaceExisting?: boolean;
+      userId?: string | null;
     }
   | {
       type: "cancel";
@@ -460,6 +462,7 @@ self.onmessage = (event: MessageEvent<YomitanWorkerRequest>) => {
   }
 
   if (data.type === "import-yomitan") {
+    switchLexiconDatabaseScope(data.userId ?? null);
     void handleImport(data.buffer, data.replaceExisting);
   }
 };

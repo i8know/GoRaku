@@ -5,6 +5,7 @@
 
 import Dexie, { type Table } from "dexie";
 import type { ReviewLogEntry } from "./fsrsScheduler";
+import { getDeckDbName } from "./userStorageScope";
 
 export type { ReviewLogEntry };
 
@@ -81,7 +82,23 @@ export class DeckDatabase extends Dexie {
   }
 }
 
-export const deckDexie = new DeckDatabase();
+export let deckDexie = new DeckDatabase(getDeckDbName());
+
+/**
+ * Mengganti instance Dexie deck agar mengarah ke basis data terisolasi milik pengguna aktif.
+ * Menunggu antrean log review selesai sebelum menutup koneksi lama.
+ */
+export async function switchDeckDatabaseScope(userId: string | null): Promise<void> {
+  await flushReviewLogs();
+  const targetName = getDeckDbName(userId);
+  if (deckDexie.name === targetName) return;
+  try {
+    deckDexie.close();
+  } catch {
+    // Abaikan galat saat menutup instance lama
+  }
+  deckDexie = new DeckDatabase(targetName);
+}
 
 export async function ensureDeckDbOpen(): Promise<void> {
   // Selalu panggil deckDexie.open() agar pemanggil serentak tetap menunggu dbReadyPromise

@@ -9,6 +9,11 @@ import {
   putKvValue,
 } from "./deckDb";
 import { useToastStore } from "../store/useToastStore";
+import {
+  getScopedKey,
+  isBlockedUnauthenticatedStorageAccess,
+  isPersistWriteSuppressed,
+} from "./userStorageScope";
 
 export const REVIEW_STORAGE_KEY = "japanese-review-storage";
 export const REVIEW_MIGRATION_DONE_KEY = "japanese-review-storage::migrated-v1";
@@ -45,11 +50,13 @@ export interface ReviewPersistStorageOptions {
   debounceMs?: number;
   retryDelayMs?: number;
   maxRetries?: number;
+  useUserScope?: boolean;
 }
 
 export interface ReviewPersistController {
   storage: StateStorage;
   flush: () => Promise<void>;
+  resetScope: () => Promise<void>;
   dispose: () => void;
   getMemorySnapshot: (key?: string) => string | null;
   getBackendMode: () => BackendMode | null;
@@ -138,6 +145,15 @@ export function createReviewPersistStorage(
   const debounceMs = opts.debounceMs ?? 300;
   const retryDelayMs = opts.retryDelayMs ?? 1500;
   const maxRetries = opts.maxRetries ?? 3;
+  const useUserScope = opts.useUserScope ?? true;
+
+  const resolveScopedKey = (key: string): string =>
+    useUserScope ? getScopedKey(key) : key;
+  const isBlockedScope = (): boolean =>
+    useUserScope && isBlockedUnauthenticatedStorageAccess();
+  const isWriteSuppressed = (): boolean =>
+    useUserScope &&
+    (isPersistWriteSuppressed() || isBlockedUnauthenticatedStorageAccess());
 
   const memoryStore = new Map<string, string>();
   const pendingOps = new Map<string, PendingOp>();
@@ -358,45 +374,50 @@ export function createReviewPersistStorage(
 
   const storage: StateStorage = {
     getItem: async (name: string) => {
-      if (pendingOps.has(name)) {
-        await enqueueFlushKey(name);
-        if (pendingOps.has(name)) {
-          return memoryStore.get(name) ?? null;
+      if (isBlockedScope()) {
+        return null;
+      }
+      const scopedName = resolveScopedKey(name);
+      if (pendingOps.has(scopedName)) {
+        await enqueueFlushKey(scopedName);
+        if (pendingOps.has(scopedName)) {
+          return memoryStore.get(scopedName) ?? null;
         }
       }
 
       const mode = await resolveBackend();
       if (mode === "localStorage") {
-        return readLocalSafe(name);
+        return readLocalSafe(scopedName);
       }
 
       let idbVal: string | undefined;
       try {
-        idbVal = await idbGet(name);
+        idbVal = await idbGet(scopedName);
       } catch (err) {
         console.error("Gagal membaca progres review dari IndexedDB:", err);
-        return memoryStore.get(name) ?? readLocalSafe(name);
+        return memoryStore.get(scopedName) ?? readLocalSafe(scopedName);
       }
 
       if (typeof idbVal === "string") {
-        memoryStore.set(name, idbVal);
+        memoryStore.set(scopedName, idbVal);
         return idbVal;
       }
 
-      // Belum ada data review di IndexedDB -> cek migrasi satu kali dari localStorage
+      // Belum ada data review di IndexedDB -> cek migrasi satu kali dari localStorage (dalam scope aktif yang sama)
+      const migrationDoneKey = resolveScopedKey(REVIEW_MIGRATION_DONE_KEY);
       let alreadyMigrated = false;
       try {
-        alreadyMigrated = Boolean(await idbGet(REVIEW_MIGRATION_DONE_KEY));
+        alreadyMigrated = Boolean(await idbGet(migrationDoneKey));
       } catch {
         alreadyMigrated = false;
       }
       if (alreadyMigrated) {
-        return memoryStore.get(name) ?? null;
+        return memoryStore.get(scopedName) ?? null;
       }
 
-      const localRaw = readLocalSafe(name);
+      const localRaw = readLocalSafe(scopedName);
       if (!localRaw) {
-        return memoryStore.get(name) ?? null;
+        return memoryStore.get(scopedName) ?? null;
       }
 
       let parsedLocal: unknown;
@@ -407,19 +428,19 @@ export function createReviewPersistStorage(
           "Data progres review di localStorage rusak, migrasi ke IndexedDB dilewati:",
           err,
         );
-        return memoryStore.get(name) ?? null;
+        return memoryStore.get(scopedName) ?? null;
       }
 
       if (!parsedLocal || typeof parsedLocal !== "object" || Array.isArray(parsedLocal)) {
         console.error(
           "Struktur data progres review di localStorage tidak valid, migrasi dilewati.",
         );
-        return memoryStore.get(name) ?? null;
+        return memoryStore.get(scopedName) ?? null;
       }
 
       try {
-        await idbPut(name, localRaw);
-        const readBack = await idbGet(name);
+        await idbPut(scopedName, localRaw);
+        const readBack = await idbGet(scopedName);
         if (typeof readBack !== "string") {
           throw new Error("Hasil baca-ulang IndexedDB kosong setelah migrasi.");
         }
@@ -428,15 +449,15 @@ export function createReviewPersistStorage(
           throw new Error("Verifikasi deep equality gagal sesudah menyalin data ke IndexedDB.");
         }
         await idbPut(
-          REVIEW_MIGRATION_DONE_KEY,
+          migrationDoneKey,
           JSON.stringify({ done: true, migratedAt: Date.now() }),
         );
         // Biarkan kunci localStorage lama tetap ada sebagai cadangan aman di rilis ini.
-        memoryStore.set(name, readBack);
+        memoryStore.set(scopedName, readBack);
         return readBack;
       } catch (err) {
         console.error("Migrasi satu kali progres review ke IndexedDB gagal:", err);
-        memoryStore.set(name, localRaw);
+        memoryStore.set(scopedName, localRaw);
         opts.onWriteError?.(err);
         triggerWriteErrorToast();
         return localRaw;
@@ -444,33 +465,54 @@ export function createReviewPersistStorage(
     },
 
     setItem: (name: string, value: string) => {
-      memoryStore.set(name, value);
-      pendingOps.set(name, { type: "set", value });
-      retryCounts.set(name, 0);
-      clearTimersForKey(name);
+      if (isWriteSuppressed()) {
+        return;
+      }
+      const scopedName = resolveScopedKey(name);
+      memoryStore.set(scopedName, value);
+      pendingOps.set(scopedName, { type: "set", value });
+      retryCounts.set(scopedName, 0);
+      clearTimersForKey(scopedName);
 
       if (debounceMs <= 0) {
-        return enqueueFlushKey(name);
+        return enqueueFlushKey(scopedName);
       }
       const timer = setTimeout(() => {
-        debounceTimers.delete(name);
-        void enqueueFlushKey(name);
+        debounceTimers.delete(scopedName);
+        void enqueueFlushKey(scopedName);
       }, debounceMs);
-      debounceTimers.set(name, timer);
+      debounceTimers.set(scopedName, timer);
     },
 
     removeItem: (name: string) => {
-      memoryStore.delete(name);
-      pendingOps.set(name, { type: "remove" });
-      retryCounts.set(name, 0);
-      clearTimersForKey(name);
-      return enqueueFlushKey(name);
+      if (isWriteSuppressed()) {
+        return;
+      }
+      const scopedName = resolveScopedKey(name);
+      memoryStore.delete(scopedName);
+      pendingOps.set(scopedName, { type: "remove" });
+      retryCounts.set(scopedName, 0);
+      clearTimersForKey(scopedName);
+      return enqueueFlushKey(scopedName);
     },
   };
 
   return {
     storage,
     flush,
+    resetScope: async () => {
+      await flush();
+      for (const t of debounceTimers.values()) clearTimeout(t);
+      for (const t of retryTimers.values()) clearTimeout(t);
+      debounceTimers.clear();
+      retryTimers.clear();
+      pendingOps.clear();
+      retryCounts.clear();
+      memoryStore.clear();
+      backendMode = null;
+      backendProbePromise = null;
+      toastShownForFailure = false;
+    },
     dispose: () => {
       disposed = true;
       for (const t of debounceTimers.values()) clearTimeout(t);
@@ -484,7 +526,8 @@ export function createReviewPersistStorage(
         window.removeEventListener("pagehide", onPageHide);
       }
     },
-    getMemorySnapshot: (key = REVIEW_STORAGE_KEY) => memoryStore.get(key) ?? null,
+    getMemorySnapshot: (key = REVIEW_STORAGE_KEY) =>
+      memoryStore.get(resolveScopedKey(key)) ?? null,
     getBackendMode: () => backendMode,
   };
 }
@@ -493,4 +536,8 @@ export const defaultReviewPersistController = createReviewPersistStorage();
 
 export async function flushReviewStorageWrites(): Promise<void> {
   await defaultReviewPersistController.flush();
+}
+
+export async function resetReviewStorageForScopeChange(): Promise<void> {
+  await defaultReviewPersistController.resetScope();
 }
