@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
@@ -7,6 +7,18 @@ import { useReviewStore } from "../store/useReviewStore";
 import { liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks } from "../lib/deckSubdecks";
 import { listNovels } from "../lib/bookStorage";
+import {
+  DELETE_ACCOUNT_CONFIRMATION_WORD,
+  deleteCurrentUserAccount,
+  downloadUserAccountExport,
+} from "../lib/accountData";
+import {
+  getPasswordStrength,
+  hasEmailPasswordIdentity,
+  normalizeJlptLevel,
+} from "../lib/supabase";
+
+const JLPT_LEVELS = ["N5", "N4", "N3", "N2", "N1"] as const;
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -33,14 +45,33 @@ export default function ProfilePage() {
   }, []);
   const [editMode, setEditMode] = useState(false);
   const [displayName, setDisplayName] = useState(user?.name || "");
+  const [selectedLevel, setSelectedLevel] = useState(normalizeJlptLevel(user?.level));
+  const [savingProfile, setSavingProfile] = useState(false);
   const [nameError, setNameError] = useState("");
   const [statusNotice, setStatusNotice] = useState("");
+  const [errorNotice, setErrorNotice] = useState("");
+
+  const [passwordFormOpen, setPasswordFormOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  const [exportingData, setExportingData] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const signOut = useAuthStore((s) => s.signOut);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const authUser = useAuthStore((s) => s.user);
+  const authProfile = useAuthStore((s) => s.profile);
+  const updateProfile = useAuthStore((s) => s.updateProfile);
+  const updatePassword = useAuthStore((s) => s.updatePassword);
+  const isEmailPasswordUser = hasEmailPasswordIdentity(authUser);
+  const passwordStrength = getPasswordStrength(newPassword);
 
   useEffect(() => {
     setDisplayName(user?.name || "");
-  }, [user?.name]);
+    setSelectedLevel(normalizeJlptLevel(user?.level));
+  }, [user?.name, user?.level]);
 
   if (!user) return <div className="prof-empty"><p>Silakan login terlebih dahulu.</p></div>;
 
@@ -75,12 +106,15 @@ export default function ProfilePage() {
   const totalDecks = rootDecks.length;
   const totalLibrary = booksCount > 0 ? booksCount : libraryItems.length;
 
-  // Calculate streak (mock: days since join)
-  const joinDate = new Date("2026-01-15");
-  const today = new Date();
-  const daysJoined = Math.floor((today.getTime() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
+  const joinedAtSource = authUser?.created_at ?? authProfile?.consented_at ?? null;
+  const daysJoined = useMemo(() => {
+    if (!joinedAtSource) return 1;
+    const ms = new Date(joinedAtSource).getTime();
+    if (!Number.isFinite(ms)) return 1;
+    return Math.max(1, Math.floor((Date.now() - ms) / (1000 * 60 * 60 * 24)) + 1);
+  }, [joinedAtSource]);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = displayName.trim();
     if (!clean) {
@@ -88,30 +122,84 @@ export default function ProfilePage() {
       return;
     }
     setNameError("");
+    setErrorNotice("");
+    setStatusNotice("");
+    const normalizedLevel = normalizeJlptLevel(selectedLevel);
+
+    if (authUser) {
+      setSavingProfile(true);
+      const res = await updateProfile({
+        display_name: clean,
+        jlpt_level: normalizedLevel,
+      });
+      setSavingProfile(false);
+      if (res.error) {
+        setErrorNotice(res.error);
+        return;
+      }
+    } else {
+      updateUser(clean, normalizedLevel);
+    }
+
     setDisplayName(clean);
-    updateUser(clean, user.level);
+    setSelectedLevel(normalizedLevel);
     setEditMode(false);
-    setStatusNotice("Nama tampilan diperbarui.");
+    setStatusNotice("Profil berhasil disimpan.");
   };
 
-  const handleExportProgress = () => {
-    const data = {
-      user: { name: user.name, email: user.email, level: user.level },
-      decks,
-      exportDate: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `goraku-progress-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatusNotice("Progres berhasil diekspor.");
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorNotice("");
+    setStatusNotice("");
+    if (newPassword.length < 8) {
+      setErrorNotice("Kata sandi baru minimal 8 karakter.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorNotice("Konfirmasi kata sandi baru tidak cocok.");
+      return;
+    }
+    setSavingPassword(true);
+    const res = await updatePassword(newPassword);
+    setSavingPassword(false);
+    if (res.error) {
+      setErrorNotice(res.error);
+      return;
+    }
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setPasswordFormOpen(false);
+    setStatusNotice("Kata sandi berhasil diperbarui.");
+  };
+
+  const handleExportMyData = async () => {
+    setErrorNotice("");
+    setStatusNotice("");
+    setExportingData(true);
+    try {
+      await downloadUserAccountExport(authUser, authProfile);
+      setStatusNotice("Seluruh data akun dan progres belajar Anda berhasil diekspor (JSON).");
+    } catch {
+      setErrorNotice("Gagal mengekspor data akun. Silakan coba lagi.");
+    } finally {
+      setExportingData(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
-    await signOut();
+    if (deleteConfirmText.trim().toUpperCase() !== DELETE_ACCOUNT_CONFIRMATION_WORD) {
+      setErrorNotice(`Ketik "${DELETE_ACCOUNT_CONFIRMATION_WORD}" terlebih dahulu untuk mengonfirmasi penghapusan.`);
+      return;
+    }
+    setErrorNotice("");
+    setStatusNotice("");
+    setDeletingAccount(true);
+    const res = await deleteCurrentUserAccount({ userId: authUser?.id ?? null });
+    setDeletingAccount(false);
+    if (res.error) {
+      setErrorNotice(res.error);
+      return;
+    }
     navigate("/", { replace: true });
   };
 
@@ -130,6 +218,14 @@ export default function ProfilePage() {
             {statusNotice}
           </p>
         )}
+        {errorNotice && (
+          <p
+            role="alert"
+            className="mb-4 rounded-xl border border-[rgba(185,60,34,0.3)] bg-[rgba(185,60,34,0.08)] px-4 py-2.5 text-xs font-semibold text-[var(--shu)]"
+          >
+            {errorNotice}
+          </p>
+        )}
         {/* Hero Section */}
         <section className="prof-hero">
           <div className="prof-header">
@@ -138,14 +234,14 @@ export default function ProfilePage() {
               {!editMode ? (
                 <>
                   <h2>{displayName}</h2>
-                  <p className="prof-level">{user.level} • Bergabung Januari 2026</p>
+                  <p className="prof-level">Target JLPT {user.level}</p>
                   <p className="prof-email">{user.email}</p>
                   <Button className="prof-edit-btn" onClick={() => { setEditMode(true); setNameError(""); }}>
                     <Icon name="edit" size={14} /> Edit profil
                   </Button>
                 </>
               ) : (
-                <form className="prof-edit-form" onSubmit={handleSaveProfile} noValidate>
+                <form className="prof-edit-form" onSubmit={(e) => void handleSaveProfile(e)} noValidate>
                   <input
                     type="text"
                     value={displayName}
@@ -155,16 +251,43 @@ export default function ProfilePage() {
                     aria-invalid={Boolean(nameError)}
                     maxLength={40}
                     required
+                    disabled={savingProfile}
                     className="prof-input"
                   />
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(normalizeJlptLevel(e.target.value))}
+                    aria-label="Target level JLPT"
+                    disabled={savingProfile}
+                    className="prof-input"
+                  >
+                    {JLPT_LEVELS.map((lvl) => (
+                      <option key={lvl} value={lvl}>
+                        Target {lvl}
+                      </option>
+                    ))}
+                  </select>
                   {nameError && (
                     <span role="alert" className="text-xs font-medium text-[var(--shu)]">
                       {nameError}
                     </span>
                   )}
                   <div className="prof-edit-actions">
-                    <Button className="primary-light" type="submit">Simpan</Button>
-                    <Button className="outline-button" onClick={() => { setDisplayName(user.name); setNameError(""); setEditMode(false); }}>Batal</Button>
+                    <Button className="primary-light" type="submit" disabled={savingProfile}>
+                      {savingProfile ? "Menyimpan…" : "Simpan"}
+                    </Button>
+                    <Button
+                      className="outline-button"
+                      disabled={savingProfile}
+                      onClick={() => {
+                        setDisplayName(user.name);
+                        setSelectedLevel(normalizeJlptLevel(user.level));
+                        setNameError("");
+                        setEditMode(false);
+                      }}
+                    >
+                      Batal
+                    </Button>
                   </div>
                 </form>
               )}
@@ -252,29 +375,95 @@ export default function ProfilePage() {
               <div className="prof-setting-item">
                 <div>
                   <p><strong>Kata Sandi</strong></p>
-                  <small>Ubah kata sandi login Anda</small>
+                  <small>
+                    {isEmailPasswordUser
+                      ? "Ganti kata sandi untuk akun email Anda"
+                      : "Akun ini masuk melalui Google; kelola kata sandi melalui akun Google Anda."}
+                  </small>
                 </div>
-                <Button className="outline-button" onClick={() => setStatusNotice("Pengelolaan kata sandi offline dikelola lewat perangkat.")}>
-                  <Icon name="key" size={14} /> Ubah
-                </Button>
+                {isEmailPasswordUser && (
+                  <Button
+                    className="outline-button"
+                    onClick={() => {
+                      setPasswordFormOpen((prev) => !prev);
+                      setErrorNotice("");
+                    }}
+                  >
+                    <Icon name="key" size={14} /> {passwordFormOpen ? "Tutup" : "Ganti kata sandi"}
+                  </Button>
+                )}
               </div>
+
+              {isEmailPasswordUser && passwordFormOpen && (
+                <form
+                  onSubmit={(e) => void handleChangePassword(e)}
+                  noValidate
+                  className="rounded-xl border border-[var(--garis)] bg-[var(--bg)] p-4 grid gap-3"
+                >
+                  <label className="grid gap-1 text-xs font-semibold">
+                    <span>Kata sandi baru (minimal 8 karakter)</span>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      autoComplete="new-password"
+                      disabled={savingPassword}
+                      className="prof-input"
+                    />
+                    {newPassword.length > 0 && (
+                      <small className="text-[var(--tinta-2)] font-normal">
+                        {passwordStrength.label}
+                      </small>
+                    )}
+                  </label>
+                  <label className="grid gap-1 text-xs font-semibold">
+                    <span>Konfirmasi kata sandi baru</span>
+                    <input
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      autoComplete="new-password"
+                      disabled={savingPassword}
+                      className="prof-input"
+                    />
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit" className="primary-light" disabled={savingPassword}>
+                      {savingPassword ? "Menyimpan…" : "Simpan kata sandi"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
               <div className="prof-setting-item">
                 <div>
-                  <p><strong>Email Verifikasi</strong></p>
-                  <small>{user.email ? `${user.email} • Terverifikasi` : "Akun lokal • Terverifikasi"}</small>
+                  <p><strong>Email Akun</strong></p>
+                  <small>
+                    {authUser?.email
+                      ? `${authUser.email} • ${authUser.email_confirmed_at ? "Terverifikasi" : "Menunggu verifikasi"}`
+                      : user.email}
+                  </small>
                 </div>
                 <Button className="outline-button" disabled>
-                  <Icon name="check" size={14} /> Terverifikasi
+                  <Icon name="check" size={14} /> Aktif
                 </Button>
               </div>
               <div className="prof-setting-item">
                 <div>
-                  <p><strong>Sesi Aktif</strong></p>
-                  <small>Saat ini masuk di 1 perangkat</small>
+                  <p><strong>Privasi &amp; Syarat</strong></p>
+                  <small>
+                    Persetujuan versi{" "}
+                    <code>{authProfile?.consent_version ?? "-"}</code>
+                  </small>
                 </div>
-                <Button className="outline-button" onClick={() => setStatusNotice("Hanya 1 sesi lokal aktif pada browser ini.")}>
-                  Kelola Sesi
-                </Button>
+                <div className="flex flex-wrap gap-3 text-xs font-semibold">
+                  <Link to="/privasi" className="text-[var(--ai)] hover:underline">
+                    Kebijakan Privasi
+                  </Link>
+                  <Link to="/syarat" className="text-[var(--ai)] hover:underline">
+                    Syarat Penggunaan
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
@@ -283,8 +472,13 @@ export default function ProfilePage() {
           <section className="prof-card">
             <h2><Icon name="upload" size={18} /> Manajemen Data</h2>
             <div className="prof-data-actions">
-              <Button className="outline-button" onClick={handleExportProgress}>
-                <Icon name="download" size={16} /> Ekspor Progres
+              <Button
+                className="outline-button"
+                disabled={exportingData}
+                onClick={() => void handleExportMyData()}
+              >
+                <Icon name="download" size={16} />{" "}
+                {exportingData ? "Menyiapkan ekspor…" : "Ekspor data saya (JSON)"}
               </Button>
               <Button className="outline-button" onClick={() => navigate("/deck")}>
                 <Icon name="upload" size={16} /> Impor Data
@@ -297,20 +491,68 @@ export default function ProfilePage() {
 
           {/* Danger Zone */}
           <section className="prof-card prof-card-danger">
-            <h2><Icon name="alert" size={18} /> Zona Berbahaya</h2>
-            <p className="prof-danger-text">Tindakan di bawah ini akan mengeluarkan akun dan menghapus sesi lokal. Lakukan dengan hati-hati.</p>
+            <h2><Icon name="alert" size={18} /> Hapus Akun</h2>
+            <p className="prof-danger-text">
+              Penghapusan akun bersifat permanen: akun Supabase, data profil di server, serta
+              seluruh deck, kartu, jadwal FSRS, dan pustaka lokal milik akun ini di peramban akan
+              dihapus.
+            </p>
             {!confirmDelete ? (
-              <Button className="outline-button warn" onClick={() => setConfirmDelete(true)}>
+              <Button
+                className="outline-button warn"
+                onClick={() => {
+                  setConfirmDelete(true);
+                  setDeleteConfirmText("");
+                  setErrorNotice("");
+                }}
+              >
                 <Icon name="trash" size={16} /> Hapus Akun Selamanya
               </Button>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                <Button className="outline-button warn" onClick={handleDeleteAccount}>
-                  <Icon name="trash" size={16} /> Konfirmasi Hapus Akun
-                </Button>
-                <Button className="outline-button" onClick={() => setConfirmDelete(false)}>
-                  Batal
-                </Button>
+              <div className="grid gap-3">
+                <label className="grid gap-1 text-xs font-semibold text-[var(--tinta)]">
+                  <span>
+                    Ketik <code>{DELETE_ACCOUNT_CONFIRMATION_WORD}</code> untuk mengonfirmasi:
+                  </span>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder={DELETE_ACCOUNT_CONFIRMATION_WORD}
+                    aria-label="Konfirmasi penghapusan akun"
+                    disabled={deletingAccount}
+                    className="prof-input"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{
+                      background: "var(--shu)",
+                      borderColor: "var(--shu)",
+                      color: "#fff",
+                    }}
+                    disabled={
+                      deletingAccount ||
+                      deleteConfirmText.trim().toUpperCase() !== DELETE_ACCOUNT_CONFIRMATION_WORD
+                    }
+                    onClick={() => void handleDeleteAccount()}
+                  >
+                    <Icon name="trash" size={16} />{" "}
+                    {deletingAccount ? "Menghapus akun…" : "Hapus akun saya selamanya"}
+                  </button>
+                  <Button
+                    className="outline-button"
+                    disabled={deletingAccount}
+                    onClick={() => {
+                      setConfirmDelete(false);
+                      setDeleteConfirmText("");
+                    }}
+                  >
+                    Batal
+                  </Button>
+                </div>
               </div>
             )}
           </section>

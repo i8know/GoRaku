@@ -1558,6 +1558,8 @@ export default function LandingPage() {
             <Link to="/mining" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Sentence Mining</Link>
             <Link to="/exam" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Ujian JLPT</Link>
             <Link to="/license" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Atribusi &amp; Lisensi</Link>
+            <Link to="/privasi" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Kebijakan Privasi</Link>
+            <Link to="/syarat" className="inline-flex items-center min-h-[32px] px-2 py-1 rounded-md text-[var(--tinta-2)] hover:text-[var(--ai)] hover:bg-[var(--tsuki)] no-underline transition-colors">Syarat Penggunaan</Link>
           </div>
 
           <p className="m-0 text-sm text-[var(--tinta-2)]">

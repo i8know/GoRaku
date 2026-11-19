@@ -11,6 +11,7 @@ import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
 import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+import ConsentUpdateModal, { needsConsentUpdate } from "./ConsentUpdateModal";
 import LegacyAdoptionModal from "./LegacyAdoptionModal";
 import {
   shouldPromptLegacyAdoption,
@@ -88,6 +89,9 @@ export default function ProtectedLayout() {
   const navigate = useNavigate();
   const signOut = useAuthStore((s) => s.signOut);
   const authUser = useAuthStore((s) => s.user);
+  const authProfile = useAuthStore((s) => s.profile);
+  const updateAuthProfile = useAuthStore((s) => s.updateProfile);
+  const consentRequired = needsConsentUpdate(authProfile);
   const [legacyPromptSummary, setLegacyPromptSummary] = useState<LegacyDataSummary | null>(null);
   const [adoptedDataRefreshKey, setAdoptedDataRefreshKey] = useState(0);
 
@@ -1343,7 +1347,18 @@ export default function ProtectedLayout() {
           />
         </Suspense>
       )}
-      {authUser && legacyPromptSummary && (
+      <ConsentUpdateModal
+        open={Boolean(authUser && consentRequired)}
+        onAccept={(patch) =>
+          updateAuthProfile({
+            display_name: authProfile?.display_name || user.name || "Pelajar GoRaku",
+            jlpt_level: authProfile?.jlpt_level || user.level || "N4",
+            ...patch,
+          })
+        }
+        onSignOut={handleLogout}
+      />
+      {authUser && !consentRequired && legacyPromptSummary && (
         <LegacyAdoptionModal
           open={Boolean(legacyPromptSummary)}
           userId={authUser.id}

@@ -19,6 +19,8 @@ initUserStorageScopeSync()
 const ProtectedLayout = lazy(() => import('./components/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfService'))
 const App = lazy(() => import('./App'))
 const DecksPage = lazy(() => import('./pages/Decks'))
 const DeckDetailPage = lazy(() => import('./pages/DeckDetail'))
@@ -80,6 +82,22 @@ function AppRoutes() {
           element={
             <PageTransition routeKey="/atur-ulang-sandi">
               <ResetPasswordPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/privasi"
+          element={
+            <PageTransition routeKey="/privasi">
+              <PrivacyPolicyPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/syarat"
+          element={
+            <PageTransition routeKey="/syarat">
+              <TermsOfServicePage />
             </PageTransition>
           }
         />
