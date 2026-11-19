@@ -11,6 +11,11 @@ import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
 import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+import LegacyAdoptionModal from "./LegacyAdoptionModal";
+import {
+  shouldPromptLegacyAdoption,
+  type LegacyDataSummary,
+} from "../lib/legacyAdoption";
 import {
   getScopedStorageItem,
   LEGACY_SIDEBAR_COLLAPSED_KEY,
@@ -82,6 +87,25 @@ export default function ProtectedLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const signOut = useAuthStore((s) => s.signOut);
+  const authUser = useAuthStore((s) => s.user);
+  const [legacyPromptSummary, setLegacyPromptSummary] = useState<LegacyDataSummary | null>(null);
+  const [adoptedDataRefreshKey, setAdoptedDataRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!authUser?.id) {
+      setLegacyPromptSummary(null);
+      return;
+    }
+    void shouldPromptLegacyAdoption(authUser.id)
+      .then((summary) => {
+        if (!cancelled) setLegacyPromptSummary(summary);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser?.id]);
 
   const handleLogout = async () => {
     await signOut();
@@ -1281,7 +1305,10 @@ export default function ProtectedLayout() {
         </header>
         <div className="content">
           <AnimatePresence mode="wait" initial={false}>
-            <PageTransition key={location.pathname} routeKey={location.pathname}>
+            <PageTransition
+              key={`${location.pathname}:${adoptedDataRefreshKey}`}
+              routeKey={location.pathname}
+            >
               <FrozenOutlet />
             </PageTransition>
           </AnimatePresence>
@@ -1315,6 +1342,20 @@ export default function ProtectedLayout() {
             onDictionariesChanged={setDictionaries}
           />
         </Suspense>
+      )}
+      {authUser && legacyPromptSummary && (
+        <LegacyAdoptionModal
+          open={Boolean(legacyPromptSummary)}
+          userId={authUser.id}
+          userEmail={authUser.email ?? ""}
+          summary={legacyPromptSummary}
+          onClose={() => setLegacyPromptSummary(null)}
+          onAdopted={() => {
+            setLegacyPromptSummary(null);
+            setAdoptedDataRefreshKey((n) => n + 1);
+            void listDictionaries().then(setDictionaries).catch(() => {});
+          }}
+        />
       )}
     </div>
   );
