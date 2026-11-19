@@ -305,5 +305,90 @@ describe("Subdeck Hierarchy & JLPT Level Partitioning (Revolusi Anki)", () => {
     expect(ankidroneLeaf).toBeDefined();
     expect(ankidroneLeaf?.parentPathKey).toBe("Bahasa Indonesia");
   });
+
+  it("aggregates parent new/learning/due totals across two sub-decks using explicit now and per-deck deckLimits override", () => {
+    const fixedNow = new Date(2026, 4, 10, 12, 0, 0, 0).getTime();
+    const parentDeck: DeckItem = {
+      id: "parent-override",
+      title: "Koleksi Override",
+      level: "Campuran • Core",
+      kind: "Core",
+      due: 0,
+      total: 30,
+      progress: 0,
+      kanji: "集",
+      color: "indigo",
+      updated: "Baru saja",
+      subdeckIds: ["sub-a", "sub-b"],
+    };
+    const subA: DeckItem = {
+      id: "sub-a",
+      parentId: "parent-override",
+      title: "Sub-deck A",
+      subdeckName: "A",
+      level: "N5 • Core",
+      kind: "Core",
+      due: 0,
+      total: 20,
+      progress: 0,
+      kanji: "初",
+      color: "indigo",
+      updated: "Baru saja",
+    };
+    const subB: DeckItem = {
+      id: "sub-b",
+      parentId: "parent-override",
+      title: "Sub-deck B",
+      subdeckName: "B",
+      level: "N4 • Core",
+      kind: "Core",
+      due: 0,
+      total: 10,
+      progress: 0,
+      kanji: "基",
+      color: "indigo",
+      updated: "Baru saja",
+    };
+
+    const srsCards: Record<string, Record<string, SRSCard>> = {
+      "sub-a": {
+        // 2 kartu belum matang yang jatuh tempo (akan dibatasi maxReview=1 pada sub-a)
+        a1: { id: "a1", interval: 1, easeFactor: 2.5, repetitions: 1, nextReview: fixedNow - 10_000 },
+        a2: { id: "a2", interval: 2, easeFactor: 2.5, repetitions: 1, nextReview: fixedNow - 5_000 },
+        // 1 kartu belum matang yang belum jatuh tempo
+        a3: { id: "a3", interval: 3, easeFactor: 2.5, repetitions: 2, nextReview: fixedNow + 86_400_000 },
+      },
+      "sub-b": {
+        // 1 kartu matang belum jatuh tempo
+        b1: { id: "b1", interval: 25, easeFactor: 2.5, repetitions: 4, nextReview: fixedNow + 86_400_000 },
+        // 1 kartu belum matang yang jatuh tempo
+        b2: { id: "b2", interval: 1, easeFactor: 2.5, repetitions: 1, nextReview: fixedNow - 1_000 },
+      },
+    };
+
+    const settings = { newCards: 5, maxReview: 10, dayStartHour: 4 };
+    const deckLimits = {
+      "sub-a": { newCards: 3, maxReview: 1 },
+    };
+
+    const res = aggregateParentStats(
+      parentDeck,
+      [subA, subB],
+      srsCards,
+      {},
+      settings,
+      [parentDeck, subA, subB],
+      fixedNow,
+      deckLimits,
+    );
+
+    // sub-a: newToday=3 (override), reviewDue=1 (override maxReview=1 dari 2 jatuh tempo), learning=3 (a1,a2,a3), due=4
+    // sub-b: newToday=5 (global), reviewDue=1 (b2), learning=1 (b2), due=2
+    expect(res.newToday).toBe(8);
+    expect(res.reviewDue).toBe(2);
+    expect(res.learning).toBe(4);
+    expect(res.due).toBe(10);
+    expect(res.learned).toBe(1);
+  });
 });
 

@@ -6,6 +6,7 @@ import {
   updateDictionaryPriorities,
   type DictionaryRecord,
 } from "../lib/lexiconDb";
+import { sanitizeHttpUrl } from "../lib/archiveLimits";
 import { Icon } from "../ui";
 import type {
   YomitanImportStage,
@@ -150,6 +151,15 @@ export default function DictionaryManagerModal({
       setLoadingList(false);
     }
   }, [onDictionariesChanged]);
+
+  useEffect(() => {
+    if (!open || importing) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, importing, onClose]);
 
   useEffect(() => {
     if (open) {
@@ -330,6 +340,9 @@ export default function DictionaryManagerModal({
       style={{ background: "rgba(18, 17, 15, 0.58)", backdropFilter: "blur(4px)" }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dict-modal-title"
         className="w-full max-w-3xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         style={{
           background: "var(--panel)",
@@ -353,7 +366,7 @@ export default function DictionaryManagerModal({
               <Icon name="book" size={18} />
             </div>
             <div>
-              <h2 className="text-[17px] font-semibold leading-tight" style={{ fontFamily: "var(--font-serif)" }}>
+              <h2 id="dict-modal-title" className="text-[17px] font-semibold leading-tight" style={{ fontFamily: "var(--font-serif)" }}>
                 Kelola Kamus Yomitan
               </h2>
               <p className="text-[12px]" style={{ color: "var(--tinta-2)" }}>
@@ -370,6 +383,7 @@ export default function DictionaryManagerModal({
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40"
             style={{ color: "var(--tinta-2)" }}
             title="Tutup"
+            aria-label="Tutup dialog kamus"
           >
             <Icon name="close" size={18} />
           </button>
@@ -751,17 +765,20 @@ export default function DictionaryManagerModal({
                                   ? "Sembunyikan Atribusi & Metadata"
                                   : "Lihat Atribusi & Lisensi"}
                               </button>
-                              {dict.url && (
-                                <a
-                                  href={dict.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="underline"
-                                  style={{ color: "var(--tinta-2)" }}
-                                >
-                                  Situs Sumber
-                                </a>
-                              )}
+                              {(() => {
+                                const safeUrl = sanitizeHttpUrl(dict.url);
+                                return safeUrl ? (
+                                  <a
+                                    href={safeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline"
+                                    style={{ color: "var(--tinta-2)" }}
+                                  >
+                                    Situs Sumber
+                                  </a>
+                                ) : null;
+                              })()}
                             </div>
 
                             {showAttr && (

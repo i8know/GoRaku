@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
-import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { SRSCard, initCard, isDue, getDueCards } from "../lib/srs";
 import {
   DEFAULT_DESIRED_RETENTION,
@@ -12,6 +13,7 @@ import {
   removeDeckReviewLogs,
   removeLatestReviewLog,
 } from "../lib/deckDb";
+import { defaultReviewPersistController } from "../lib/reviewStorage";
 import {
   DEFAULT_DAY_START_HOUR,
   normalizeStudyDayKey,
@@ -19,42 +21,28 @@ import {
 } from "../lib/studyDay";
 import { useAppStore } from "./useAppStore";
 
-const fallbackMemoryStorage = new Map<string, string>();
+let persistentStorageRequested = false;
 
-const safeStateStorage: StateStorage = {
-  getItem: (name) => {
-    try {
-      if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
-        return localStorage.getItem(name);
-      }
-    } catch {
-      /* fallback to memory */
+function requestPersistentStorageOnce(): void {
+  if (persistentStorageRequested) return;
+  try {
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.storage &&
+      typeof navigator.storage.persist === "function"
+    ) {
+      persistentStorageRequested = true;
+      void navigator.storage.persist().catch(() => {});
     }
-    return fallbackMemoryStorage.get(name) ?? null;
-  },
-  setItem: (name, value) => {
-    try {
-      if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
-        localStorage.setItem(name, value);
-        return;
-      }
-    } catch {
-      /* fallback to memory */
-    }
-    fallbackMemoryStorage.set(name, value);
-  },
-  removeItem: (name) => {
-    try {
-      if (typeof localStorage !== "undefined" && typeof localStorage.removeItem === "function") {
-        localStorage.removeItem(name);
-        return;
-      }
-    } catch {
-      /* fallback to memory */
-    }
-    fallbackMemoryStorage.delete(name);
-  },
-};
+  } catch {
+    /* abaikan kegagalan storage.persist() */
+  }
+}
+
+/** @internal Hanya untuk pengujian unit */
+export function resetPersistentStorageRequestForTest(): void {
+  persistentStorageRequested = false;
+}
 
 function resolveDayStartHour(dayStartHour?: number): number {
   if (dayStartHour !== undefined) return dayStartHour;
@@ -218,6 +206,7 @@ export const useReviewStore = create<ReviewStore>()(
         });
 
         void appendReviewLog(log);
+        requestPersistentStorageOnce();
         return updated;
       },
       addExtraNewToday: (deckId, amount, now = Date.now(), dayStartHour) => {
@@ -334,7 +323,7 @@ export const useReviewStore = create<ReviewStore>()(
     {
       name: "japanese-review-storage",
       version: 1,
-      storage: createJSONStorage(() => safeStateStorage),
+      storage: createJSONStorage(() => defaultReviewPersistController.storage),
       migrate: (persistedState) => migrateReviewState(persistedState) as ReviewStore,
       merge: (persistedState, currentState) => ({
         ...currentState,
@@ -344,11 +333,67 @@ export const useReviewStore = create<ReviewStore>()(
   ),
 );
 
+/**
+ * Mengembalikan `true` hanya setelah hidrasi asinkron IndexedDB/cadangan untuk
+ * `useReviewStore` selesai. Mencegah render/sesi membaca state kosong saat startup.
+ */
+export function useReviewStoreHydrated(): boolean {
+  const [hydrated, setHydrated] = useState<boolean>(() =>
+    useReviewStore.persist.hasHydrated(),
+  );
+
+  useEffect(() => {
+    const unsubHydrate = useReviewStore.persist.onHydrate(() => {
+      setHydrated(false);
+    });
+    const unsubFinish = useReviewStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    setHydrated(useReviewStore.persist.hasHydrated());
+    return () => {
+      unsubHydrate();
+      unsubFinish();
+    };
+  }, []);
+
+  return hydrated;
+}
+
+/** Menunggu hingga hidrasi `useReviewStore` tuntas (langsung resolve bila sudah terhidrasi). */
+export function waitForReviewStoreHydration(): Promise<void> {
+  if (useReviewStore.persist.hasHydrated()) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    const unsub = useReviewStore.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+    if (useReviewStore.persist.hasHydrated()) {
+      unsub();
+      resolve();
+    }
+  });
+}
+
 function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
+  const isSafeKey = (k: string) =>
+    k !== "__proto__" && k !== "constructor" && k !== "prototype";
   const raw = (persistedState ?? {}) as Partial<ReviewStore>;
+  const nextSrs: ReviewStore["srsCards"] = {};
+  if (raw.srsCards && typeof raw.srsCards === "object") {
+    for (const [deckId, deckMap] of Object.entries(raw.srsCards)) {
+      if (!isSafeKey(deckId) || !deckMap || typeof deckMap !== "object") continue;
+      const cleanDeck: Record<string, SRSCard> = {};
+      for (const [cardId, card] of Object.entries(deckMap)) {
+        if (!isSafeKey(cardId) || !card || typeof card !== "object") continue;
+        cleanDeck[cardId] = card;
+      }
+      nextSrs[deckId] = cleanDeck;
+    }
+  }
   const nextIntro: ReviewStore["newIntroduced"] = {};
   if (raw.newIntroduced && typeof raw.newIntroduced === "object") {
     for (const [k, v] of Object.entries(raw.newIntroduced)) {
+      if (!isSafeKey(k)) continue;
       if (v && typeof v.date === "string") {
         nextIntro[k] = { ...v, date: normalizeStudyDayKey(v.date) };
       }
@@ -357,6 +402,7 @@ function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
   const nextAct: ReviewStore["activity"] = {};
   if (raw.activity && typeof raw.activity === "object") {
     for (const [k, v] of Object.entries(raw.activity)) {
+      if (!isSafeKey(k)) continue;
       if (v && typeof v.date === "string") {
         nextAct[k] = { ...v, date: normalizeStudyDayKey(v.date) };
       }
@@ -364,6 +410,7 @@ function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
   }
   return {
     ...raw,
+    ...(raw.srsCards ? { srsCards: nextSrs } : {}),
     ...(raw.newIntroduced ? { newIntroduced: nextIntro } : {}),
     ...(raw.activity ? { activity: nextAct } : {}),
   };

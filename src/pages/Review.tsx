@@ -1,54 +1,54 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon, Button, Hanko } from "../ui";
-import { limitsFor, orderNewCards, useAppStore } from "../store/useAppStore";
-import { newCardsLeftToday, useReviewStore } from "../store/useReviewStore";
+import { useAppStore } from "../store/useAppStore";
+import {
+  useReviewStore,
+  useReviewStoreHydrated,
+  waitForReviewStoreHydration,
+} from "../store/useReviewStore";
 import { getMedia, type StoredCard } from "../lib/deckDb";
 import { loadDeckCards } from "../lib/deckCards";
-import { initCard, isDue, type SRSCard } from "../lib/srs";
-import { previewIntervals, qualityToRating } from "../lib/fsrsScheduler";
+import { loadHydratedSessionQueue, selectLearnMoreBatch } from "../lib/sessionQueue";
+import {
+  classifyReviewKeyEvent,
+  computeSessionProgress,
+  countUniqueReviewedCards,
+  getGradeButtonHint,
+  removeDrillCardByKey,
+  REVIEW_GRADES,
+  type ReviewSessionCard,
+  type ReviewUndoItem,
+} from "../lib/reviewSession";
+import { initCard } from "../lib/srs";
+import { previewIntervals, type FsrsGrade } from "../lib/fsrsScheduler";
 import { renderJapanese } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
 
-type ReviewCard = {
-  id: string;
-  deckId?: string;
-  subdeck?: string;
-  word: string;
-  reading: string;
-  /** Inline HTML (sanitized for imported decks). */
-  meaning: string;
-  sentence: string;
-  translation: string;
-  audio?: string;
-  sentenceAudio?: string;
-  image?: string;
-  /** True when re-queued inside the same session after "Lupa" (in-session drill). */
-  isDrill?: boolean;
-};
+type ReviewCard = ReviewSessionCard;
+type UndoHistoryItem = ReviewUndoItem;
 
-interface UndoHistoryItem {
-  pos: number;
-  cardId: string;
-  deckId?: string;
-  prevSrsCard: SRSCard | undefined;
-  wasNew: boolean;
-  wasRequeued: boolean;
-  wasDrill: boolean;
+export function ReviewGradeButtons({
+  isDrill,
+  intervals,
+  onGrade,
+}: {
+  isDrill: boolean;
+  intervals: Record<FsrsGrade, number>;
+  onGrade: (quality: number) => void;
+}) {
+  return (
+    <div className="review-buttons">
+      {REVIEW_GRADES.map((g, i) => (
+        <Button key={g.q} className={`review-btn review-btn-${g.cls}`} onClick={() => onGrade(g.q)}>
+          <strong>{g.label}</strong>
+          <small>{getGradeButtonHint(g.q, isDrill, intervals)}</small>
+          <kbd className="rv-kbd">{i + 1}</kbd>
+        </Button>
+      ))}
+    </div>
+  );
 }
-
-function formatInterval(days: number) {
-  if (days < 30) return `${days} hari`;
-  if (days < 365) return `${(days / 30).toFixed(days < 60 ? 1 : 0)} bln`;
-  return `${(days / 365).toFixed(1)} thn`;
-}
-
-const GRADES = [
-  { q: 0, label: "Lupa", cls: "again" },
-  { q: 2, label: "Sulit", cls: "hard" },
-  { q: 4, label: "Baik", cls: "good" },
-  { q: 5, label: "Mudah", cls: "easy" },
-] as const;
 
 export default function ReviewPage() {
   const { deckId } = useParams<{ deckId: string }>();
@@ -60,16 +60,17 @@ export default function ReviewPage() {
   const reviewCardAction = useReviewStore((s) => s.reviewCardAction);
   const restoreCardState = useReviewStore((s) => s.restoreCardState);
   const addExtraNewToday = useReviewStore((s) => s.addExtraNewToday);
+  const reviewHydrated = useReviewStoreHydrated();
 
   const [allCards, setAllCards] = useState<StoredCard[]>([]);
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [pos, setPos] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [reviewed, setReviewed] = useState(0);
   const [history, setHistory] = useState<UndoHistoryItem[]>([]);
   const [media, setMedia] = useState<{ audio?: string; sentenceAudio?: string; image?: string }>({});
   const [playing, setPlaying] = useState<"word" | "sentence" | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const drillSeqRef = useRef(0);
 
   const card = queue && pos < queue.length ? queue[pos] : undefined;
   const srsCard = useReviewStore((s) => {
@@ -78,56 +79,29 @@ export default function ReviewPage() {
     return targetDeckId ? s.srsCards[targetDeckId]?.[card.id] : undefined;
   });
 
-  // Build the session queue once: due reviews first, then today's new cards.
+  // Build the session queue once after review store hydration: due reviews first, then today's new cards.
   useEffect(() => {
-    if (!deck) return;
+    if (!deck || !reviewHydrated) return;
     let alive = true;
-    loadDeckCards(deck.id)
-      .then((cards) => {
+    loadHydratedSessionQueue({
+      deckId: deck.id,
+      waitForHydration: waitForReviewStoreHydration,
+      loadCards: loadDeckCards,
+      getReviewState: () => useReviewStore.getState(),
+      settings,
+      deckLimits,
+    })
+      .then(({ cards, queue: nextQueue }) => {
         if (!alive) return;
         setAllCards(cards);
-        const { srsCards, newIntroduced } = useReviewStore.getState();
-        const getCardSrs = (c: StoredCard): SRSCard | undefined => {
-          const targetDeckId = c.deckId || deck.id;
-          return targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
-        };
-
-        const limits = limitsFor(deck.id, settings, deckLimits);
-
-        const due = cards
-          .filter((c) => {
-            const sc = getCardSrs(c);
-            return sc && isDue(sc);
-          })
-          .sort((a, b) => (getCardSrs(a)?.nextReview ?? 0) - (getCardSrs(b)?.nextReview ?? 0))
-          .slice(0, limits.maxReview);
-
-        const unlearned = cards.filter((c) => !getCardSrs(c));
-        const orderedFresh = orderNewCards(
-          unlearned,
-          deck.id,
-          settings.newOrder ?? "urutan",
-          Date.now(),
-          settings.dayStartHour,
-        );
-        const fresh = orderedFresh.slice(
-          0,
-          newCardsLeftToday(
-            newIntroduced[deck.id],
-            limits.newCards,
-            Date.now(),
-            settings.dayStartHour,
-          ),
-        );
-
-        setQueue([...due, ...fresh]);
+        setQueue(nextQueue);
       })
       .catch(() => alive && setQueue([]));
     return () => {
       alive = false;
     };
     // Queue is intentionally built once per deck; SRS updates during the session must not reshuffle it.
-  }, [deck?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [deck?.id, reviewHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Resolve media blobs for the current card (supports both .apkg media and manga bubble crops).
   useEffect(() => {
@@ -207,6 +181,9 @@ export default function ReviewPage() {
       const wasNew = !prevSrsCard;
       const wasDrill = Boolean(card.isDrill);
       const wasRequeued = quality === 0;
+      const requeuedDrillKey = wasRequeued
+        ? `drill-${++drillSeqRef.current}-${targetDeckId}-${card.id}`
+        : undefined;
 
       setHistory((h) => [
         ...h,
@@ -218,13 +195,17 @@ export default function ReviewPage() {
           wasNew,
           wasRequeued,
           wasDrill,
+          requeuedDrillKey,
         },
       ]);
 
       reviewCardAction(targetDeckId, card.id, quality, { drill: wasDrill });
-      setReviewed((r) => r + 1);
       // "Lupa" puts the card back at the end of this session as a drill (does not alter FSRS state on second pass).
-      if (wasRequeued) setQueue((q) => (q ? [...q, { ...card, isDrill: true }] : q));
+      if (wasRequeued) {
+        setQueue((q) =>
+          q ? [...q, { ...card, isDrill: true, drillKey: requeuedDrillKey }] : q,
+        );
+      }
       setShowAnswer(false);
       setPos((p) => p + 1);
     },
@@ -239,30 +220,44 @@ export default function ReviewPage() {
       drill: last.wasDrill,
     });
     if (last.wasRequeued) {
-      setQueue((q) => (q && q.length > 0 ? q.slice(0, -1) : q));
+      setQueue((q) => (q ? removeDrillCardByKey(q, last.requeuedDrillKey) : q));
     }
     setHistory((h) => h.slice(0, -1));
-    setReviewed((r) => Math.max(0, r - 1));
     setPos(last.pos);
     setShowAnswer(true);
   }, [history, deckId, restoreCardState]);
 
-  // Keyboard: Space/Enter reveals, 1–4 grades, R plays audio, Ctrl+Z / Z undoes.
+  // Keyboard: Space/Enter reveals, 1–4 grades (tanpa repeat/modifier), R plays audio, Ctrl/Cmd+Z undoes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.closest("input, textarea, select")) return;
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+      const target = e.target as HTMLElement | null;
+      const inEditableTarget = Boolean(
+        target &&
+          (target.isContentEditable ||
+            (typeof target.closest === "function" &&
+              target.closest("input, textarea, select, [contenteditable]"))),
+      );
+      const action = classifyReviewKeyEvent({
+        key: e.key,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        repeat: e.repeat,
+        isComposing: e.isComposing,
+        hasCard: Boolean(card),
+        showAnswer,
+        inEditableTarget,
+      });
+      if (action.type === "undo") {
         e.preventDefault();
         handleUndo();
-        return;
-      }
-      if (!card) return;
-      if (!showAnswer && (e.key === " " || e.key === "Enter")) {
+      } else if (action.type === "reveal") {
         e.preventDefault();
         setShowAnswer(true);
-      } else if (showAnswer && ["1", "2", "3", "4"].includes(e.key)) {
-        answer(GRADES[Number(e.key) - 1].q);
-      } else if (e.key.toLowerCase() === "r") {
+      } else if (action.type === "grade") {
+        answer(REVIEW_GRADES[action.gradeIndex].q);
+      } else if (action.type === "play-word") {
         play("word");
       }
     };
@@ -291,28 +286,32 @@ export default function ReviewPage() {
     );
   }
 
+  const uniqueReviewed = countUniqueReviewedCards(history, deckId);
+
   if (!card) {
     const nothingToDo = queue.length === 0;
     const { srsCards } = useReviewStore.getState();
-    const queuedIds = new Set(queue.map((q) => q.id));
+    const queuedKeys = new Set(queue.map((q) => `${q.deckId || deck.id}::${q.id}`));
     const remainingUnlearned = allCards.filter((c) => {
       const targetDeckId = c.deckId || deck.id;
       const sc = targetDeckId ? srsCards[targetDeckId]?.[c.id] : undefined;
-      return !sc && !queuedIds.has(c.id);
+      return !sc && !queuedKeys.has(`${targetDeckId}::${c.id}`);
     });
 
     const handleLearnMore = (extraAmount: number) => {
-      addExtraNewToday(deck.id, extraAmount, Date.now(), settings.dayStartHour);
-      const ordered = orderNewCards(
+      const now = Date.now();
+      const { batch, extraByGroup } = selectLearnMoreBatch({
         remainingUnlearned,
-        deck.id,
-        settings.newOrder ?? "urutan",
-        Date.now(),
-        settings.dayStartHour,
-      );
-      const nextBatch = ordered.slice(0, extraAmount);
-      if (nextBatch.length > 0) {
-        setQueue((prev) => [...(prev ?? []), ...nextBatch]);
+        amount: extraAmount,
+        rootDeckId: deck.id,
+        settings,
+        now,
+      });
+      for (const [groupId, count] of Object.entries(extraByGroup)) {
+        addExtraNewToday(groupId, count, now, settings.dayStartHour);
+      }
+      if (batch.length > 0) {
+        setQueue((prev) => [...(prev ?? []), ...batch]);
       }
     };
 
@@ -332,9 +331,9 @@ export default function ReviewPage() {
           </div>
 
           <div className="review-complete-v2__body">
-            {reviewed > 0 ? (
+            {uniqueReviewed > 0 ? (
               <div className="mb-5">
-                <Hanko char="済" size={96} title={`Sesi selesai: ${reviewed} kartu diulas`} />
+                <Hanko char="済" size={96} />
               </div>
             ) : (
               <div className="mb-4 w-12 h-12 rounded-md border border-[var(--garis)] bg-[var(--kertas-2)] grid place-items-center text-[var(--kon)]">
@@ -345,7 +344,7 @@ export default function ReviewPage() {
             <p className="text-sm text-[var(--tinta-2)] max-w-md mb-6">
               {nothingToDo
                 ? `Semua kartu di "${deck.title}" sudah kamu kerjakan. Kembali lagi besok, ya.`
-                : `Kamu telah menyelesaikan ${reviewed} kartu pada deck "${deck.title}" hari ini dengan penuh konsistensi.`}
+                : `Kamu telah menyelesaikan ${uniqueReviewed} kartu pada deck "${deck.title}" hari ini dengan penuh konsistensi.`}
             </p>
 
             {remainingUnlearned.length > 0 && (
@@ -382,6 +381,7 @@ export default function ReviewPage() {
 
   const base = srsCard ?? initCard(card.id);
   const isNewCard = !srsCard;
+  const sessionProgress = computeSessionProgress(queue, pos);
   const intervals = previewIntervals(base, Date.now(), {
     desiredRetention: settings.desiredRetention,
   });
@@ -394,7 +394,7 @@ export default function ReviewPage() {
         </Button>
 
         <div className="review-progress-bar">
-          <div className="review-progress-fill" style={{ width: `${(pos / queue.length) * 100}%` }} />
+          <div className="review-progress-fill" style={{ width: `${sessionProgress.progressPct}%` }} />
         </div>
 
         <div className="flex items-center gap-2">
@@ -434,7 +434,12 @@ export default function ReviewPage() {
             <Icon name="volume" size={14} />
           </button>
 
-          <span className="review-count">{pos + 1} / {queue.length}</span>
+          <span className="review-count">
+            {sessionProgress.currentStep} / {sessionProgress.totalBase}
+            {sessionProgress.remainingDrills > 0 && (
+              <small className="ml-1.5 text-[11px] opacity-75">+{sessionProgress.remainingDrills} ulangan</small>
+            )}
+          </span>
         </div>
       </div>
 
@@ -479,15 +484,11 @@ export default function ReviewPage() {
         ) : (
           <div className="review-actions">
             <p className="review-prompt">Seberapa baik kamu mengingat kata ini?</p>
-            <div className="review-buttons">
-              {GRADES.map((g, i) => (
-                <Button key={g.q} className={`review-btn review-btn-${g.cls}`} onClick={() => answer(g.q)}>
-                  <strong>{g.label}</strong>
-                  <small>{g.q === 0 ? "Ulangi lagi" : formatInterval(intervals[qualityToRating(g.q)])}</small>
-                  <kbd className="rv-kbd">{i + 1}</kbd>
-                </Button>
-              ))}
-            </div>
+            <ReviewGradeButtons
+              isDrill={Boolean(card.isDrill)}
+              intervals={intervals}
+              onGrade={answer}
+            />
           </div>
         )}
       </div>

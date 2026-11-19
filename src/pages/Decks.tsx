@@ -5,7 +5,7 @@ import { useAppStore, type DeckItem } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 import { deckUpdatedLabel, liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
-import { dyeStep, jlptDyeStep } from "../lib/dye";
+import { deckTileGlyph, dyeStep, jlptDyeStep } from "../lib/dye";
 import { ensureSeeded } from "../lib/deckCards";
 
 const ImportDeckModal = lazy(() => import("../components/ImportDeckModal"));
@@ -33,7 +33,99 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
   const [createOpen, setCreateOpen] = useState(false);
   const [pageDrag, setPageDrag] = useState(false);
   const [expandedParents, setExpandedParents] = useState<Set<string>>(() => new Set());
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const dragDepth = useRef(0);
+  const overflowWrapRef = useRef<HTMLDivElement>(null);
+  const overflowBtnRef = useRef<HTMLButtonElement>(null);
+  const overflowMenuRef = useRef<HTMLDivElement>(null);
+  const pendingMenuFocusRef = useRef<"first" | "last" | null>(null);
+  const filterBtnRef = useRef<HTMLButtonElement>(null);
+  const filterCloseRef = useRef<HTMLButtonElement>(null);
+  const sheetWasOpenRef = useRef(false);
+
+  // Close mobile menus automatically when viewport expands to desktop
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 721px)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        setOverflowOpen(false);
+        setFilterSheetOpen(false);
+      }
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Overflow menu keyboard & outside-click handling
+  useEffect(() => {
+    if (!overflowOpen) return;
+    if (pendingMenuFocusRef.current && overflowMenuRef.current) {
+      const items = overflowMenuRef.current.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
+      if (items.length > 0) {
+        const idx = pendingMenuFocusRef.current === "last" ? items.length - 1 : 0;
+        items[idx]?.focus();
+      }
+      pendingMenuFocusRef.current = null;
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      if (!overflowWrapRef.current?.contains(e.target as Node)) {
+        setOverflowOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOverflowOpen(false);
+        overflowBtnRef.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [overflowOpen]);
+
+  // Filter bottom sheet Escape & focus management
+  useEffect(() => {
+    if (filterSheetOpen) {
+      sheetWasOpenRef.current = true;
+      filterCloseRef.current?.focus();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setFilterSheetOpen(false);
+          return;
+        }
+        if (e.key === "Tab") {
+          const sheet = document.getElementById("dk-filter-sheet");
+          if (!sheet) return;
+          const focusables = Array.from(
+            sheet.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          );
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      };
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    } else if (sheetWasOpenRef.current) {
+      sheetWasOpenRef.current = false;
+      filterBtnRef.current?.focus();
+    }
+  }, [filterSheetOpen]);
 
   // Ensure starter decks are seeded in IndexedDB on first load
   useEffect(() => {
@@ -306,7 +398,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   }
                 }}
               >
-                <DyeTile step={tileStep} kanji={deck.kanji} size={isSubdeck ? 30 : 38} />
+                <DyeTile step={tileStep} glyph={deckTileGlyph(deck.kanji, deck.title)} fallbackTitle={deck.title} size={isSubdeck ? 30 : 38} />
                 <span className="min-w-0">
                   <span className="flex items-center gap-1.5 flex-wrap">
                     <strong className="font-serif text-sm text-[var(--tinta)]">
@@ -319,7 +411,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                       <small className="dk-subdeck-badge-sub">Sub-deck</small>
                     )}
                   </span>
-                  <small className="block text-[11px] text-[var(--teks-redup)]">
+                  <small className="block text-[length:var(--fs-12)] text-[var(--teks-redup)]">
                     {deck.total.toLocaleString("id-ID")} kartu · {deckUpdatedLabel(deck)}
                   </small>
                 </span>
@@ -365,7 +457,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
           {/* 4. Penguasaan */}
           <td style={{ minWidth: "150px" }}>
             {s.progress >= 100 ? (
-              <Hanko char="済" size={40} title="Deck tuntas 100%" />
+              <Hanko char="済" size={40} label={`Penguasaan ${deck.subdeckName || deck.title} 100%, tuntas`} />
             ) : (
               <DyeProgress percent={s.progress} label={`Penguasaan ${deck.subdeckName || deck.title}`} />
             )}
@@ -415,6 +507,44 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
     );
   };
 
+  const handleOverflowTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      pendingMenuFocusRef.current = "first";
+      setOverflowOpen(true);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      pendingMenuFocusRef.current = "last";
+      setOverflowOpen(true);
+    }
+  };
+
+  const handleOverflowMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const items = Array.from(
+      overflowMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [],
+    );
+    if (items.length === 0) return;
+    const cur = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      items[(cur + 1 + items.length) % items.length]?.focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      items[(cur - 1 + items.length) % items.length]?.focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      items[0]?.focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      items[items.length - 1]?.focus();
+    }
+  };
+
+  const mobileFilterCount =
+    (sort !== "Jatuh tempo" ? 1 : 0) +
+    (statusFilter !== "Semua" ? 1 : 0) +
+    (viewMode !== "list" ? 1 : 0);
+
   const summarySentence = `${decks.length} deck aktif · ${totalCards.toLocaleString("id-ID")} total kartu · ${totalDue.toLocaleString("id-ID")} jatuh tempo hari ini · ${totalCompleted} deck tuntas (${importedCount} Anki).`;
 
   return (
@@ -435,12 +565,67 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                 Belajar {totalDue} kartu
               </Button>
             )}
-            <Button className="outline-button dk-import-btn" onClick={() => openImport()}>
-              <Icon name="upload" size={16} /> Impor .apkg
-            </Button>
-            <Button className="outline-button" onClick={() => setCreateOpen(true)}>
-              <Icon name="plus" size={17} /> Buat deck baru
-            </Button>
+            <div className="dk-head-desktop-btns flex items-center gap-2 flex-wrap">
+              <Button className="outline-button dk-import-btn" onClick={() => openImport()}>
+                <Icon name="upload" size={16} /> Impor .apkg
+              </Button>
+              <Button className="outline-button" onClick={() => setCreateOpen(true)}>
+                <Icon name="plus" size={17} /> Buat deck baru
+              </Button>
+            </div>
+            <div ref={overflowWrapRef} className="dk-mobile-overflow-wrap">
+              <button
+                ref={overflowBtnRef}
+                type="button"
+                className="dk-mobile-overflow-btn"
+                aria-haspopup="menu"
+                aria-expanded={overflowOpen}
+                aria-controls="dk-mobile-overflow-menu"
+                aria-label="Menu aksi deck"
+                onClick={() => {
+                  pendingMenuFocusRef.current = null;
+                  setOverflowOpen((o) => !o);
+                }}
+                onKeyDown={handleOverflowTriggerKeyDown}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5" r="1.8" />
+                  <circle cx="12" cy="12" r="1.8" />
+                  <circle cx="12" cy="19" r="1.8" />
+                </svg>
+              </button>
+              {overflowOpen && (
+                <div
+                  id="dk-mobile-overflow-menu"
+                  ref={overflowMenuRef}
+                  className="dk-mobile-overflow-menu"
+                  role="menu"
+                  aria-label="Menu aksi deck"
+                  onKeyDown={handleOverflowMenuKeyDown}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOverflowOpen(false);
+                      openImport();
+                    }}
+                  >
+                    <Icon name="upload" size={16} /> Impor .apkg
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOverflowOpen(false);
+                      setCreateOpen(true);
+                    }}
+                  >
+                    <Icon name="plus" size={16} /> Buat deck baru
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </PageHead>
       </div>
@@ -485,7 +670,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
             id="dk-hero-drop"
             type="button"
             className="outline-button"
-            style={{ padding: "6px 12px", fontSize: "12px" }}
+            style={{ padding: "var(--sp-1) var(--sp-3)", fontSize: "var(--fs-12)" }}
             onClick={() => openImport()}
           >
             Pilih file .apkg
@@ -509,62 +694,81 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
               placeholder="Cari deck..."
             />
           </label>
-          <label className="pg-select">
+          <button
+            ref={filterBtnRef}
+            type="button"
+            className="dk-mobile-filter-btn"
+            aria-haspopup="dialog"
+            aria-expanded={filterSheetOpen}
+            aria-controls="dk-filter-sheet"
+            onClick={() => setFilterSheetOpen(true)}
+          >
             <Icon name="filter" size={15} />
-            <select
-              id="deck-sort"
-              value={combinedSelectValue}
-              onChange={(e) => handleCombinedSelectChange(e.target.value)}
-              aria-label="Urutkan dan filter status"
-            >
-              <optgroup label="Urutkan">
-                {sorts.map((s) => (
-                  <option key={`sort:${s}`} value={`sort:${s}`}>
-                    Urut: {s}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Filter Status">
-                {statusFilters.map((stOpt) => (
-                  <option key={`status:${stOpt}`} value={`status:${stOpt}`}>
-                    Status: {stOpt}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </label>
-          {viewMode === "list" && allParentIds.length > 0 && (
-            <button
-              type="button"
-              className="dk-tree-toggle-all"
-              onClick={toggleAll}
-              title={allExpanded ? "Tutup semua cabang sub-deck" : "Buka semua cabang sub-deck"}
-            >
-              <Icon name={allExpanded ? "chevron-up" : "chevron-down"} size={14} />
-              <span>{allExpanded ? "Tutup Sub-deck" : "Buka Sub-deck"}</span>
-            </button>
-          )}
-          <div className="dk-view-toggle" role="group" aria-label="Mode tampilan">
-            <button
-              type="button"
-              aria-pressed={viewMode === "grid"}
-              className={viewMode === "grid" ? "on" : ""}
-              onClick={() => setViewMode("grid")}
-              aria-label="Tampilan grid"
-              title="Tampilan Grid"
-            >
-              <Icon name="grid" size={16} />
-            </button>
-            <button
-              type="button"
-              aria-pressed={viewMode === "list"}
-              className={viewMode === "list" ? "on" : ""}
-              onClick={() => setViewMode("list")}
-              aria-label="Tampilan daftar"
-              title="Tampilan Daftar"
-            >
-              <Icon name="list" size={16} />
-            </button>
+            <span>Filter</span>
+            {mobileFilterCount > 0 && (
+              <span className="dk-mobile-filter-badge" aria-label={`${mobileFilterCount} filter aktif`}>
+                {mobileFilterCount}
+              </span>
+            )}
+          </button>
+          <div className="dk-desktop-toolbar-controls">
+            <label className="pg-select">
+              <Icon name="filter" size={15} />
+              <select
+                id="deck-sort"
+                value={combinedSelectValue}
+                onChange={(e) => handleCombinedSelectChange(e.target.value)}
+                aria-label="Urutkan dan filter status"
+              >
+                <optgroup label="Urutkan">
+                  {sorts.map((s) => (
+                    <option key={`sort:${s}`} value={`sort:${s}`}>
+                      Urut: {s}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Filter Status">
+                  {statusFilters.map((stOpt) => (
+                    <option key={`status:${stOpt}`} value={`status:${stOpt}`}>
+                      Status: {stOpt}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
+            {viewMode === "list" && allParentIds.length > 0 && (
+              <button
+                type="button"
+                className="dk-tree-toggle-all"
+                onClick={toggleAll}
+                title={allExpanded ? "Tutup semua cabang sub-deck" : "Buka semua cabang sub-deck"}
+              >
+                <Icon name={allExpanded ? "chevron-up" : "chevron-down"} size={14} />
+                <span>{allExpanded ? "Tutup Sub-deck" : "Buka Sub-deck"}</span>
+              </button>
+            )}
+            <div className="dk-view-toggle" role="group" aria-label="Mode tampilan">
+              <button
+                type="button"
+                aria-pressed={viewMode === "grid"}
+                className={viewMode === "grid" ? "on" : ""}
+                onClick={() => setViewMode("grid")}
+                aria-label="Tampilan grid"
+                title="Tampilan Grid"
+              >
+                <Icon name="grid" size={16} />
+              </button>
+              <button
+                type="button"
+                aria-pressed={viewMode === "list"}
+                className={viewMode === "list" ? "on" : ""}
+                onClick={() => setViewMode("list")}
+                aria-label="Tampilan daftar"
+                title="Tampilan Daftar"
+              >
+                <Icon name="list" size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -612,7 +816,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                         : `Buka dashboard ${deck.title}`
                     }
                   >
-                    <span>{deck.kanji}</span>
+                    <span>{deckTileGlyph(deck.kanji, deck.title)}</span>
                     <i />
                   </button>
                   {imported && <em className="dk-badge">ANKI</em>}
@@ -707,7 +911,7 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                   </div>
                   <div className="my-2">
                     {s.progress >= 100 ? (
-                      <Hanko char="済" size={36} title="Deck tuntas 100%" />
+                      <Hanko char="済" size={36} label={`Penguasaan ${deck.title} 100%, tuntas`} />
                     ) : (
                       <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />
                     )}
@@ -730,10 +934,13 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                 type="button"
                                 className="dk-quick-chip indigo"
                                 onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
+                                aria-label={`Belajar khusus ${c.subdeckName || c.title}: ${
+                                  cs.due > 0 ? `${cs.due} kartu jatuh tempo` : "selesai"
+                                }`}
                                 title={`Belajar khusus ${c.subdeckName || c.title} (${cs.due > 0 ? `${cs.due} tugas` : "selesai"})`}
                               >
                                 <strong>{lvlLabel}</strong>
-                                <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                                <small aria-hidden="true">{cs.due > 0 ? cs.due : "✓"}</small>
                               </button>
                             );
                           })}
@@ -751,14 +958,14 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
                                 className="dk-card-subdeck-item-left"
                                 onClick={() => navigate(`/deck/${c.id}`)}
                               >
-                                <DyeTile step={jlptDyeStep(cCode)} kanji={c.kanji} size={28} />
+                                <DyeTile step={jlptDyeStep(cCode)} glyph={deckTileGlyph(c.kanji, c.title)} fallbackTitle={c.title} size={28} />
                                 <span>
                                   <strong>{c.subdeckName || c.title}</strong>
                                   <small>{c.total.toLocaleString("id-ID")} kartu</small>
                                 </span>
                               </button>
                               <div className="dk-card-subdeck-item-right">
-                                <div className="inline-flex items-center gap-2 font-mono text-[11px]">
+                                <div className="inline-flex items-center gap-2 font-mono text-[length:var(--fs-12)]">
                                   <span
                                     className={cs.newToday > 0 ? "text-[var(--kon)] font-bold" : "text-[var(--teks-redup)]"}
                                     aria-label={`${cs.newToday} kartu baru`}
@@ -887,6 +1094,116 @@ export default function DecksPage({ notify }: { onCreate?: () => void; notify: (
             }}
           />
         </Suspense>
+      )}
+
+      {filterSheetOpen && (
+        <div
+          className="dk-sheet-backdrop"
+          onClick={() => setFilterSheetOpen(false)}
+        >
+          <div
+            id="dk-filter-sheet"
+            className="dk-filter-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dk-filter-sheet-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="dk-filter-sheet-head">
+              <h2 id="dk-filter-sheet-title">Urutkan &amp; Filter Deck</h2>
+              <button
+                ref={filterCloseRef}
+                type="button"
+                className="dk-sheet-close"
+                aria-label="Tutup filter"
+                onClick={() => setFilterSheetOpen(false)}
+              >
+                <Icon name="close" size={18} />
+              </button>
+            </div>
+
+            <div className="dk-filter-sheet-group">
+              <p className="dk-filter-sheet-label">Urutkan</p>
+              <div className="dk-filter-sheet-chips" role="group" aria-label="Urutkan deck">
+                {sorts.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={sort === s}
+                    className={`dk-sheet-chip${sort === s ? " is-active" : ""}`}
+                    onClick={() => setSort(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="dk-filter-sheet-group">
+              <p className="dk-filter-sheet-label">Status</p>
+              <div className="dk-filter-sheet-chips" role="group" aria-label="Filter status deck">
+                {statusFilters.map((stOpt) => (
+                  <button
+                    key={stOpt}
+                    type="button"
+                    aria-pressed={statusFilter === stOpt}
+                    className={`dk-sheet-chip${statusFilter === stOpt ? " is-active" : ""}`}
+                    onClick={() => setStatusFilter(stOpt)}
+                  >
+                    {stOpt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="dk-filter-sheet-group">
+              <p className="dk-filter-sheet-label">Mode Tampilan</p>
+              <div className="dk-filter-sheet-chips" role="group" aria-label="Mode tampilan">
+                <button
+                  type="button"
+                  aria-pressed={viewMode === "list"}
+                  className={`dk-sheet-chip${viewMode === "list" ? " is-active" : ""}`}
+                  onClick={() => setViewMode("list")}
+                >
+                  <Icon name="list" size={15} /> Daftar
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={viewMode === "grid"}
+                  className={`dk-sheet-chip${viewMode === "grid" ? " is-active" : ""}`}
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Icon name="grid" size={15} /> Grid
+                </button>
+              </div>
+            </div>
+
+            {viewMode === "list" && allParentIds.length > 0 && (
+              <div className="dk-filter-sheet-group">
+                <p className="dk-filter-sheet-label">Cabang Sub-deck</p>
+                <button
+                  type="button"
+                  className="dk-sheet-chip dk-sheet-chip-wide"
+                  aria-pressed={allExpanded}
+                  onClick={toggleAll}
+                >
+                  <Icon name={allExpanded ? "chevron-up" : "chevron-down"} size={15} />
+                  <span>{allExpanded ? "Tutup semua cabang sub-deck" : "Buka semua cabang sub-deck"}</span>
+                </button>
+              </div>
+            )}
+
+            <div className="dk-filter-sheet-foot">
+              <button
+                type="button"
+                className="btn-kon w-full justify-center"
+                onClick={() => setFilterSheetOpen(false)}
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {createOpen && (

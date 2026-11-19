@@ -14,14 +14,26 @@ import {
   type LiveDeckStats,
 } from "./lib/deckStats";
 import { aggregateParentStats, extractLevelCode, getLeafDescendantDecks } from "./lib/deckSubdecks";
-import { dyeStep, jlptDyeStep } from "./lib/dye";
+import { deckTileGlyph, dyeStep, jlptDyeStep } from "./lib/dye";
 import { ensureSeeded } from "./lib/deckCards";
+import { deckDexie } from "./lib/deckDb";
 import { listNovels, extractCoverKanji } from "./lib/bookStorage";
-import type { BookRecord } from "./lib/lexiconDb";
+import {
+  listDictionaries,
+  type BookRecord,
+  type DictionaryRecord,
+} from "./lib/lexiconDb";
+import {
+  countCompletedReviews,
+  countUserMinedCards,
+  getMiningActionPath,
+} from "./lib/onboardingStats";
 import { speakJapanese } from "./lib/tts";
+import FirstRunChecklist from "./components/FirstRunChecklist";
 
 const ImportDeckModal = lazy(() => import("./components/ImportDeckModal"));
 const DeckFormModal = lazy(() => import("./components/DeckFormModal"));
+const DictionaryManagerModal = lazy(() => import("./components/DictionaryManagerModal"));
 
 const defaultSources = [
   {
@@ -61,22 +73,54 @@ const defaultSources = [
 
 export default function App() {
   const navigate = useNavigate();
-  const [modal, setModal] = useState<"deck" | "mining" | "import" | null>(null);
+  const [modal, setModal] = useState<"deck" | "mining" | "import" | "dict" | null>(null);
   const [notice, setNotice] = useState("");
   const [books, setBooks] = useState<BookRecord[]>([]);
+  const [dictionaries, setDictionaries] = useState<DictionaryRecord[]>([]);
+  const [reviewLogCount, setReviewLogCount] = useState(0);
+  const [onboardingReady, setOnboardingReady] = useState(false);
   const [expandedDeckId, setExpandedDeckId] = useState<string | null>(null);
 
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
+  const minedQueue = useAppStore((s) => s.minedQueue);
   const settings = useAppStore((s) => s.settings);
   const deckLimits = useAppStore((s) => s.deckLimits);
   const srsCards = useReviewStore((s) => s.srsCards);
   const newIntroduced = useReviewStore((s) => s.newIntroduced);
+  const activity = useReviewStore((s) => s.activity);
 
   useEffect(() => {
+    let cancelled = false;
     void ensureSeeded();
-    void listNovels().then(setBooks).catch(() => {});
+    void Promise.allSettled([
+      listNovels(),
+      listDictionaries(),
+      deckDexie.reviewLogs.count(),
+    ]).then(([booksRes, dictsRes, logsRes]) => {
+      if (cancelled) return;
+      if (booksRes.status === "fulfilled") setBooks(booksRes.value);
+      if (dictsRes.status === "fulfilled") setDictionaries(dictsRes.value);
+      if (logsRes.status === "fulfilled") setReviewLogCount(logsRes.value);
+      setOnboardingReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const activeDictCount = useMemo(
+    () => dictionaries.filter((d) => d.enabled).length,
+    [dictionaries],
+  );
+  const minedCardsCount = useMemo(
+    () => countUserMinedCards(books, minedQueue),
+    [books, minedQueue],
+  );
+  const reviewedCount = useMemo(
+    () => countCompletedReviews(reviewLogCount, activity),
+    [reviewLogCount, activity],
+  );
 
   const now = new Date();
   const jpDateVertical = formatKanjiDate(now);
@@ -273,7 +317,7 @@ export default function App() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
         {/* KOLOM KIRI: DAFTAR DECK BERBORDER */}
-        <section className="lg:col-span-8">
+        <section className="lg:col-span-8 beranda-deck-section">
           <div className="section-heading">
             <div>
               <h2>Deck belajarmu</h2>
@@ -310,7 +354,7 @@ export default function App() {
                   <article className="beranda-deck-row">
                     <button
                       type="button"
-                      className="bg-transparent border-0 p-0 cursor-pointer shrink-0"
+                      className="beranda-deck-row__tile bg-transparent border-0 p-0 cursor-pointer shrink-0"
                       aria-expanded={displaySubdecks.length > 0 ? isExpanded : undefined}
                       aria-label={
                         displaySubdecks.length > 0
@@ -322,14 +366,14 @@ export default function App() {
                         else navigate(`/deck/${deck.id}`);
                       }}
                     >
-                      <DyeTile step={dyeStep(s.progress)} kanji={deck.kanji} size={44} />
+                      <DyeTile step={dyeStep(s.progress)} glyph={deckTileGlyph(deck.kanji, deck.title)} fallbackTitle={deck.title} size={44} />
                     </button>
 
                     <div className="beranda-deck-info min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[11px] font-bold text-[var(--ai)]">{deck.level}</span>
+                      <div className="beranda-deck-row__meta flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-[length:var(--fs-12)] font-bold text-[var(--ai)]">{deck.level}</span>
                         {imported && (
-                          <span className="rounded bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--kon)]">
+                          <span className="rounded-[var(--r-sm)] bg-[var(--tsuki)] border border-[var(--garis)] px-1.5 py-0.5 text-[length:var(--fs-12)] font-bold text-[var(--kon)]">
                             ANKI
                           </span>
                         )}
@@ -368,7 +412,7 @@ export default function App() {
                         >
                           復 {s.reviewDue}
                         </span>
-                        <span className="font-sans text-[var(--teks-redup)]">
+                        <span className="beranda-deck-row__total font-sans text-[var(--teks-redup)]">
                           {deck.total.toLocaleString("id-ID")} kartu
                         </span>
                       </div>
@@ -376,7 +420,7 @@ export default function App() {
 
                     <div className="beranda-deck-row__mastery flex items-center justify-end min-w-[128px]">
                       {s.progress >= 100 ? (
-                        <Hanko char="済" size={44} title="Deck tuntas 100%" />
+                        <Hanko char="済" size={44} label={`Penguasaan ${deck.title} 100%, tuntas`} />
                       ) : (
                         <div className="w-full max-w-[140px]">
                           <DyeProgress percent={s.progress} label={`Penguasaan ${deck.title}`} />
@@ -384,7 +428,7 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="beranda-deck-row__action flex items-center gap-2 shrink-0">
                       {displaySubdecks.length > 0 ? (
                         <Button className="outline-button" ariaExpanded={isExpanded} onClick={toggleDeckExpand}>
                           {isExpanded ? "Tutup" : `Sub-deck (${displaySubdecks.length})`}
@@ -418,10 +462,13 @@ export default function App() {
                                   key={c.id}
                                   type="button"
                                   className="dk-quick-chip indigo"
+                                  aria-label={`Belajar ${c.subdeckName || c.title}: ${
+                                    cs.due > 0 ? `${cs.due} kartu jatuh tempo` : "selesai"
+                                  }`}
                                   onClick={() => navigate(cs.due > 0 ? `/deck/${c.id}/review` : `/deck/${c.id}`)}
                                 >
                                   <strong>{lvlLabel}</strong>
-                                  <small>{cs.due > 0 ? cs.due : "✓"}</small>
+                                  <small aria-hidden="true">{cs.due > 0 ? cs.due : "✓"}</small>
                                 </button>
                               );
                             })}
@@ -438,11 +485,13 @@ export default function App() {
                                   className="dk-card-subdeck-item-left"
                                   onClick={() => navigate(`/deck/${c.id}`)}
                                 >
-                                  <DyeTile step={jlptDyeStep(code)} kanji={c.kanji} size={32} />
+                                  <DyeTile step={jlptDyeStep(code)} glyph={deckTileGlyph(c.kanji, c.title)} fallbackTitle={c.title} size={32} />
                                   <span>
                                     <strong>{c.subdeckName || c.title}</strong>
                                     <small className="font-mono">
-                                      新 {cs.newToday} · 復 {cs.reviewDue} · {c.total.toLocaleString("id-ID")} kartu
+                                      <span aria-label={`${cs.newToday} kartu baru`}>新 {cs.newToday}</span> ·{" "}
+                                      <span aria-label={`${cs.reviewDue} ulasan jatuh tempo`}>復 {cs.reviewDue}</span> ·{" "}
+                                      <span>{c.total.toLocaleString("id-ID")} kartu</span>
                                     </small>
                                   </span>
                                 </button>
@@ -468,13 +517,26 @@ export default function App() {
           </div>
         </section>
 
-        {/* KOLOM KANAN: DUA KARTU (TUJUH HARI KE DEPAN & KUOTA HARI INI) */}
+        {/* KOLOM KANAN: ONBOARDING + TUJUH HARI KE DEPAN & KUOTA HARI INI */}
         <aside className="lg:col-span-4 space-y-5">
+          {onboardingReady && (
+            <FirstRunChecklist
+              activeDictCount={activeDictCount}
+              booksCount={books.length}
+              minedCardsCount={minedCardsCount}
+              reviewedCount={reviewedCount}
+              onOpenDictManager={() => setModal("dict")}
+              onAddBook={() => navigate("/library")}
+              onStartMining={() => navigate(getMiningActionPath(books))}
+              onStartReview={handleStartReview}
+            />
+          )}
+
           {/* 1. Tujuh hari ke depan */}
-          <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
+          <article className="rounded-[var(--r-box)] border border-[var(--garis)] bg-[var(--panel)] p-5">
             <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
               <div>
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                <p className="text-[length:var(--fs-12)] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
                   予習と復習
                 </p>
                 <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
@@ -495,7 +557,7 @@ export default function App() {
                   className="beranda-forecast-col"
                 >
                   <span
-                    className={`text-[11px] font-mono ${
+                    className={`text-[length:var(--fs-12)] font-mono ${
                       idx === 0 ? "font-bold text-[var(--kon)]" : "text-[var(--teks-redup)]"
                     }`}
                   >
@@ -527,7 +589,7 @@ export default function App() {
           <article className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-5">
             <div className="flex items-baseline justify-between gap-2 pb-3 border-b border-[var(--garis)]">
               <div>
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
+                <p className="text-[length:var(--fs-12)] font-bold tracking-widest uppercase text-[var(--ai)] m-0">
                   本日の割当
                 </p>
                 <h2 className="text-base font-serif font-bold text-[var(--tinta)] m-0 mt-0.5">
@@ -697,6 +759,16 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {modal === "dict" && (
+        <Suspense fallback={null}>
+          <DictionaryManagerModal
+            open
+            onClose={() => setModal(null)}
+            onDictionariesChanged={setDictionaries}
+          />
+        </Suspense>
       )}
 
       {notice && (

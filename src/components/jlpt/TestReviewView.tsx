@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
 import { QuestionItem } from "../../lib/questionPack";
+import { sanitizeRichHtml } from "../../lib/ankiText";
 import { renderQuestionPrompt } from "./furiganaHelper";
 import ListeningSceneCard from "./ListeningSceneCard";
 import { Icon } from "../../ui";
@@ -295,7 +296,7 @@ export default function TestReviewView({
                 {q.passageHtml && (
                   <div
                     className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)]"
-                    dangerouslySetInnerHTML={{ __html: q.passageHtml }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(q.passageHtml) }}
                   />
                 )}
 

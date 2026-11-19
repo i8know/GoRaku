@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt",
+    "typecheck": "tsc --noEmit -p .",
     "test": "vitest run",
+    "postbuild:check": "node tools/checkLfsAssets.mjs",
+    "verify": "npm run typecheck && npm test && npm run build && npm run postbuild:check",
     "gen:n5": "tsx tools/generateQuestionPack.ts",
     "audit:sample": "tsx tools/auditSample.ts",
     "review:workflow": "tsx tools/reviewWorkflow.ts"

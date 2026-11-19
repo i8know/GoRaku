@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { MockTest, MockSection, SectionSessionResult } from "./types";
 import { QuestionItem } from "../../lib/questionPack";
+import { sanitizeRichHtml } from "../../lib/ankiText";
 import { renderQuestionPrompt } from "./furiganaHelper";
 import ListeningSceneCard from "./ListeningSceneCard";
 import { Icon } from "../../ui";
@@ -441,7 +442,7 @@ export default function TestSessionRunner({
                   </div>
                 )}
                 <div
-                  dangerouslySetInnerHTML={{ __html: currentQ.passageHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(currentQ.passageHtml) }}
                 />
               </div>
             )}

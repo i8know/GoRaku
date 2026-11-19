@@ -8,6 +8,100 @@ import {
   type OcrRecognitionResult,
   type OcrRecognizeOptions,
 } from "./ocrProvider";
+import { normalizeBasePath } from "../basePath";
+import { useToastStore } from "../../store/useToastStore";
+
+export const OCR_ASSET_LOAD_ERROR_MESSAGE =
+  "Data OCR tidak dapat dimuat. Pastikan aset /tesseract terpasang dengan benar.";
+
+const LFS_POINTER_PREFIX = "version https://git-lfs.github.com/spec";
+
+async function readInitialAssetBytes(
+  url: string,
+  maxBytes = 64,
+): Promise<Uint8Array> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} (${url})`);
+  }
+  if (res.body && typeof res.body.getReader === "function") {
+    const reader = res.body.getReader();
+    try {
+      const { value } = await reader.read();
+      return value ? value.subarray(0, maxBytes) : new Uint8Array(0);
+    } finally {
+      await reader.cancel().catch(() => {});
+    }
+  }
+  const buf = await res.arrayBuffer();
+  return new Uint8Array(buf, 0, Math.min(buf.byteLength, maxBytes));
+}
+
+/**
+ * Memastikan aset biner OCR (`/tesseract/tesseract-core-lstm.wasm` dan `traineddata.gz`)
+ * dapat diakses dan bukan berkas pointer Git LFS 132-byte sebelum worker dijalankan.
+ */
+export async function verifyOcrRuntimeAssets(
+  assetUrls: { corePath: string; langPath: string },
+  lang: OcrLanguage,
+): Promise<void> {
+  if (typeof fetch !== "function") return;
+
+  const wasmUrl = `${assetUrls.corePath.replace(/\/$/, "")}/tesseract-core-lstm.wasm`;
+  const langUrl = `${assetUrls.langPath.replace(/\/$/, "")}/${lang}.traineddata.gz`;
+
+  const [wasmBytes, gzipBytes] = await Promise.all([
+    readInitialAssetBytes(wasmUrl, 64),
+    readInitialAssetBytes(langUrl, 64),
+  ]);
+
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  if (
+    decoder.decode(wasmBytes).startsWith(LFS_POINTER_PREFIX) ||
+    wasmBytes.length < 4 ||
+    wasmBytes[0] !== 0x00 ||
+    wasmBytes[1] !== 0x61 ||
+    wasmBytes[2] !== 0x73 ||
+    wasmBytes[3] !== 0x6d
+  ) {
+    throw new Error(OCR_ASSET_LOAD_ERROR_MESSAGE);
+  }
+
+  if (
+    decoder.decode(gzipBytes).startsWith(LFS_POINTER_PREFIX) ||
+    gzipBytes.length < 2 ||
+    gzipBytes[0] !== 0x1f ||
+    gzipBytes[1] !== 0x8b
+  ) {
+    throw new Error(OCR_ASSET_LOAD_ERROR_MESSAGE);
+  }
+}
+
+/**
+ * Membangun URL aset lokal Tesseract (`workerPath`, `corePath`, `langPath`)
+ * dengan memperhitungkan `import.meta.env.BASE_URL` (mis. `/` atau `/GoRaku/`).
+ */
+export function buildTesseractAssetUrls(
+  variant: OcrModelVariant,
+  baseUrl: string = import.meta.env.BASE_URL ?? "/",
+  origin: string = typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "http://localhost",
+): {
+  workerPath: string;
+  corePath: string;
+  langPath: string;
+} {
+  const normalizedBase = normalizeBasePath(baseUrl);
+  return {
+    workerPath: new URL(`${normalizedBase}tesseract/worker.min.js`, origin).href,
+    corePath: new URL(`${normalizedBase}tesseract`, origin).href,
+    langPath: new URL(
+      `${normalizedBase}tesseract/lang-data/${variant}`,
+      origin,
+    ).href,
+  };
+}
 
 function formatProgressStatusId(rawStatus: string, lang: OcrLanguage): string {
   const s = (rawStatus || "").toLowerCase();
@@ -84,60 +178,81 @@ export class TesseractProvider implements OcrProvider {
       this.currentLang = lang;
 
       this.workerPromise = (async () => {
+        const assetUrls = buildTesseractAssetUrls(variant);
+        await verifyOcrRuntimeAssets(assetUrls, lang);
+
         const tesseractMod = await import("tesseract.js");
         const createWorker =
           tesseractMod.createWorker ??
           (tesseractMod as unknown as { default: { createWorker: typeof tesseractMod.createWorker } }).default
             ?.createWorker;
 
-        const origin =
-          typeof window !== "undefined" && window.location?.origin
-            ? window.location.origin
-            : "";
+        let rejectWorkerInit: ((reason?: unknown) => void) | null = null;
+        const workerInitErrorPromise = new Promise<never>((_, reject) => {
+          rejectWorkerInit = reject;
+        });
 
-        const worker = (await createWorker(lang, 1, {
-          workerPath: `${origin}/tesseract/worker.min.js`,
-          corePath: `${origin}/tesseract`,
-          langPath: `${origin}/tesseract/lang-data/${variant}`,
-          cachePath: `goraku-tess-${variant}`,
-          gzip: true,
-          workerBlobURL: false,
-          logger: (msg: { status?: string; progress?: number }) => {
-            if (this.activeProgressHandler) {
-              this.activeProgressHandler({
-                status: formatProgressStatusId(
-                  msg.status ?? "",
-                  this.currentLang ?? lang,
-                ),
-                progress:
-                  typeof msg.progress === "number"
-                    ? Math.max(0, Math.min(1, msg.progress))
-                    : 0,
-                lang: this.currentLang ?? lang,
-              });
-            }
-          },
-        })) as unknown as TesseractWorkerInstance;
+        const worker = (await Promise.race([
+          createWorker(lang, 1, {
+            workerPath: assetUrls.workerPath,
+            corePath: assetUrls.corePath,
+            langPath: assetUrls.langPath,
+            cachePath: `goraku-tess-${variant}`,
+            gzip: true,
+            workerBlobURL: false,
+            errorHandler: (err: unknown) => {
+              rejectWorkerInit?.(
+                err instanceof Error ? err : new Error(String(err)),
+              );
+            },
+            logger: (msg: { status?: string; progress?: number }) => {
+              if (this.activeProgressHandler) {
+                this.activeProgressHandler({
+                  status: formatProgressStatusId(
+                    msg.status ?? "",
+                    this.currentLang ?? lang,
+                  ),
+                  progress:
+                    typeof msg.progress === "number"
+                      ? Math.max(0, Math.min(1, msg.progress))
+                      : 0,
+                  lang: this.currentLang ?? lang,
+                });
+              }
+            },
+          }),
+          workerInitErrorPromise,
+        ])) as unknown as TesseractWorkerInstance;
 
         return worker;
       })();
     }
 
-    const worker = await this.workerPromise;
+    try {
+      const worker = await this.workerPromise;
 
-    if (this.currentLang !== lang) {
-      await worker.reinitialize(lang, 1);
-      this.currentLang = lang;
+      if (this.currentLang !== lang) {
+        const assetUrls = buildTesseractAssetUrls(variant);
+        await verifyOcrRuntimeAssets(assetUrls, lang);
+        await worker.reinitialize(lang, 1);
+        this.currentLang = lang;
+      }
+
+      // PSM 5 = SINGLE_BLOCK_VERT_TEXT (teks vertikal kolom kanan-ke-kiri)
+      // PSM 6 = SINGLE_BLOCK (teks horizontal seragam)
+      await worker.setParameters({
+        tessedit_pageseg_mode: lang === "jpn_vert" ? "5" : "6",
+        preserve_interword_spaces: "0",
+      });
+
+      return worker;
+    } catch {
+      this.workerPromise = null;
+      this.currentLang = null;
+      this.currentVariant = null;
+      useToastStore.getState().notify(OCR_ASSET_LOAD_ERROR_MESSAGE);
+      throw new Error(OCR_ASSET_LOAD_ERROR_MESSAGE);
     }
-
-    // PSM 5 = SINGLE_BLOCK_VERT_TEXT (teks vertikal kolom kanan-ke-kiri)
-    // PSM 6 = SINGLE_BLOCK (teks horizontal seragam)
-    await worker.setParameters({
-      tessedit_pageseg_mode: lang === "jpn_vert" ? "5" : "6",
-      preserve_interword_spaces: "0",
-    });
-
-    return worker;
   }
 
   async recognize(

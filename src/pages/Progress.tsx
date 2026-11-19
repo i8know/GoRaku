@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Icon, PageHead, Tabs } from "../ui";
+import { jlptDyeStep } from "../lib/dye";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -34,15 +35,25 @@ const sourcesMix = [
 const forecast = [44, 31, 52, 27, 38, 60, 22];
 const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
+function formatDeltaWords(raw: string): string {
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("-")) {
+    return `turun ${trimmed.slice(1)}`;
+  }
+  const clean = trimmed.startsWith("+") ? trimmed.slice(1) : trimmed;
+  return `naik ${clean}`;
+}
+
 function Line({
   pts,
   activeIdx,
-  onHoverIdx,
+  onActiveIdx,
 }: {
   pts: number[];
   activeIdx: number | null;
-  onHoverIdx: (idx: number | null) => void;
+  onActiveIdx: (idx: number | null) => void;
 }) {
+  const gradId = useId();
   const W = 600, H = 190, pad = 14;
   const min = Math.min(...pts) - 40, max = Math.max(...pts) + 20;
   const xy = pts.map((v, i) => [
@@ -53,39 +64,83 @@ function Line({
   const last = xy[xy.length - 1];
   const selIdx = activeIdx ?? pts.length - 1;
   const selPt = xy[selIdx] ?? last;
+  const tooltipPt = activeIdx !== null ? xy[activeIdx] : null;
+  const tooltipVal = activeIdx !== null ? pts[activeIdx] : null;
+  const pctX = tooltipPt ? (tooltipPt[0] / W) * 100 : 0;
+  const pctY = tooltipPt ? (tooltipPt[1] / H) * 100 : 0;
+  const translateX = pctX < 14 ? "0%" : pctX > 86 ? "-100%" : "-50%";
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      className="pr-line"
-      role="img"
-      aria-label="Pertumbuhan kosakata"
-      onMouseLeave={() => onHoverIdx(null)}
-    >
-      {[0.25, 0.5, 0.75].map((g) => (
-        <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} />
-      ))}
-      <path d={`${d} L${last[0]} ${H} L${xy[0][0]} ${H} Z`} className="area" />
-      <path d={d} className="stroke" />
-      <line
-        x1={selPt[0]}
-        x2={selPt[0]}
-        y1={pad}
-        y2={H - pad}
-        stroke="var(--ai)"
-        strokeWidth="1.2"
-        strokeDasharray="3 3"
-      />
-      {xy.map(([x, y], i) => {
-        const isSel = i === selIdx;
-        return (
-          <g key={i} className="cursor-pointer" onMouseEnter={() => onHoverIdx(i)} onClick={() => onHoverIdx(i)}>
-            <circle cx={x} cy={y} r={14} fill="transparent" stroke="none" />
-            <circle cx={x} cy={y} r={isSel ? 6 : 3.5} />
-          </g>
-        );
-      })}
-    </svg>
+    <div className="pr-chart-wrap" onMouseLeave={() => onActiveIdx(null)}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="pr-line"
+        role="img"
+        aria-label="Grafik pertumbuhan kosakata yang dikuasai"
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#12284A" stopOpacity="0.22" />
+            <stop offset="55%" stopColor="#1F5C85" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#1F5C85" stopOpacity="0.01" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75].map((g) => (
+          <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} />
+        ))}
+        <path d={`${d} L${last[0]} ${H} L${xy[0][0]} ${H} Z`} fill={`url(#${gradId})`} />
+        <path d={d} className="stroke" />
+        <line
+          x1={selPt[0]}
+          x2={selPt[0]}
+          y1={pad}
+          y2={H - pad}
+          className="pr-cursor-line"
+        />
+        {xy.map(([x, y], i) => {
+          const isSel = i === selIdx;
+          const label = `Titik ${i + 1}: ${pts[i].toLocaleString("id-ID")} kata`;
+          return (
+            <g
+              key={i}
+              role="button"
+              tabIndex={0}
+              aria-label={label}
+              className="cursor-pointer"
+              onMouseEnter={() => onActiveIdx(i)}
+              onFocus={() => onActiveIdx(i)}
+              onBlur={() => onActiveIdx(null)}
+              onClick={() => onActiveIdx(i)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onActiveIdx(i);
+                }
+              }}
+            >
+              <circle cx={x} cy={y} r={14} className="pr-dot-hit" />
+              <circle cx={x} cy={y} r={7.5} className="pr-dot-focus" />
+              <circle cx={x} cy={y} r={isSel ? 4.5 : 3} className={`pr-dot${isSel ? " is-active" : ""}`} />
+            </g>
+          );
+        })}
+      </svg>
+
+      {tooltipPt && tooltipVal !== null && activeIdx !== null && (
+        <div
+          role="tooltip"
+          className="pr-tooltip"
+          style={{
+            left: `${pctX}%`,
+            top: `${pctY}%`,
+            transform: `translate(${translateX}, -130%)`,
+          }}
+        >
+          <span className="pr-tooltip-sub">Titik #{activeIdx + 1}</span>
+          <span>{tooltipVal.toLocaleString("id-ID")} kata</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -150,20 +205,19 @@ export default function ProgressPage() {
         />
       </PageHead>
 
-      <section className="pr-kpis">
+      <section className="pr-kpis pr-kpis-aizome">
         {cards.map((c) => (
           <article key={c.l}>
-            <span className="pr-ico"><Icon name={c.i} size={18} /></span>
             <strong>{c.v}</strong>
             <small>{c.l}</small>
-            <em>▲ {c.d} vs periode lalu</em>
+            <em>{formatDeltaWords(c.d)} vs periode lalu</em>
           </article>
         ))}
       </section>
 
-      <section className="mb-5 rounded-2xl border border-[var(--garis)] bg-[var(--panel)] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
+      <section className="mb-5 rounded-md border border-[var(--garis)] bg-[var(--panel)] px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap text-xs">
         <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-lg bg-[var(--kon)] text-white grid place-items-center">
+          <span className="w-7 h-7 rounded bg-[var(--mizu-soft)] text-[var(--kon)] grid place-items-center" aria-hidden="true">
             <Icon name="check" size={15} />
           </span>
           <div>
@@ -173,7 +227,7 @@ export default function ProgressPage() {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-[11px]">
+        <div className="flex items-center gap-4 text-xs">
           <span>
             Sudah dipelajari: <strong className="text-[var(--kon)]">{realStats.totalStudiedCards} kartu</strong>
           </span>
@@ -184,39 +238,48 @@ export default function ProgressPage() {
       </section>
 
       <div className="pr-row">
-        <section className="pr-panel pr-wide">
+        <section className="pr-panel pr-panel-aizome pr-wide">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">PERTUMBUHAN (ARAHKAN KURSOR KE TITIK)</p>
+              <p className="eyebrow">PERTUMBUHAN KOSAKATA</p>
               <h2>Kosakata yang kamu kuasai</h2>
             </div>
             <span className="goal">
               Titik #{selectedPtIndex + 1}: {selectedPtValue.toLocaleString("id-ID")} kata
             </span>
           </div>
-          <Line pts={pts} activeIdx={hoverPtIdx} onHoverIdx={setHoverPtIdx} />
-          <div className="pr-axis"><span>{range === "7 hari" ? "7 hari lalu" : range === "30 hari" ? "30 hari lalu" : "3 bulan lalu"}</span><span>Hari ini</span></div>
+          <Line pts={pts} activeIdx={hoverPtIdx} onActiveIdx={setHoverPtIdx} />
+          <div className="pr-axis pr-axis-aizome"><span>{range === "7 hari" ? "7 hari lalu" : range === "30 hari" ? "30 hari lalu" : "3 bulan lalu"}</span><span>Hari ini</span></div>
         </section>
 
-        <section className="pr-panel">
+        <section className="pr-panel pr-panel-aizome">
           <div className="section-heading compact"><div><p className="eyebrow">TARGET JLPT</p><h2>Kemajuan level</h2></div></div>
-          <ul className="pr-jlpt">
-            {jlpt.map((j) => (
-              <li key={j.lv}><b>{j.lv}</b><div className="progress"><i style={{ width: `${j.p}%` }} /></div><small>{j.n}</small></li>
-            ))}
+          <ul className="pr-jlpt pr-jlpt-aizome">
+            {jlpt.map((j) => {
+              const step = jlptDyeStep(j.lv);
+              return (
+                <li key={j.lv}>
+                  <b className={`pr-jlpt-badge dye-${step}`}>{j.lv}</b>
+                  <div className="dye-bar" data-step={step} aria-label={`Kemajuan ${j.lv}: ${j.p}%`}>
+                    <i style={{ width: `${j.p}%` }} />
+                  </div>
+                  <small>{j.n}</small>
+                </li>
+              );
+            })}
           </ul>
         </section>
       </div>
 
-      <section className="pr-panel pr-heat-wrap">
+      <section className="pr-panel pr-panel-aizome pr-heat-wrap">
         <div className="section-heading compact">
           <div>
             <p className="eyebrow">KONSISTENSI</p>
             <h2>16 minggu terakhir</h2>
           </div>
-          <div className="pr-streaks items-center">
+          <div className="pr-streaks pr-streaks-aizome items-center">
             {activeHeatInfo && (
-              <span className="rounded-lg bg-[var(--mizu-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--ai)]">
+              <span className="rounded bg-[var(--mizu-soft)] px-2.5 py-1 text-xs font-bold text-[var(--kon)]">
                 {activeHeatInfo}
               </span>
             )}
@@ -250,13 +313,13 @@ export default function ProgressPage() {
             />
           ))}
         </div>
-        <div className="pr-legend">Sedikit <i className="l0" /><i className="l1" /><i className="l2" /><i className="l3" /><i className="l4" /> Banyak</div>
+        <div className="pr-legend pr-legend-aizome">Sedikit <i className="l0" /><i className="l1" /><i className="l2" /><i className="l3" /><i className="l4" /> Banyak</div>
       </section>
 
       <div className="pr-row pr-row-b">
-        <section className="pr-panel">
+        <section className="pr-panel pr-panel-aizome">
           <div className="section-heading compact"><div><p className="eyebrow">PRAKIRAAN</p><h2>Review 7 hari ke depan</h2></div></div>
-          <div className="pr-forecast">
+          <div className="pr-forecast pr-forecast-aizome">
             {forecast.map((v, i) => (
               <div key={i} title={`${i === 0 ? "Hari ini" : days[i]}: ${v} kartu`}>
                 <span>{v}</span>
@@ -267,10 +330,10 @@ export default function ProgressPage() {
           </div>
         </section>
 
-        <section className="pr-panel">
+        <section className="pr-panel pr-panel-aizome">
           <div className="section-heading compact"><div><p className="eyebrow">SUMBER BELAJAR</p><h2>Dari mana kata-katamu</h2></div></div>
           <div className="pr-stack">{sourcesMix.map((s) => <i key={s.n} style={{ width: `${s.p}%`, background: s.c }} title={`${s.n} ${s.p}%`} />)}</div>
-          <ul className="pr-mix">{sourcesMix.map((s) => <li key={s.n}><i style={{ background: s.c }} />{s.n}<b>{s.p}%</b></li>)}</ul>
+          <ul className="pr-mix pr-mix-aizome">{sourcesMix.map((s) => <li key={s.n}><i style={{ background: s.c }} />{s.n}<b>{s.p}%</b></li>)}</ul>
         </section>
       </div>
     </>

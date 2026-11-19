@@ -77,7 +77,9 @@ const fetchFile = async url => {
 }
 
 export const makeBook = async file => {
-    if (typeof file === 'string') file = await fetchFile(file)
+    if (!file || typeof file === 'string') {
+        throw new UnsupportedTypeError('Remote URL or non-file input is not supported')
+    }
     let book
     if (file.isDirectory) {
         const loader = await makeDirectoryLoader(file)
@@ -86,37 +88,12 @@ export const makeBook = async file => {
     }
     else if (!file.size) throw new NotFoundError('File not found')
     else if (await isZip(file)) {
+        if (isCBZ(file) || isFBZ(file)) {
+            throw new UnsupportedTypeError('Only EPUB archives are supported by the novel reader')
+        }
         const loader = await makeZipLoader(file)
-        if (isCBZ(file)) {
-            const { makeComicBook } = await import('./comic-book.js')
-            book = makeComicBook(loader, file)
-        }
-        else if (isFBZ(file)) {
-            const { makeFB2 } = await import('./fb2.js')
-            const { entries } = loader
-            const entry = entries.find(entry => entry.filename.endsWith('.fb2'))
-            const blob = await loader.loadBlob((entry ?? entries[0]).filename)
-            book = await makeFB2(blob)
-        }
-        else {
-            const { EPUB } = await import('./epub.js')
-            book = await new EPUB(loader).init()
-        }
-    }
-    else if (await isPDF(file)) {
-        const { makePDF } = await import('./pdf.js')
-        book = await makePDF(file)
-    }
-    else {
-        const { isMOBI, MOBI } = await import('./mobi.js')
-        if (await isMOBI(file)) {
-            const fflate = await import('./vendor/fflate.js')
-            book = await new MOBI({ unzlib: fflate.unzlibSync }).open(file)
-        }
-        else if (isFB2(file)) {
-            const { makeFB2 } = await import('./fb2.js')
-            book = await makeFB2(file)
-        }
+        const { EPUB } = await import('./epub.js')
+        book = await new EPUB(loader).init()
     }
     if (!book) throw new UnsupportedTypeError('File type not supported')
     return book
@@ -358,7 +335,9 @@ export class View extends HTMLElement {
             const href = section?.resolveHref?.(href_) ?? href_
             if (book?.isExternal?.(href))
                 Promise.resolve(this.#emit('external-link', { a, href_ }, true))
-                    .then(x => x ? globalThis.open(href_, '_blank') : null)
+                    .then(x => x && /^https?:\/\//i.test(href_ ?? '')
+                        ? globalThis.open(href_, '_blank', 'noopener,noreferrer')
+                        : null)
                     .catch(e => console.error(e))
             else Promise.resolve(this.#emit('link', { a, href }, true))
                 .then(x => x ? this.goTo(href) : null)

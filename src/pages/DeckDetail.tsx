@@ -77,6 +77,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
   }, [allDecks, deckId]);
 
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const updateDeck = useAppStore((s) => s.updateDeck);
   const removeDeck = useAppStore((s) => s.removeDeck);
   const allSrsCards = useReviewStore((s) => s.srsCards);
@@ -171,10 +172,10 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
   const stats = useMemo(() => {
     if (!deck) return null;
     if (childSubdecks.length > 0) {
-      return aggregateParentStats(deck, childSubdecks, allSrsCards, allIntros, settings, allDecks);
+      return aggregateParentStats(deck, childSubdecks, allSrsCards, allIntros, settings, allDecks, Date.now(), deckLimits);
     }
-    return liveDeckStats(deck, srsDeck, intro, settings);
-  }, [deck, childSubdecks, allSrsCards, allIntros, srsDeck, intro, settings]);
+    return liveDeckStats(deck, srsDeck, intro, settings, Date.now(), deckLimits);
+  }, [deck, childSubdecks, allSrsCards, allIntros, srsDeck, intro, settings, allDecks, deckLimits]);
 
   const fc = useMemo(() => {
     if (childSubdecks.length > 0) {
@@ -397,8 +398,8 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                   const subChildren = allDecks.filter((d) => d.parentId === sub.id);
                   const isContainer = subChildren.length > 0;
                   const subSt = isContainer
-                    ? aggregateParentStats(sub, subChildren, allSrsCards, allIntros, settings, allDecks)
-                    : liveDeckStats(sub, allSrsCards[sub.id], allIntros[sub.id], settings);
+                    ? aggregateParentStats(sub, subChildren, allSrsCards, allIntros, settings, allDecks, Date.now(), deckLimits)
+                    : liveDeckStats(sub, allSrsCards[sub.id], allIntros[sub.id], settings, Date.now(), deckLimits);
 
                   return (
                     <article

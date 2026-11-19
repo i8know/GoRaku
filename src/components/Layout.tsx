@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import PageTransition, { FrozenOutlet } from "./PageTransition";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
-import { reviewedToday, useReviewStore } from "../store/useReviewStore";
+import { reviewedToday, useReviewStore, useReviewStoreHydrated } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
@@ -68,9 +68,11 @@ export default function ProtectedLayout() {
   const decks = useAppStore((s) => s.decks);
   const minedQueue = useAppStore((s) => s.minedQueue);
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const srsCards = useReviewStore((s) => s.srsCards);
   const newIntroduced = useReviewStore((s) => s.newIntroduced);
   const activity = useReviewStore((s) => s.activity);
+  const reviewHydrated = useReviewStoreHydrated();
   const location = useLocation();
   const navigate = useNavigate();
   const logout = useAppStore((s) => s.logout);
@@ -152,7 +154,7 @@ export default function ProtectedLayout() {
     const withDue: { id: string; title: string; kanji: string; due: number; color: string }[] = [];
     for (const d of decks) {
       if (parentIds.has(d.id)) continue; // skip parent container decks to avoid double-counting leaf subdecks
-      const st = liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings);
+      const st = liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings, Date.now(), deckLimits);
       sumDue += st.due;
       withDue.push({
         id: d.id,
@@ -169,7 +171,7 @@ export default function ProtectedLayout() {
       rootDecksCount: roots.length,
       subdecksCount: leafSubdecks.length,
     };
-  }, [decks, srsCards, newIntroduced, settings]);
+  }, [decks, deckLimits, srsCards, newIntroduced, settings]);
 
   // Cards reviewed today across all decks
   const todayReviewedCount = useMemo(() => {
@@ -257,6 +259,18 @@ export default function ProtectedLayout() {
 
   if (!user) return <Navigate to="/login" replace />;
 
+  if (!reviewHydrated) {
+    return (
+      <div
+        className="app-shell grid place-items-center min-h-dvh px-4 text-sm text-[var(--tinta-2)]"
+        role="status"
+        aria-live="polite"
+      >
+        Memuat progres belajar…
+      </div>
+    );
+  }
+
   const active =
     location.pathname === "/settings"
       ? "Pengaturan"
@@ -294,7 +308,7 @@ export default function ProtectedLayout() {
       decks.find(
         (d) =>
           !parentIds.has(d.id) &&
-          liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings).due > 0,
+          liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings, Date.now(), deckLimits).due > 0,
       ) ?? decks[0];
     if (firstDue) {
       navigate(`/deck/${firstDue.id}/review`);

@@ -1,4 +1,13 @@
-import { inflateSync, strFromU8 } from "fflate";
+import { strFromU8 } from "fflate";
+import {
+  ArchiveLimitError,
+  MAX_YOMITAN_ENTRY_BYTES,
+  MAX_ZIP_ENTRIES,
+  inflateWithLimit,
+  isIgnoredArchivePath,
+  sanitizeHttpUrl,
+  shouldPreferArchivePath,
+} from "./archiveLimits";
 import { extractYomitanGlossary, toHiragana } from "./kana";
 import type {
   DictionaryRecord,
@@ -23,6 +32,7 @@ export interface YomitanIndexJson {
 
 export interface ZipCentralEntry {
   name: string;
+  rawPath?: string;
   compressionMethod: number;
   compressedSize: number;
   uncompressedSize: number;
@@ -73,8 +83,12 @@ export function indexYomitanZip(zipBytes: Uint8Array): Map<string, ZipCentralEnt
   const entries = new Map<string, ZipCentralEntry>();
   let pos = cdOffset;
   const cdEnd = cdOffset + cdSize;
+  let seenCount = 0;
 
   while (pos + 46 <= cdEnd) {
+    if (++seenCount > MAX_ZIP_ENTRIES) {
+      throw new ArchiveLimitError("Jumlah entri dalam arsip ZIP melebihi batas aman.");
+    }
     const sig = view.getUint32(pos, true);
     if (sig !== 0x02014b50) {
       throw new Error("Header Central Directory pada arsip ZIP rusak.");
@@ -88,18 +102,23 @@ export function indexYomitanZip(zipBytes: Uint8Array): Map<string, ZipCentralEnt
     const localHeaderOffset = view.getUint32(pos + 42, true);
 
     const nameBytes = zipBytes.subarray(pos + 46, pos + 46 + fileNameLen);
-    // Normalisasi path: buang prefix folder tunggal jika ada dan ubah backslash ke slash
+    // Normalisasi path: ubah backslash ke slash dan abai entri metadata macOS
     const rawName = strFromU8(nameBytes).replace(/\\/g, "/");
     const baseName = rawName.split("/").filter(Boolean).pop() ?? rawName;
 
-    if (!rawName.endsWith("/") && baseName) {
-      entries.set(baseName, {
-        name: baseName,
-        compressionMethod,
-        compressedSize,
-        uncompressedSize,
-        localHeaderOffset,
-      });
+    if (!rawName.endsWith("/") && baseName && !isIgnoredArchivePath(rawName)) {
+      const existing = entries.get(baseName);
+      // Utamakan entri terluar (root / depth terkecil) dan cegah entri duplikat tersembunyi menimpa entri awal
+      if (shouldPreferArchivePath(rawName, existing?.rawPath)) {
+        entries.set(baseName, {
+          name: baseName,
+          rawPath: rawName,
+          compressionMethod,
+          compressedSize,
+          uncompressedSize,
+          localHeaderOffset,
+        });
+      }
     }
 
     pos += 46 + fileNameLen + extraLen + commentLen;
@@ -109,12 +128,15 @@ export function indexYomitanZip(zipBytes: Uint8Array): Map<string, ZipCentralEnt
 }
 
 /**
- * Mengekstrak satu berkas dari ZIP berdasarkan entri Central Directory.
+ * Mengekstrak satu berkas dari ZIP berdasarkan entri Central Directory dengan batas ukuran aman.
  */
 export function extractZipEntryBytes(
   zipBytes: Uint8Array,
   entry: ZipCentralEntry,
+  maxBytes = MAX_YOMITAN_ENTRY_BYTES,
+  budget?: { remaining: number },
 ): Uint8Array {
+  const effectiveMax = budget ? Math.min(maxBytes, Math.max(0, budget.remaining)) : maxBytes;
   const view = new DataView(
     zipBytes.buffer,
     zipBytes.byteOffset,
@@ -138,19 +160,30 @@ export function extractZipEntryBytes(
   }
 
   const rawSlice = zipBytes.subarray(dataStart, dataEnd);
+  let out: Uint8Array;
   if (entry.compressionMethod === 0) {
-    return rawSlice;
-  }
-  if (entry.compressionMethod === 8) {
+    if (rawSlice.byteLength > effectiveMax) {
+      throw new ArchiveLimitError(
+        `Ukuran berkas "${entry.name}" melebihi batas aman (${Math.round(effectiveMax / (1024 * 1024))} MB).`,
+      );
+    }
+    out = rawSlice;
+  } else if (entry.compressionMethod === 8) {
     try {
-      return inflateSync(rawSlice);
-    } catch {
+      out = inflateWithLimit(rawSlice, effectiveMax, entry.name, entry.uncompressedSize);
+    } catch (err) {
+      if (err instanceof ArchiveLimitError) throw err;
       throw new Error(`Gagal mendekompresi berkas "${entry.name}" di dalam ZIP.`);
     }
+  } else {
+    throw new Error(
+      `Metode kompresi ZIP (${entry.compressionMethod}) pada "${entry.name}" tidak didukung.`,
+    );
   }
-  throw new Error(
-    `Metode kompresi ZIP (${entry.compressionMethod}) pada "${entry.name}" tidak didukung.`,
-  );
+  if (budget) {
+    budget.remaining -= out.byteLength;
+  }
+  return out;
 }
 
 /**
@@ -159,8 +192,10 @@ export function extractZipEntryBytes(
 export function extractZipEntryJson<T = unknown>(
   zipBytes: Uint8Array,
   entry: ZipCentralEntry,
+  maxBytes = MAX_YOMITAN_ENTRY_BYTES,
+  budget?: { remaining: number },
 ): T {
-  const bytes = extractZipEntryBytes(zipBytes, entry);
+  const bytes = extractZipEntryBytes(zipBytes, entry, maxBytes, budget);
   const text = strFromU8(bytes);
   try {
     return JSON.parse(text) as T;
@@ -200,7 +235,7 @@ export function parseYomitanIndex(
   }
 
   const author = typeof obj.author === "string" ? obj.author.trim() : undefined;
-  const url = typeof obj.url === "string" ? obj.url.trim() : undefined;
+  const url = sanitizeHttpUrl(obj.url);
   const description =
     typeof obj.description === "string" ? obj.description.trim() : undefined;
 

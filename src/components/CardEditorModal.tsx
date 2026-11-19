@@ -28,16 +28,20 @@ export default function CardEditorModal({ deckTitle, card, onClose, onSave, onDe
   const save = async (again: boolean) => {
     if (!valid || saving) return;
     setSaving(true);
+    let savedAgain = false;
     try {
       const tags = tagText.split(/[,\s]+/).map((t) => t.trim()).filter(Boolean);
       await onSave({ ...draft, tags }, again);
       if (again) {
         setDraft(draftFromCard());
         setAdded((n) => n + 1);
-        wordRef.current?.focus();
+        savedAgain = true;
       }
     } finally {
       setSaving(false);
+      if (savedAgain) {
+        requestAnimationFrame(() => wordRef.current?.focus());
+      }
     }
   };
 
@@ -70,28 +74,28 @@ export default function CardEditorModal({ deckTitle, card, onClose, onSave, onDe
             <div className="imp-row2">
               <label className="field">
                 <span>Kata / depan kartu <em className="ce-req">*</em></span>
-                <input ref={wordRef} id="ce-word" lang="ja" autoFocus value={draft.word} onChange={set("word")} placeholder="例：寿命" />
+                <input ref={wordRef} id="ce-word" lang="ja" autoFocus disabled={saving} value={draft.word} onChange={set("word")} placeholder="例：寿命" />
               </label>
               <label className="field">
                 <span>Cara baca</span>
-                <input id="ce-reading" lang="ja" value={draft.reading} onChange={set("reading")} placeholder="じゅみょう" />
+                <input id="ce-reading" lang="ja" disabled={saving} value={draft.reading} onChange={set("reading")} placeholder="じゅみょう" />
               </label>
             </div>
             <label className="field">
               <span>Arti <em className="ce-req">*</em></span>
-              <textarea id="ce-meaning" rows={2} value={draft.meaning} onChange={set("meaning")} placeholder="umur; masa hidup" />
+              <textarea id="ce-meaning" rows={2} disabled={saving} value={draft.meaning} onChange={set("meaning")} placeholder="umur; masa hidup" />
             </label>
             <label className="field">
               <span>Kalimat contoh <small className="ce-hint">furigana: <code> 漢字[かんじ]</code></small></span>
-              <textarea id="ce-sentence" lang="ja" rows={2} value={draft.sentence} onChange={set("sentence")} placeholder=" 人間[にんげん]の 寿命[じゅみょう]は 短[みじか]い。" />
+              <textarea id="ce-sentence" lang="ja" rows={2} disabled={saving} value={draft.sentence} onChange={set("sentence")} placeholder=" 人間[にんげん]の 寿命[じゅみょう]は 短[みじか]い。" />
             </label>
             <label className="field">
               <span>Terjemahan kalimat</span>
-              <textarea id="ce-translation" rows={2} value={draft.translation} onChange={set("translation")} placeholder="Umur manusia itu pendek." />
+              <textarea id="ce-translation" rows={2} disabled={saving} value={draft.translation} onChange={set("translation")} placeholder="Umur manusia itu pendek." />
             </label>
             <label className="field">
               <span>Tag <small className="ce-hint">pisahkan dengan koma</small></span>
-              <input id="ce-tags" value={tagText} onChange={(e) => setTagText(e.target.value)} placeholder="anime, N3" />
+              <input id="ce-tags" disabled={saving} value={tagText} onChange={(e) => setTagText(e.target.value)} placeholder="anime, N3" />
             </label>
           </div>
 

@@ -34,8 +34,15 @@ const DB_NAME = "ma-immersion-decks";
 const CARDS = "cards";
 const MEDIA = "media";
 
+export interface KVRecord {
+  key: string;
+  value: string;
+  updatedAt: number;
+}
+
 export class DeckDatabase extends Dexie {
   reviewLogs!: Table<ReviewLogEntry, number>;
+  kv!: Table<KVRecord, string>;
 
   constructor(dbName = DB_NAME) {
     super(dbName);
@@ -60,15 +67,99 @@ export class DeckDatabase extends Dexie {
       .upgrade(() => {
         // Safe upgrade: existing cards and media stores remain intact while adding reviewLogs.
       });
+
+    this.version(3)
+      .stores({
+        cards: "",
+        media: "",
+        reviewLogs: "++id, deckId, cardId, reviewedAt, [deckId+cardId]",
+        kv: "key",
+      })
+      .upgrade(() => {
+        // Safe upgrade: existing cards, media, and reviewLogs remain intact while adding kv store.
+      });
   }
 }
 
 export const deckDexie = new DeckDatabase();
 
-async function openDb(): Promise<IDBDatabase> {
-  if (!deckDexie.isOpen()) {
-    await deckDexie.open();
+export async function ensureDeckDbOpen(): Promise<void> {
+  // Selalu panggil deckDexie.open() agar pemanggil serentak tetap menunggu dbReadyPromise
+  // hingga upgrade versi selesai (isOpen() bisa bernilai true saat onupgradeneeded masih berjalan).
+  await deckDexie.open();
+}
+
+export async function getKvValue(keyName: string): Promise<string | undefined> {
+  await ensureDeckDbOpen();
+  const row = await deckDexie.kv.get(keyName);
+  return row?.value;
+}
+
+export async function putKvValue(keyName: string, value: string): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.kv.put({
+    key: keyName,
+    value,
+    updatedAt: Date.now(),
+  });
+}
+
+export async function deleteKvValue(keyName: string): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.kv.delete(keyName);
+}
+
+function mutateKvSyncIfOpen(
+  op: "put" | "delete",
+  keyName: string,
+  value?: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  if (!deckDexie.isOpen()) return false;
+  try {
+    const db = deckDexie.backendDB();
+    if (!db) return false;
+    const tx = db.transaction("kv", "readwrite");
+    if (onError) {
+      tx.onabort = () => onError(tx.error ?? new Error("Transaksi sinkron kv dibatalkan"));
+      tx.onerror = () => onError(tx.error ?? new Error("Transaksi sinkron kv gagal"));
+    }
+    const store = tx.objectStore("kv");
+    if (op === "put" && value !== undefined) {
+      store.put({ key: keyName, value, updatedAt: Date.now() });
+    } else {
+      store.delete(keyName);
+    }
+    const maybeCommit = (tx as IDBTransaction & { commit?: () => void }).commit;
+    if (typeof maybeCommit === "function") maybeCommit.call(tx);
+    return true;
+  } catch {
+    return false;
   }
+}
+
+/**
+ * Mengirim transaksi `put` IndexedDB secara sinkron bila koneksi Dexie sudah terbuka penuh.
+ * Dipakai pada `pagehide`/`visibilitychange` agar antrean tulis yang masih menunggu debounce
+ * sempat terkirim sebelum dokumen ditutup/dimuat ulang.
+ */
+export function putKvSyncIfOpen(
+  keyName: string,
+  value: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  return mutateKvSyncIfOpen("put", keyName, value, onError);
+}
+
+export function deleteKvSyncIfOpen(
+  keyName: string,
+  onError?: (err: unknown) => void,
+): boolean {
+  return mutateKvSyncIfOpen("delete", keyName, undefined, onError);
+}
+
+async function openDb(): Promise<IDBDatabase> {
+  await ensureDeckDbOpen();
   return deckDexie.backendDB();
 }
 

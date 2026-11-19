@@ -333,7 +333,20 @@ export async function addNovelFile(
     return record;
   }
 
-  // Format EPUB -> ekstrak metadata & sampul menggunakan foliate-js
+  // Format EPUB -> pastikan header berkas benar-benar arsip ZIP sebelum diteruskan ke foliate-js
+  const epubHeader = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  const hasZipHeader =
+    epubHeader.byteLength >= 4 &&
+    epubHeader[0] === 0x50 &&
+    epubHeader[1] === 0x4b &&
+    ((epubHeader[2] === 0x03 && epubHeader[3] === 0x04) ||
+      (epubHeader[2] === 0x05 && epubHeader[3] === 0x06));
+  if (!hasZipHeader) {
+    throw new Error(
+      `Gagal membuka berkas EPUB "${file.name}": Berkas bukan arsip EPUB (ZIP) yang valid.`,
+    );
+  }
+
   const { makeBook } = await import("../vendor/foliate-js/view.js");
   let bookObj: Awaited<ReturnType<typeof makeBook>> | null = null;
   try {

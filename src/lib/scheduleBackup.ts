@@ -2,8 +2,13 @@ import {
   flushReviewLogs,
   getAllReviewLogs,
   replaceAllReviewLogs,
-  type ReviewLogRecord,
+  type ReviewLogEntry as ReviewLogRecord,
 } from "./deckDb";
+import {
+  flushReviewStorageWrites,
+  registerReviewBackupExporter,
+} from "./reviewStorage";
+import { isSafeObjectKey } from "./archiveLimits";
 import type { SRSCard } from "./srs";
 import { normalizeStudyDayKey } from "./studyDay";
 import {
@@ -99,7 +104,12 @@ function isValidReviewLog(val: unknown): val is ReviewLogRecord {
 export async function exportScheduleBackup(): Promise<ScheduleBackupData> {
   await flushReviewLogs();
   const state = useReviewStore.getState();
-  const logs = await getAllReviewLogs();
+  let logs: ReviewLogRecord[] = [];
+  try {
+    logs = await getAllReviewLogs();
+  } catch (err) {
+    console.warn("Gagal membaca reviewLogs saat ekspor cadangan, melanjutkan tanpa log:", err);
+  }
 
   return {
     version: 1,
@@ -117,6 +127,22 @@ export async function exportScheduleBackupJson(): Promise<string> {
   const payload = await exportScheduleBackup();
   return JSON.stringify(payload, null, 2);
 }
+
+/** Mengunduh berkas JSON cadangan jadwal belajar dari state store saat ini (termasuk in-memory saat penyimpanan gagal). */
+export async function downloadScheduleBackupJson(): Promise<void> {
+  const json = await exportScheduleBackupJson();
+  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `goraku-jadwal-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+registerReviewBackupExporter(downloadScheduleBackupJson);
 
 /**
  * Memvalidasi dan mengimpor cadangan jadwal belajar (JSON string atau objek).
@@ -153,11 +179,17 @@ export async function importScheduleBackup(
   let cardsCount = 0;
 
   for (const [deckId, deckMap] of Object.entries(storageContainer.srsCards)) {
+    if (!isSafeObjectKey(deckId)) {
+      throw new Error(`Nama deck "${deckId}" tidak diizinkan.`);
+    }
     if (!isPlainObject(deckMap)) {
       throw new Error(`Data kartu untuk deck "${deckId}" tidak valid.`);
     }
     const validatedDeck: Record<string, SRSCard> = {};
     for (const [cardId, cardVal] of Object.entries(deckMap)) {
+      if (!isSafeObjectKey(cardId)) {
+        throw new Error(`ID kartu "${cardId}" tidak diizinkan.`);
+      }
       if (!isValidSrsCard(cardVal)) {
         throw new Error(
           `Kartu "${cardId}" di deck "${deckId}" memiliki struktur tidak valid.`,
@@ -177,6 +209,9 @@ export async function importScheduleBackup(
     for (const [deckId, introVal] of Object.entries(
       storageContainer.newIntroduced,
     )) {
+      if (!isSafeObjectKey(deckId)) {
+        throw new Error(`Nama deck "${deckId}" pada newIntroduced tidak diizinkan.`);
+      }
       if (
         !isPlainObject(introVal) ||
         typeof introVal.date !== "string" ||
@@ -206,6 +241,9 @@ export async function importScheduleBackup(
       throw new Error("Field activity tidak valid.");
     }
     for (const [deckId, actVal] of Object.entries(storageContainer.activity)) {
+      if (!isSafeObjectKey(deckId)) {
+        throw new Error(`Nama deck "${deckId}" pada activity tidak diizinkan.`);
+      }
       if (
         !isPlainObject(actVal) ||
         typeof actVal.date !== "string" ||
@@ -250,6 +288,7 @@ export async function importScheduleBackup(
     await replaceAllReviewLogs(validatedLogs);
     await flushReviewLogs();
   }
+  await flushReviewStorageWrites();
 
   return {
     cardsCount,

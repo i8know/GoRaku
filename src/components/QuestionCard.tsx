@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { QuestionItem } from "../lib/questionPack";
-import { renderRubyHtml } from "../../tools/language/furigana";
+import { renderQuestionPrompt } from "./jlpt/furiganaHelper";
 
 export interface QuestionCardProps {
   question: QuestionItem;
@@ -32,31 +32,13 @@ export default function QuestionCard({
     onAnswer?.(isCorrect, idx);
   };
 
-  // Render teks prompt dengan dukungan ruby & garis bawah
-  const renderPrompt = () => {
-    if (question.rubyNodes && question.rubyNodes.length > 0) {
-      const htmlContent = renderRubyHtml(question.rubyNodes, showFurigana);
-      const target = question.explanation.targetWord;
-      const finalHtml =
-        target && htmlContent.includes(target)
-          ? htmlContent.replace(target, `<u class="underline decoration-2 decoration-amber-500 font-bold">${target}</u>`)
-          : htmlContent;
-
-      return (
-        <div
-          className="text-2xl font-medium tracking-wide leading-relaxed text-zinc-900 dark:text-zinc-100"
-          dangerouslySetInnerHTML={{ __html: finalHtml }}
-        />
-      );
-    }
-
-    return (
-      <div
-        className="text-2xl font-medium tracking-wide leading-relaxed text-zinc-900 dark:text-zinc-100"
-        dangerouslySetInnerHTML={{ __html: question.prompt }}
-      />
-    );
-  };
+  // Render teks prompt dengan dukungan ruby & garis bawah (sudah disanitasi)
+  const renderPrompt = () => (
+    <div
+      className="text-2xl font-medium tracking-wide leading-relaxed text-zinc-900 dark:text-zinc-100"
+      dangerouslySetInnerHTML={{ __html: renderQuestionPrompt(question, showFurigana) }}
+    />
+  );
 
   const typeLabels: Record<string, string> = {
     G1_KANJI_READING: "Membaca Kanji (G1)",

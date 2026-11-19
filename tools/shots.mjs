@@ -229,6 +229,7 @@ async function auditPage(page) {
       overflow,
       scrollWidth: document.documentElement.scrollWidth,
       innerWidth: window.innerWidth,
+      scrollHeight: document.documentElement.scrollHeight,
     };
   });
 }
@@ -313,6 +314,16 @@ try {
       `  ${r.slug.padEnd(20)} (${r.route}): ${r.shuCount} elements`,
       r.shuElements.map((e) => `${e.tag}.${e.className}[${e.reasons}]`).join(", "),
     );
+  }
+
+  const shuOverLimit = allResults.filter((x) => x.shuCount > 3);
+  if (shuOverLimit.length > 0) {
+    console.log("\n--shu accent count > 3 detected on:");
+    for (const s of shuOverLimit) {
+      console.log(`  - w${s.width} ${s.slug}: ${s.shuCount}`);
+    }
+  } else {
+    console.log("\nAll routes across all widths satisfy --shu count <= 3.");
   }
 
   const overflows = allResults.filter((x) => x.overflow);

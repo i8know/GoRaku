@@ -9,6 +9,7 @@
 import Dexie, { type Table } from "dexie";
 import {
   QuestionPack,
+  sanitizeQuestionPack,
   validateQuestionPack
 } from "./questionPack";
 
@@ -36,7 +37,7 @@ export async function saveQuestionPack(pack: QuestionPack): Promise<void> {
   if (!validation.valid) {
     throw new Error(`Validasi QuestionPack gagal: ${validation.errors.join("; ")}`);
   }
-  await questionPackDb.packs.put(pack);
+  await questionPackDb.packs.put(sanitizeQuestionPack(pack));
 }
 
 /**
@@ -77,10 +78,11 @@ export async function importQuestionPackFromJson(
       };
     }
 
-    await saveQuestionPack(parsed);
+    const cleanPack = sanitizeQuestionPack(parsed);
+    await saveQuestionPack(cleanPack);
     return {
       success: true,
-      pack: parsed
+      pack: cleanPack
     };
   } catch (err) {
     return {

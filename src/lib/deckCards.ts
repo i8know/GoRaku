@@ -7,7 +7,7 @@ import { sanitizeInline, toPlain } from "./ankiText";
 import { toHiragana } from "./kana";
 import { compressBubbleImageForCard } from "./mangaCoordinates";
 import { SEED_TOTALS, useAppStore } from "../store/useAppStore";
-import { useReviewStore } from "../store/useReviewStore";
+import { useReviewStore, waitForReviewStoreHydration } from "../store/useReviewStore";
 
 export const DECK_LEVELS = ["N5", "N4", "N3", "N2", "N1", "Campuran"] as const;
 export const DECK_KINDS = ["Core", "Anime", "Novel", "Manga", "YouTube"] as const;
@@ -314,24 +314,32 @@ async function seedStarterDecks(): Promise<void> {
     }));
     await putCards(cards);
 
-    // Seed realistic due SRS schedules for demo subdecks
+    // Seed realistic due SRS schedules for demo subdecks (wait for review hydration first)
     if (["ps-n5", "ps-n4", "ps-n3", "ps-n2", "ps-ankidrone"].includes(deckId)) {
-      const now = Date.now();
-      const srsList = cards.map((c, idx) => ({
-        id: c.id,
-        repetitions: 2 + (idx % 3),
-        interval: 1 + (idx % 4),
-        easeFactor: 2.5,
-        nextReview: now - (idx + 1) * 3600 * 1000, // already due
-        lastReview: now - 86400 * 1000,
-        lapses: 0,
-      }));
-      useReviewStore.getState().importSchedule(deckId, srsList);
+      await waitForReviewStoreHydration();
+      const existingDeckSrs = useReviewStore.getState().srsCards[deckId];
+      if (!existingDeckSrs || Object.keys(existingDeckSrs).length === 0) {
+        const now = Date.now();
+        const srsList = cards.map((c, idx) => ({
+          id: c.id,
+          repetitions: 2 + (idx % 3),
+          interval: 1 + (idx % 4),
+          easeFactor: 2.5,
+          nextReview: now - (idx + 1) * 3600 * 1000, // already due
+          lastReview: now - 86400 * 1000,
+          lapses: 0,
+        }));
+        useReviewStore.getState().importSchedule(deckId, srsList);
+      }
     }
   }
 
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(SEED_FLAG, "1");
+  try {
+    if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
+      localStorage.setItem(SEED_FLAG, "1");
+    }
+  } catch {
+    /* abaikan bila localStorage diblokir */
   }
 }
 
@@ -603,6 +611,9 @@ function download(name: string, mime: string, body: string) {
 
 const slug = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "deck";
 
+export const neutralizeCsvCell = (s: string): string =>
+  /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+
 export async function exportDeck(deckId: string, title: string, format: "csv" | "json"): Promise<number> {
   const cards = await getCards(deckId);
   const srs = useReviewStore.getState().srsCards[deckId] ?? {};
@@ -610,7 +621,7 @@ export async function exportDeck(deckId: string, title: string, format: "csv" | 
     const body = { title, exportedAt: new Date().toISOString(), cards: cards.map(({ deckId: _d, ...c }) => ({ ...c, srs: srs[c.id] ?? null })) };
     download(`${slug(title)}.json`, "application/json", JSON.stringify(body, null, 2));
   } else {
-    const cell = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const cell = (s: string) => `"${neutralizeCsvCell(s).replace(/"/g, '""')}"`;
     const rows = [["word", "reading", "meaning", "sentence", "translation", "tags"].join(",")];
     for (const c of cards) rows.push([c.word, c.reading, toPlain(c.meaning), toPlain(c.sentence), toPlain(c.translation), (c.tags ?? []).join(" ")].map(cell).join(","));
     // BOM so Excel opens Japanese text correctly.

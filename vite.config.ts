@@ -1,18 +1,23 @@
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
+import { normalizeBasePath, resolveBaseAssetHref } from './src/lib/basePath.ts'
 
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // .figma/make/deploy-preview passes `--mode development` for cached-preview builds.
   const emitSourcemaps = mode === 'development'
+  const basePath = normalizeBasePath(
+    process.env.FIGMA_PUBLIC_URL || process.env.APP_BASE_PATH,
+  )
 
   return {
-    base: process.env.FIGMA_PUBLIC_URL ? `${process.env.FIGMA_PUBLIC_URL}/` : '/',
+    base: basePath,
     build: {
       sourcemap: emitSourcemaps ? 'inline' : false,
       minify: !emitSourcemaps,
@@ -20,7 +25,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
 react(),
       tailwindcss(),
-      figmaSiteConfiguration(siteConfiguration),
+      figmaSiteConfiguration(siteConfiguration, basePath),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
@@ -75,7 +80,10 @@ type FigmaSiteConfiguration = {
 }
 
 /** Applies /.figma/make/site.json to the generated document shell. */
-function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
+function figmaSiteConfiguration(
+  config: FigmaSiteConfiguration,
+  basePath = '/',
+): Plugin {
   function sanitizeHtmlValue(value: string | undefined): string {
     return value?.replace(/[^a-zA-Z0-9_-]/g, '') || ''
   }
@@ -89,7 +97,8 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
   const title = config.title ?? "語楽"
   const description = config.description ?? ''
   // Imported HTML keeps its own favicon; new Makes default to the Make product icon.
-  const favicon = config.icons?.icon ?? '/favicon.svg'
+  const rawFavicon = config.icons?.icon ?? '/favicon.svg'
+  const favicon = rawFavicon ? resolveBaseAssetHref(rawFavicon, basePath) : ''
   const socialImage = config.openGraph?.image ?? ''
   const language = sanitizeHtmlValue(config.language) || 'en'
   const googleAnalyticsId = sanitizeHtmlValue(config.analytics?.googleAnalyticsId)
@@ -97,13 +106,21 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
   const headEnd = config.customScripts?.headEnd ?? ''
   const bodyStart = config.customScripts?.bodyStart ?? ''
   const bodyEnd = config.customScripts?.bodyEnd ?? ''
-  const robotsTxt = config.robots?.index === false ? 'User-agent: *\nDisallow: /\n' : ''
+  const allowIndex = process.env.ALLOW_INDEX === '1'
+  const disallowRobots = !allowIndex && config.robots?.index === false
+  const robotsTxt = allowIndex
+    ? 'User-agent: *\nAllow: /\n'
+    : disallowRobots
+      ? 'User-agent: *\nDisallow: /\n'
+      : ''
 
   return {
     name: 'figma-site-configuration',
     configureServer(server) {
+      const robotsUrlPath = resolveBaseAssetHref('/robots.txt', basePath)
       server.middlewares.use((req, res, next) => {
-        if (!robotsTxt || req.url?.split('?')[0] !== '/robots.txt') return next()
+        const reqPath = req.url?.split('?')[0]
+        if (!robotsTxt || (reqPath !== '/robots.txt' && reqPath !== robotsUrlPath)) return next()
 
         res.setHeader('Content-Type', 'text/plain; charset=utf-8')
         res.end(robotsTxt)
@@ -117,6 +134,16 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
         fileName: 'robots.txt',
         source: robotsTxt,
       })
+    },
+    closeBundle() {
+      // GitHub Pages SPA fallback: salin dist/index.html ke dist/404.html saat APP_BASE_PATH disetel
+      if (!process.env.APP_BASE_PATH) return
+      const outDir = path.resolve(import.meta.dirname, 'dist')
+      const indexHtml = path.join(outDir, 'index.html')
+      const fallbackHtml = path.join(outDir, '404.html')
+      if (fs.existsSync(indexHtml)) {
+        fs.copyFileSync(indexHtml, fallbackHtml)
+      }
     },
     transformIndexHtml: {
       order: 'pre',
@@ -133,7 +160,7 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
         if (description) {
           tags.push({ tag: 'meta', attrs: { name: 'description', content: description }, injectTo: 'head' })
         }
-        if (config.robots?.index === false) {
+        if (disallowRobots) {
           tags.push({ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' }, injectTo: 'head' })
         }
         if (favicon) {

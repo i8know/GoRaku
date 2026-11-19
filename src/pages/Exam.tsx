@@ -15,6 +15,7 @@ import {
 import { calculateOfficialJLPTScore } from "../components/jlpt/jlptScoring";
 import { loadQuestionsForTestAndSection } from "../components/jlpt/mockTestLoader";
 import type { QuestionItem } from "../lib/questionPack";
+import { jlptDyeStep } from "../lib/dye";
 import { Icon } from "../ui";
 
 const AudioCheckModal = lazy(() => import("../components/jlpt/AudioCheckModal"));
@@ -27,6 +28,44 @@ export interface ExamPageProps {
 }
 
 const STORAGE_KEY_SESSIONS = "jlpt_mock_sessions_v1";
+
+type ExamLevel = "N5" | "N4" | "N3" | "N2" | "N1";
+
+const NEUTRAL_EXAM_META: Record<
+  ExamLevel,
+  { title: string; facts: string; detailSummary: string }
+> = {
+  N5: {
+    title: "Paket Latihan N5",
+    facts: "91 soal • 90 menit • 3 bagian",
+    detailSummary:
+      "Simulasi 3 bagian standar: 35 Kosakata & Kanji, 32 Tata Bahasa & Pemahaman Bacaan (wacana singkat, narasi, dan pencarian tabel), serta 24 Mendengarkan.",
+  },
+  N4: {
+    title: "Paket Latihan N4",
+    facts: "98 soal • 115 menit • 3 bagian",
+    detailSummary:
+      "Simulasi 3 bagian standar: 35 Kosakata & Kanji (termasuk penggunaan kata), 35 Tata Bahasa & Pemahaman Bacaan (wacana pendek, menengah, dan jadwal), serta 28 Mendengarkan.",
+  },
+  N3: {
+    title: "Paket Latihan N3",
+    facts: "101 soal • 140 menit • 3 bagian",
+    detailSummary:
+      "Simulasi 3 bagian standar: 35 Kosakata & Kanji, 38 Tata Bahasa & Pemahaman Bacaan (pendek, menengah, panjang, dan brosur), serta 28 Mendengarkan.",
+  },
+  N2: {
+    title: "Paket Latihan N2",
+    facts: "106 soal • 155 menit • 3 bagian",
+    detailSummary:
+      "Simulasi 3 bagian standar: 32 Kosakata & Formasi Kata, 43 Tata Bahasa & Pemahaman Bacaan analitis dan perbandingan teks, serta 31 Mendengarkan.",
+  },
+  N1: {
+    title: "Paket Latihan N1",
+    facts: "96 soal • 165 menit • 3 bagian",
+    detailSummary:
+      "Simulasi 3 bagian standar: 25 Kosakata Konteks & Pemakaian, 41 Tata Bahasa & Pemahaman Bacaan kritis dan terpadu, serta 30 Mendengarkan.",
+  },
+};
 
 interface MondaiBreakdownItem {
   mondai: number;
@@ -98,7 +137,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 3,
         titleJa: "もんだい 3：文章の文法",
-        titleId: "Wacana Esai Nin-san & Mei-san",
+        titleId: "Tata Bahasa dalam Wacana Esai Pendek",
         count: 5,
         rangeLabel: "No. 22–26",
         startIndex: 21,
@@ -116,7 +155,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 5,
         titleJa: "もんだい 5：内容理解（中文）",
-        titleId: "Karangan Chin Shun「まちがえました」",
+        titleId: "Pemahaman Bacaan Menengah (Narasi)",
         count: 2,
         rangeLabel: "No. 30–31",
         startIndex: 29,
@@ -125,11 +164,11 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 6,
         titleJa: "もんだい 6：情報検索",
-        titleId: "Tabel 4 Rute Menuju Universitas Takagi",
+        titleId: "Pencarian Informasi Tabel Rute",
         count: 1,
         rangeLabel: "No. 32",
         startIndex: 31,
-        badge: "ルート表"
+        badge: "情報検索"
       }
     ],
     listening: [
@@ -236,7 +275,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 3,
         titleJa: "もんだい 3：文章の文法",
-        titleId: "Wacana Karangan Chin Meiki「水泳」",
+        titleId: "Tata Bahasa dalam Wacana Pendek",
         count: 5,
         rangeLabel: "No. 21–25",
         startIndex: 20,
@@ -245,7 +284,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 4,
         titleJa: "もんだい 4：内容理解（短文）",
-        titleId: "4 Bacaan Pendek (忘れ物・アイス・みそ工場・黒い消しゴム)",
+        titleId: "Pemahaman 4 Bacaan Pendek",
         count: 4,
         rangeLabel: "No. 26–29",
         startIndex: 25,
@@ -254,7 +293,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 5,
         titleJa: "もんだい 5：内容理解（中文）",
-        titleId: "Karangan Katy Wan「東京駅で会った人」",
+        titleId: "Pemahaman Bacaan Menengah (Narasi)",
         count: 4,
         rangeLabel: "No. 30–33",
         startIndex: 29,
@@ -263,7 +302,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 6,
         titleJa: "もんだい 6：情報検索",
-        titleId: "Jadwal Acara 青野市ニュース「春を楽しもう」",
+        titleId: "Pencarian Informasi Jadwal Acara",
         count: 2,
         rangeLabel: "No. 34–35",
         startIndex: 33,
@@ -374,7 +413,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 3,
         titleJa: "問題 3：文章の文法",
-        titleId: "Karangan Nguyen Thi Lan「京都旅行」",
+        titleId: "Tata Bahasa dalam Wacana Pengalaman",
         count: 4,
         rangeLabel: "No. 19–22",
         startIndex: 18,
@@ -383,7 +422,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 4,
         titleJa: "問題 4：内容理解（短文）",
-        titleId: "4 Bacaan Pendek (営業課コピー機・ボール投げ・財布専門店メール・古い靴割引券)",
+        titleId: "Pemahaman 4 Bacaan Pendek & Email",
         count: 4,
         rangeLabel: "No. 23–26",
         startIndex: 22,
@@ -392,7 +431,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 5,
         titleJa: "問題 5：内容理解（中文）",
-        titleId: "2 Wacana Menengah (父の古いラジオ & 田舎で農業を始める・説明会)",
+        titleId: "Pemahaman 2 Wacana Menengah",
         count: 6,
         rangeLabel: "No. 27–32",
         startIndex: 26,
@@ -401,7 +440,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 6,
         titleJa: "問題 6：内容理解（長文）",
-        titleId: "Wacana Panjang「眠りと体の中心の温度」",
+        titleId: "Pemahaman Bacaan Panjang",
         count: 4,
         rangeLabel: "No. 33–36",
         startIndex: 32,
@@ -410,7 +449,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 7,
         titleJa: "問題 7：情報検索",
-        titleId: "Brosur「秋の日帰りバス旅行のご案内」& Aturan キャンセル料",
+        titleId: "Pencarian Informasi Brosur & Ketentuan",
         count: 2,
         rangeLabel: "No. 37–38",
         startIndex: 36,
@@ -539,7 +578,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 9,
         titleJa: "問題 9：文章の文法",
-        titleId: "Kolom Majalah「日本発のトイレマーク」",
+        titleId: "Tata Bahasa dalam Artikel Singkat",
         count: 5,
         rangeLabel: "No. 50–54",
         startIndex: 17,
@@ -548,7 +587,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 10,
         titleJa: "問題 10：内容理解（短文）",
-        titleId: "5 Bacaan Pendek (ルール・暖房文書・目の前の目標・野田コーヒー・日記)",
+        titleId: "Pemahaman 5 Bacaan Pendek",
         count: 5,
         rangeLabel: "No. 55–59",
         startIndex: 22,
@@ -557,7 +596,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 11,
         titleJa: "問題 11：内容理解（中文）",
-        titleId: "3 Wacana Menengah (個性とは何か・話し言葉と書き言葉・目的重視の旅)",
+        titleId: "Pemahaman 3 Wacana Menengah",
         count: 9,
         rangeLabel: "No. 60–68",
         startIndex: 27,
@@ -566,7 +605,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 12,
         titleJa: "問題 12：統合理解（A・B）",
-        titleId: "Perbandingan 2 Teks「公立の図書館で人気の高い本を複数冊置くこと」",
+        titleId: "Pemahaman Terpadu (Perbandingan 2 Teks)",
         count: 2,
         rangeLabel: "No. 69–70",
         startIndex: 36,
@@ -575,7 +614,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 13,
         titleJa: "問題 13：主張理解（長文）",
-        titleId: "Esai Desainer「感動の森とアイディア」",
+        titleId: "Pemahaman Pendapat & Argumen (Bacaan Panjang)",
         count: 3,
         rangeLabel: "No. 71–73",
         startIndex: 38,
@@ -584,7 +623,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 14,
         titleJa: "問題 14：情報検索",
-        titleId: "Panduan「ミハマホテル ビュッフェのご案内」（ベルン＆みよし）",
+        titleId: "Pencarian Informasi Panduan Layanan",
         count: 2,
         rangeLabel: "No. 74–75",
         startIndex: 41,
@@ -631,7 +670,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 5,
         titleJa: "問題 5：統合理解",
-        titleId: "Diskusi Panjang & 3番（北中・大川・上田・山下通り）質問1・質問2",
+        titleId: "Pemahaman Terpadu (Diskusi & Pemilihan)",
         count: 4,
         rangeLabel: "1番–3番(質問1・2)",
         startIndex: 27,
@@ -696,7 +735,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 7,
         titleJa: "問題 7：文章の文法",
-        titleId: "Esai Sastra「一生の仕事」",
+        titleId: "Tata Bahasa dalam Esai Sastra",
         count: 4,
         rangeLabel: "No. 41–44",
         startIndex: 15,
@@ -705,7 +744,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 8,
         titleJa: "問題 8：内容理解（短文）",
-        titleId: "4 Bacaan Pendek (情報化社会・書くことと批判・広告の本質・対話と思考)",
+        titleId: "Pemahaman 4 Bacaan Pendek",
         count: 4,
         rangeLabel: "No. 45–48",
         startIndex: 19,
@@ -714,7 +753,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 9,
         titleJa: "問題 9：内容理解（中文）",
-        titleId: "4 Wacana Menengah (常識を疑う学問・カタクリとアリ・こどもの模倣・UDと平等)",
+        titleId: "Pemahaman 4 Wacana Menengah",
         count: 8,
         rangeLabel: "No. 49–56",
         startIndex: 23,
@@ -723,7 +762,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 10,
         titleJa: "問題 10：内容理解（長文）",
-        titleId: "Wacana Panjang「ロボピーと『心とは観察する側の問題である』」",
+        titleId: "Pemahaman Bacaan Panjang",
         count: 3,
         rangeLabel: "No. 57–59",
         startIndex: 31,
@@ -732,7 +771,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 11,
         titleJa: "問題 11：統合理解（A・B）",
-        titleId: "Perbandingan 2 Opini「メモを取ることと話の聞き方」",
+        titleId: "Pemahaman Terpadu (Perbandingan 2 Opini)",
         count: 2,
         rangeLabel: "No. 60–61",
         startIndex: 34,
@@ -741,7 +780,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 12,
         titleJa: "問題 12：主張理解（長文）",
-        titleId: "Esai Kritis「教育の不確定性と過剰な期待への警報」",
+        titleId: "Pemahaman Argumen Kritis (Bacaan Panjang)",
         count: 3,
         rangeLabel: "No. 62–64",
         startIndex: 36,
@@ -750,7 +789,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 13,
         titleJa: "問題 13：情報検索",
-        titleId: "Brosur「木原市健康づくりセンター いきいき運動教室のご案内」",
+        titleId: "Pencarian Informasi Panduan Kegiatan",
         count: 2,
         rangeLabel: "No. 65–66",
         startIndex: 39,
@@ -797,7 +836,7 @@ const SECTION_MONDAI_BREAKDOWN_BY_LEVEL: Record<
       {
         mondai: 5,
         titleJa: "問題 5：統合理解",
-        titleId: "Diskusi Panjang & 2番（島田・森山・ミナミ・北川書店）質問1・質問2",
+        titleId: "Pemahaman Terpadu (Diskusi & Pemilihan)",
         count: 3,
         rangeLabel: "1番–2番(質問1・2)",
         startIndex: 27,
@@ -849,7 +888,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
     }
   }, [sessions]);
 
-  // Ujian Resmi 2018年 N5 (91 Soal), 2018年 N4 (98 Soal), 2022年12月 N3 (101 Soal), 2016年12月 N2 (106 Soal) & 2023年7月 N1 (96 Soal)
+  // Ringkasan dan label netral untuk tampilan antarmuka (tanpa menyentuh data internal)
   const official2018N5Test = useMemo(() => generateOfficial2018N5MockTest(), []);
   const official2018N4Test = useMemo(() => generateOfficial2018N4MockTest(), []);
   const official2022N3Test = useMemo(() => generateOfficial2022N3MockTest(), []);
@@ -866,6 +905,16 @@ export default function ExamPage({ notify }: ExamPageProps) {
       : activeExamLevel === "N4"
       ? official2018N4Test
       : official2018N5Test;
+
+  const currentMeta = NEUTRAL_EXAM_META[activeExamLevel];
+  const currentDisplayTest = useMemo(
+    () => ({
+      ...currentExamTest,
+      title: currentMeta.title,
+      subtitle: currentMeta.detailSummary,
+    }),
+    [currentExamTest, currentMeta],
+  );
 
   // Handler Memulai Seksi (atau langsung melompat ke Mondai tertentu)
   const handleStartSection = async (
@@ -1044,10 +1093,12 @@ export default function ExamPage({ notify }: ExamPageProps) {
     );
   }
 
+  const activeDyeStep = jlptDyeStep(activeExamLevel);
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fade-in text-[var(--tinta)]">
-      {/* 1. Header Utama Ujian JLPT Format Baru */}
-      <header className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 sm:p-7 shadow-[0_4px_24px_rgba(16,33,58,0.04)] relative overflow-hidden">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 text-[var(--tinta)]">
+      {/* 1. Header Utama Ujian JLPT Format Standar */}
+      <header className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-6 sm:p-7 relative overflow-hidden">
         <span
           className="absolute right-5 -bottom-3 [font-family:var(--font-serif)] text-[116px] font-bold text-[var(--ai)] pointer-events-none select-none leading-none opacity-[0.07]"
           aria-hidden="true"
@@ -1058,25 +1109,23 @@ export default function ExamPage({ notify }: ExamPageProps) {
         <div className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center flex-wrap gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--kon)] text-white">
-                {`模擬試験 • 日本語能力試験 ${currentExamTest.levelLabel} (Seri ${
-                  currentExamTest.officialYear || "2018"
-                })`}
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold dye-${activeDyeStep}`}>
+                {currentMeta.title}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--ai)]">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">
                 {`全${currentExamTest.totalQuestions}問 • ${currentExamTest.totalDurationMinutes}分 • 180点満点`}
               </span>
-              <span className="text-xs text-[var(--tinta-2)]">
+              <span className="text-xs text-[#5A6C80]">
                 Format Latihan Standar (文字・語彙 / 文法・読解 / 聴解)
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tinta)] [font-family:var(--font-serif)]">
               Simulasi Ujian Bahasa Jepang (JLPT)
             </h1>
-            <p className="text-xs sm:text-sm text-[var(--tinta-2)]">
-              {currentExamTest.subtitle}
+            <p className="text-sm text-[var(--tinta-2)]">
+              Simulasi 3 bagian berpenghitung waktu dengan skala nilai 0–180.
             </p>
-            <p className="text-[11px] text-[var(--tinta-2)] pt-1">
+            <p className="text-xs text-[#5A6C80] pt-1">
               Materi simulasi orisinal berbasis data terbuka — bukan soal resmi The Japan Foundation / JEES.{" "}
               <Link
                 to="/license"
@@ -1092,7 +1141,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <button
               type="button"
               onClick={() => setAudioModalOpen(true)}
-              className="px-3.5 py-2 min-h-[40px] text-xs font-semibold rounded-xl border border-[var(--garis)] bg-[var(--panel)] hover:border-[var(--ai)] hover:text-[var(--ai)] text-[var(--tinta)] transition-colors flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 min-h-[40px] text-xs font-semibold rounded-full border border-[var(--garis)] bg-[var(--panel)] hover:border-[var(--ai)] hover:text-[var(--ai)] text-[var(--tinta)] transition-colors flex items-center gap-1.5"
             >
               <Icon name="volume" size={16} />
               <span>Cek Audio</span>
@@ -1100,111 +1149,101 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
             <button
               type="button"
-              onClick={() => setSelectedTest(currentExamTest)}
-              className="px-4 py-2 min-h-[40px] text-xs font-bold rounded-xl bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5 shadow-sm"
+              onClick={() => setSelectedTest(currentDisplayTest)}
+              className="px-4 py-2 min-h-[40px] text-xs font-bold rounded-full bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center gap-1.5"
             >
               <Icon name="book" size={16} />
-              <span>Lembar Skor & Detail</span>
+              <span>Lembar Skor &amp; Detail</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* 2. Pemilih Level Simulasi JLPT (N5, N4, N3, N2 & N1 模擬テスト) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          {
-            lvl: "N5" as const,
-            test: official2018N5Test,
-            yearLabel: "Simulasi Standar • Seri 2018",
-            desc: "35 文字・語彙 • 32 文法・読解（高木大学ルート表） • 24 聴解"
-          },
-          {
-            lvl: "N4" as const,
-            test: official2018N4Test,
-            yearLabel: "Simulasi Standar • Seri 2018",
-            desc: "35 文字・語彙（用法付） • 35 文法・読解（水泳・東京駅・青野市予定表） • 28 聴解"
-          },
-          {
-            lvl: "N3" as const,
-            test: official2022N3Test,
-            yearLabel: "Simulasi Standar • Seri 2022",
-            desc: "35 文字・語彙 • 38 文法・読解（京都旅行・古いラジオ・眠りと体温・バス旅行） • 28 聴解"
-          },
-          {
-            lvl: "N2" as const,
-            test: official2016N2Test,
-            yearLabel: "Simulasi Standar • Seri 2016",
-            desc: "32 文字・語彙（語形成・用法付） • 43 文法・読解（トイレマーク・公立図書館A/B・ミハマホテル） • 31 聴解"
-          },
-          {
-            lvl: "N1" as const,
-            test: official2023N1Test,
-            yearLabel: "Simulasi Standar • Seri 2023",
-            desc: "25 文字・語彙（用法付） • 41 文法・読解（一生の仕事・ロボピーと心・メモA/B・教育論・木原市運動教室） • 30 聴解"
-          }
-        ].map(({ lvl, test, yearLabel, desc }) => {
+      {/* 2. Pemilih Level Simulasi JLPT (N5, N4, N3, N2 & N1) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="group" aria-label="Pilih paket latihan JLPT">
+        {(
+          [
+            { lvl: "N5" as const, test: official2018N5Test },
+            { lvl: "N4" as const, test: official2018N4Test },
+            { lvl: "N3" as const, test: official2022N3Test },
+            { lvl: "N2" as const, test: official2016N2Test },
+            { lvl: "N1" as const, test: official2023N1Test },
+          ] as const
+        ).map(({ lvl, test }) => {
           const isSelected = activeExamLevel === lvl;
+          const step = jlptDyeStep(lvl);
+          const meta = NEUTRAL_EXAM_META[lvl];
+          const doneCount = test.mock_sections.filter(
+            (sec) => Boolean(sessions[`${test.id}_${sec.id}`]),
+          ).length;
+          const statusLabel =
+            doneCount === 0
+              ? "Belum dimulai"
+              : doneCount === test.mock_sections.length
+                ? `Tuntas (${doneCount}/${test.mock_sections.length})`
+                : `${doneCount}/${test.mock_sections.length} bagian selesai`;
+          const selectedBorder = step >= 2 ? `var(--celup-${step})` : "var(--ai)";
+
           return (
             <button
               key={lvl}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => setActiveExamLevel(lvl)}
-              className={`p-5 rounded-2xl border-2 text-left transition-colors flex items-center justify-between gap-4 ${
+              style={
                 isSelected
-                  ? "bg-[var(--kon)] text-white border-[var(--kon)] shadow-[0_8px_24px_rgba(16,33,58,0.2)]"
+                  ? {
+                      borderColor: selectedBorder,
+                      boxShadow: `inset 5px 0 0 var(--celup-${step}), 0 4px 16px rgba(18, 40, 74, 0.08)`,
+                    }
+                  : {
+                      boxShadow: `inset 3px 0 0 var(--celup-${step})`,
+                    }
+              }
+              className={`p-5 rounded-md border text-left transition-colors flex items-center justify-between gap-4 ${
+                isSelected
+                  ? "border-2 bg-[var(--tsuki)] text-[var(--tinta)]"
                   : "bg-[var(--panel)] text-[var(--tinta)] border-[var(--garis)] hover:border-[var(--ai)]"
               }`}
             >
-              <div className="space-y-1">
+              <div className="space-y-1.5 min-w-0">
                 <div className="flex items-center flex-wrap gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
-                      isSelected
-                        ? "bg-white text-[var(--kon)]"
-                        : "bg-[var(--kon)] text-white"
-                    }`}
-                  >
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold dye-${step}`}>
                     {`JLPT ${lvl}`}
                   </span>
-                  <span
-                    className={`text-xs font-semibold ${
-                      isSelected ? "text-[var(--mizu)]" : "text-[var(--ai)]"
-                    }`}
-                  >
-                    {`${yearLabel} • 全${test.totalQuestions}問 (${test.totalDurationMinutes}分)`}
+                  <span className="text-xs font-semibold text-[#5A6C80]">
+                    {statusLabel}
                   </span>
                 </div>
-                <div className="font-bold text-base [font-family:var(--font-serif)]">
-                  {test.title}
+                <div className="font-bold text-base [font-family:var(--font-serif)] text-[var(--tinta)]">
+                  {meta.title}
                 </div>
-                <p
-                  className={`text-xs ${
-                    isSelected ? "text-[#DCE6F2]/90" : "text-[var(--tinta-2)]"
-                  }`}
-                >
-                  {desc}
+                <p className="text-xs text-[#5A6C80] m-0">
+                  {meta.facts}
                 </p>
               </div>
 
-              <div
+              <span
+                aria-hidden="true"
                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  isSelected ? "border-white bg-white/20" : "border-[var(--garis)]"
+                  isSelected
+                    ? "border-[var(--kon)] bg-[var(--kon)] text-white"
+                    : "border-[var(--garis)] bg-transparent text-transparent"
                 }`}
               >
-                {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-              </div>
+                {isSelected && <Icon name="check" size={14} />}
+              </span>
             </button>
           );
         })}
       </div>
 
       {/* 3. Papan Skor Skala Resmi 0–180 & Standar Kelulusan */}
-      <section className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] p-6 shadow-[0_4px_20px_rgba(16,33,58,0.03)] space-y-5">
+      <section className="rounded-md border border-[var(--garis)] bg-[var(--panel)] p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--garis)] pb-4">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ai)]">
-              得点範囲・合格基準（Simulasi Skala Nilai JLPT {currentExamTest.levelLabel}）
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--ai)]">
+              得点範囲・合格基準（Skala Nilai JLPT {currentExamTest.levelLabel}）
             </span>
             <h2 className="text-lg font-bold text-[var(--tinta)] [font-family:var(--font-serif)] mt-0.5">
               Simulasi Nilai Skala 0〜180 &amp; Ambang Batas Seksi (基準点)
@@ -1216,7 +1255,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
               <button
                 type="button"
                 onClick={handleResetCurrentTestSessions}
-                className="px-3 py-1.5 min-h-[36px] rounded-lg border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--kon)] hover:text-[var(--kon)] transition-colors"
+                className="px-3 py-1.5 min-h-[36px] rounded-full border border-[var(--garis)] bg-[var(--panel)] text-xs font-medium text-[var(--tinta-2)] hover:border-[var(--kon)] hover:text-[var(--kon)] transition-colors"
               >
                 Reset Skor
               </button>
@@ -1241,12 +1280,12 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Kategori 1: Bahasa & Membaca (0-120) */}
-          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
+          <div className="p-4 rounded-md bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
-                言語知識（文字・語彙・文法）・読解
+                言語知識・読解
               </span>
-              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-xs font-bold whitespace-nowrap">
                 基準点: 38点
               </span>
             </div>
@@ -1255,9 +1294,9 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 ? `${currentExamSummary.scaled.langReadingScaled} / 120点`
                 : "ー / 120点"}
             </div>
-            <p className="text-[11px] text-[var(--tinta-2)]">
+            <p className="text-xs text-[#5A6C80]">
               Gabungan Bagian 1 ({currentExamSummary.vocabTotal} soal) + Bagian 2 ({currentExamSummary.grTotal} soal) ={" "}
-              <strong>
+              <strong className="text-[var(--tinta)]">
                 {currentExamSummary.vocabCorrect + currentExamSummary.grCorrect} /{" "}
                 {currentExamSummary.vocabTotal + currentExamSummary.grTotal}
               </strong>{" "}
@@ -1266,12 +1305,12 @@ export default function ExamPage({ notify }: ExamPageProps) {
           </div>
 
           {/* Kategori 2: Mendengarkan (0-60) */}
-          <div className="p-4 rounded-xl bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
+          <div className="p-4 rounded-md bg-[var(--tsuki)] border border-[var(--garis)] space-y-1.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-bold text-[var(--tinta)] [font-family:var(--font-serif)]">
                 聴解（リスニング）
               </span>
-              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-xs font-bold whitespace-nowrap">
                 基準点: 19点
               </span>
             </div>
@@ -1280,9 +1319,9 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 ? `${currentExamSummary.scaled.listeningScaled} / 60点`
                 : "ー / 60点"}
             </div>
-            <p className="text-[11px] text-[var(--tinta-2)]">
+            <p className="text-xs text-[#5A6C80]">
               Bagian 3 Mendengarkan ({currentExamSummary.listenTotal} soal) ={" "}
-              <strong>
+              <strong className="text-[var(--tinta)]">
                 {currentExamSummary.listenCorrect} / {currentExamSummary.listenTotal}
               </strong>{" "}
               benar
@@ -1290,12 +1329,12 @@ export default function ExamPage({ notify }: ExamPageProps) {
           </div>
 
           {/* Kategori 3: Skor Total (0-180) */}
-          <div className="p-4 rounded-xl bg-[var(--panel)] border border-[var(--ai)] shadow-[0_2px_10px_rgba(18,40,74,0.06)] space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
+          <div className="p-4 rounded-md bg-[var(--panel)] border border-[var(--ai)] space-y-1.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-bold text-[var(--kon)] [font-family:var(--font-serif)]">
-                総合得点（Total Nilai Skala）
+                総合得点（Total Skala）
               </span>
-              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--ai)] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded bg-[var(--mizu-soft)] text-[var(--kon)] text-xs font-bold whitespace-nowrap">
                 {`合格点: ${currentExamSummary.scaled.passThresholdTotal}点`}
               </span>
             </div>
@@ -1304,9 +1343,9 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 ? `${currentExamSummary.scaled.totalScaled} / 180点`
                 : "ー / 180点"}
             </div>
-            <p className="text-[11px] text-[var(--tinta-2)]">
+            <p className="text-xs text-[#5A6C80]">
               Total jawaban benar:{" "}
-              <strong>
+              <strong className="text-[var(--tinta)]">
                 {currentExamSummary.rawCorrect} / {currentExamTest.totalQuestions} soal
               </strong>{" "}
               ({currentExamSummary.completedCount}/3 bagian selesai)
@@ -1322,7 +1361,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
             <h2 className="text-lg sm:text-xl font-extrabold text-[var(--tinta)] [font-family:var(--font-serif)]">
               Bagian Ujian &amp; Rincian Mondai {currentExamTest.levelLabel} (全3部 • {currentExamTest.totalQuestions}問)
             </h2>
-            <p className="text-xs text-[var(--tinta-2)]">
+            <p className="text-xs text-[#5A6C80]">
               Pilih <strong>Mulai Bagian</strong> untuk simulasi penuh per seksi, atau klik salah satu baris <strong>もんだい</strong> untuk langsung berlatih pada nomor soal tersebut.
             </p>
           </div>
@@ -1338,15 +1377,15 @@ export default function ExamPage({ notify }: ExamPageProps) {
             return (
               <div
                 key={sec.id}
-                className="rounded-2xl border border-[var(--garis)] bg-[var(--panel)] overflow-hidden shadow-[0_6px_22px_rgba(16,33,58,0.04)] flex flex-col justify-between"
+                className="rounded-md border border-[var(--garis)] bg-[var(--panel)] overflow-hidden flex flex-col justify-between"
               >
                 {/* Header Bagian */}
                 <div className="p-5 bg-[var(--tsuki)] border-b border-[var(--garis)] space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--kon)] text-white">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--kon)] text-white">
                       第{idx + 1}部 • {sec.duration_minutes}分
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--mizu-soft)] text-[var(--ai)]">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--mizu-soft)] text-[var(--kon)]">
                       {sec.mock_questions_count} Pertanyaan
                     </span>
                   </div>
@@ -1358,7 +1397,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
                 {/* Daftar Mondai di dalam Bagian */}
                 <div className="p-5 space-y-2.5">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)]">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[var(--ai)]">
                     Daftar Mondai ({mondaiList.length} Kategori)
                   </div>
 
@@ -1368,25 +1407,25 @@ export default function ExamPage({ notify }: ExamPageProps) {
                         <button
                           type="button"
                           onClick={() =>
-                            handleStartSection(currentExamTest, sec, m.startIndex)
+                            handleStartSection(currentDisplayTest, sec, m.startIndex)
                           }
-                          className="w-full p-3 rounded-xl bg-[var(--tsuki)] hover:bg-[var(--mizu-soft)] border border-[var(--garis)] hover:border-[var(--ai)] text-left transition-all group"
+                          className="w-full p-3 rounded border border-[var(--garis)] bg-[var(--tsuki)] hover:bg-[var(--mizu-soft)] hover:border-[var(--ai)] text-left transition-colors group"
                           title={`Mulai dari ${m.titleJa} (${m.rangeLabel})`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-xs text-[var(--tinta)] [font-family:var(--font-serif)] group-hover:text-[var(--ai)]">
+                            <span className="font-bold text-xs text-[var(--tinta)] [font-family:var(--font-serif)] group-hover:text-[var(--kon)]">
                               {m.titleJa}
                             </span>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] whitespace-nowrap tabular-nums shrink-0">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--panel)] border border-[var(--garis)] text-[var(--tinta-2)] whitespace-nowrap tabular-nums shrink-0">
                               {m.count}問 ({m.rangeLabel})
                             </span>
                           </div>
                           <div className="flex items-center justify-between gap-2 mt-1">
-                            <span className="text-[11px] text-[var(--tinta-2)]">
+                            <span className="text-xs text-[#5A6C80]">
                               {m.titleId}
                             </span>
                             {m.badge && (
-                              <span className="text-[10px] font-bold text-[var(--ai)] whitespace-nowrap shrink-0">
+                              <span className="text-xs font-bold text-[var(--ai)] whitespace-nowrap shrink-0">
                                 {m.badge}
                               </span>
                             )}
@@ -1400,7 +1439,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
                 {/* Status Skor & Tombol Aksi */}
                 <div className="p-5 pt-3 border-t border-[var(--garis)] bg-[var(--tsuki)] space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--tinta-2)]">Status Pengerjaan:</span>
+                    <span className="text-[#5A6C80]">Status Pengerjaan:</span>
                     <span className="font-bold text-[var(--tinta)]">
                       {sess
                         ? `${sess.correctCount} / ${sec.mock_questions_count} Benar (${sess.percentageScore}%)`
@@ -1412,8 +1451,8 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     {sess && (
                       <button
                         type="button"
-                        onClick={() => handleReviewSection(currentExamTest, sec)}
-                        className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors text-center"
+                        onClick={() => handleReviewSection(currentDisplayTest, sec)}
+                        className="flex-1 py-2.5 px-3 min-h-[38px] rounded-full text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors text-center"
                       >
                         Lihat Pembahasan
                       </button>
@@ -1421,8 +1460,8 @@ export default function ExamPage({ notify }: ExamPageProps) {
                     <button
                       type="button"
                       disabled={loadingSection}
-                      onClick={() => void handleStartSection(currentExamTest, sec, 0)}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      onClick={() => void handleStartSection(currentDisplayTest, sec, 0)}
+                      className="flex-1 py-2.5 px-4 min-h-[38px] rounded-full text-xs font-bold bg-[var(--kon)] hover:bg-[var(--ai-tua)] text-white transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       <Icon name="play" size={14} />
                       <span>

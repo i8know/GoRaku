@@ -1,0 +1,26 @@
+name: Verifikasi Tipe, Tes, dan Build
+
+on:
+  pull_request:
+    branches: ["main", "feat/**"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositori
+        uses: actions/checkout@v4
+      - name: Siapkan Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Pasang dependensi
+        run: npm ci
+      - name: Jalankan typecheck, test, dan build
+        run: npm run verify

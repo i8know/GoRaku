@@ -4,10 +4,20 @@
 //   - Flashcard JSON (.json): native app exports and standard card arrays
 //   - Curated starter preset decks ready to load in 1 click
 
-import { inflateSync, strFromU8, unzipSync, type UnzipFileInfo } from "fflate";
-import { Decompress } from "fzstd";
+import { strFromU8, unzipSync, type UnzipFileInfo } from "fflate";
 import initSqlJs, { type Database, type SqlJsStatic, type SqlValue } from "sql.js";
 import wasmUrl from "sql.js/dist/sql-wasm-browser.wasm?url";
+import {
+  ArchiveLimitError,
+  MAX_APKG_DB_BYTES,
+  MAX_APKG_MEDIA_ENTRY_BYTES,
+  MAX_APKG_MEDIA_TOTAL_BYTES,
+  MAX_ZIP_ENTRIES,
+  inflateWithLimit,
+  isIgnoredArchivePath,
+  shouldPreferArchivePath,
+  zstdDecompressWithLimit,
+} from "./archiveLimits";
 import {
   extractImages,
   extractSounds,
@@ -86,6 +96,7 @@ export interface MediaManifestEntry {
 }
 
 export interface ZipEntryMeta {
+  rawPath?: string;
   compression: number;
   compressedSize: number;
   uncompressedSize: number;
@@ -150,22 +161,17 @@ export const isSqliteHeader = (b: Uint8Array): boolean => {
   return true;
 };
 
-export function zstdDecompress(data: Uint8Array, context = "data"): Uint8Array {
+export function zstdDecompress(
+  data: Uint8Array,
+  context = "data",
+  maxBytes = MAX_APKG_DB_BYTES,
+): Uint8Array {
   try {
-    // Streaming API handles frames without a declared content size (as written by Anki).
-    const chunks: Uint8Array[] = [];
-    const d = new Decompress((chunk) => chunks.push(chunk));
-    d.push(data, true);
-    if (chunks.length === 0) return new Uint8Array(0);
-    if (chunks.length === 1) return chunks[0];
-    const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
-    let off = 0;
-    for (const c of chunks) {
-      out.set(c, off);
-      off += c.length;
+    return zstdDecompressWithLimit(data, maxBytes, context);
+  } catch (err) {
+    if (err instanceof ArchiveLimitError) {
+      throw new ApkgError(err.message, "ZSTD_FAILED");
     }
-    return out;
-  } catch {
     throw new ApkgError(
       `Gagal mendekode kompresi Zstandard (zstd) pada ${context}. Berkas mungkin rusak atau tidak lengkap.`,
       "ZSTD_FAILED",
@@ -173,8 +179,11 @@ export function zstdDecompress(data: Uint8Array, context = "data"): Uint8Array {
   }
 }
 
-export const maybeZstd = (b: Uint8Array, context = "data"): Uint8Array =>
-  isZstd(b) ? zstdDecompress(b, context) : b;
+export const maybeZstd = (
+  b: Uint8Array,
+  context = "data",
+  maxBytes = MAX_APKG_DB_BYTES,
+): Uint8Array => (isZstd(b) ? zstdDecompress(b, context, maxBytes) : b);
 
 /**
  * Decode Anki `meta` protobuf (`message PackageMetadata { int32 version = 1; }`).
@@ -379,8 +388,12 @@ export function indexZipEntries(buf: Uint8Array): Map<string, ZipEntryMeta> | nu
   const entries = new Map<string, ZipEntryMeta>();
   let pos = cdOffset;
   const cdEnd = cdOffset + cdSize;
+  let seenCount = 0;
 
   while (pos < cdEnd && pos + 46 <= buf.byteLength) {
+    if (++seenCount > MAX_ZIP_ENTRIES) {
+      throw new ApkgError("Jumlah entri dalam arsip .apkg melebihi batas aman.", "NOT_ZIP");
+    }
     if (view.getUint32(pos, true) !== 0x02014b50) break;
     const compression = view.getUint16(pos + 10, true);
     const compressedSize = view.getUint32(pos + 20, true);
@@ -389,24 +402,32 @@ export function indexZipEntries(buf: Uint8Array): Map<string, ZipEntryMeta> | nu
     const extraLen = view.getUint16(pos + 30, true);
     const commentLen = view.getUint16(pos + 32, true);
     const localHeaderOffset = view.getUint32(pos + 42, true);
-    const rawName = decoder.decode(buf.subarray(pos + 46, pos + 46 + nameLen));
-    entries.set(normZipName(rawName), {
-      compression,
-      compressedSize,
-      uncompressedSize,
-      localHeaderOffset,
-    });
+    const rawName = decoder.decode(buf.subarray(pos + 46, pos + 46 + nameLen)).replace(/\\/g, "/");
+    const baseName = normZipName(rawName);
+    if (!rawName.endsWith("/") && baseName && !isIgnoredArchivePath(rawName)) {
+      const existing = entries.get(baseName);
+      if (shouldPreferArchivePath(rawName, existing?.rawPath)) {
+        entries.set(baseName, {
+          rawPath: rawName,
+          compression,
+          compressedSize,
+          uncompressedSize,
+          localHeaderOffset,
+        });
+      }
+    }
     pos += 46 + nameLen + extraLen + commentLen;
   }
 
   return entries;
 }
 
-/** Extract a single entry from `buf` using the pre-built Central Directory index. */
+/** Extract a single entry from `buf` using the pre-built Central Directory index with size bounds. */
 export function extractZipEntry(
   buf: Uint8Array,
   zipIndex: Map<string, ZipEntryMeta> | null | undefined,
   entryName: string,
+  maxBytes = MAX_APKG_DB_BYTES,
 ): Uint8Array | undefined {
   if (zipIndex) {
     const meta = zipIndex.get(entryName);
@@ -423,16 +444,50 @@ export function extractZipEntry(
       throw new ApkgError(`Data entri ZIP "${entryName}" terpotong.`, "NOT_ZIP");
     }
     const slice = buf.subarray(dataStart, dataStart + meta.compressedSize);
-    if (meta.compression === 0) return slice;
-    if (meta.compression === 8) return inflateSync(slice);
+    if (meta.compression === 0) {
+      if (slice.byteLength > maxBytes) {
+        throw new ApkgError(
+          `Ukuran entri "${entryName}" melebihi batas aman (${Math.round(maxBytes / (1024 * 1024))} MB).`,
+          "NOT_ZIP",
+        );
+      }
+      return slice;
+    }
+    if (meta.compression === 8) {
+      try {
+        return inflateWithLimit(slice, maxBytes, entryName, meta.uncompressedSize);
+      } catch (err) {
+        if (err instanceof ArchiveLimitError) {
+          throw new ApkgError(err.message, "NOT_ZIP");
+        }
+        throw err;
+      }
+    }
   }
 
   // Fallback for ZIP64 or non-standard compression
   const unzipped = unzipSync(buf, {
-    filter: (f: UnzipFileInfo) => normZipName(f.name) === entryName,
+    filter: (f: UnzipFileInfo) => {
+      if (normZipName(f.name) !== entryName || isIgnoredArchivePath(f.name)) return false;
+      if (typeof f.originalSize === "number" && f.originalSize > maxBytes) {
+        throw new ApkgError(
+          `Ukuran entri "${entryName}" melebihi batas aman (${Math.round(maxBytes / (1024 * 1024))} MB).`,
+          "NOT_ZIP",
+        );
+      }
+      return true;
+    },
   });
   for (const [k, v] of Object.entries(unzipped)) {
-    if (normZipName(k) === entryName) return v;
+    if (normZipName(k) === entryName && !isIgnoredArchivePath(k)) {
+      if (v.byteLength > maxBytes) {
+        throw new ApkgError(
+          `Ukuran entri "${entryName}" melebihi batas aman (${Math.round(maxBytes / (1024 * 1024))} MB).`,
+          "NOT_ZIP",
+        );
+      }
+      return v;
+    }
   }
   return undefined;
 }
@@ -513,10 +568,27 @@ export async function parseApkgBuffer(
       }
     } else {
       const unzipped = unzipSync(raw, {
-        filter: (f: UnzipFileInfo) =>
-          /^(collection\.anki2(?:1b?)?|media(?:\.json)?|meta)$/i.test(normZipName(f.name)),
+        filter: (f: UnzipFileInfo) => {
+          if (isIgnoredArchivePath(f.name)) return false;
+          if (!/^(collection\.anki2(?:1b?)?|media(?:\.json)?|meta)$/i.test(normZipName(f.name))) {
+            return false;
+          }
+          if (typeof f.originalSize === "number" && f.originalSize > MAX_APKG_DB_BYTES) {
+            throw new ApkgError(
+              `Ukuran entri "${normZipName(f.name)}" melebihi batas aman (${Math.round(MAX_APKG_DB_BYTES / (1024 * 1024))} MB).`,
+              "NOT_ZIP",
+            );
+          }
+          return true;
+        },
       });
       for (const [k, v] of Object.entries(unzipped)) {
+        if (v.byteLength > MAX_APKG_DB_BYTES) {
+          throw new ApkgError(
+            `Ukuran entri "${normZipName(k)}" melebihi batas aman (${Math.round(MAX_APKG_DB_BYTES / (1024 * 1024))} MB).`,
+            "NOT_ZIP",
+          );
+        }
         entries[normZipName(k).toLowerCase()] = v;
       }
     }
@@ -1209,6 +1281,7 @@ export async function extractMedia(
   let done = 0;
   let stored = 0;
   let failed = 0;
+  let totalMediaBytes = 0;
 
   for (let i = 0; i < wanted.length; i += batchSize) {
     const slice = wanted.slice(i, i + batchSize);
@@ -1217,12 +1290,22 @@ export async function extractMedia(
 
     for (const [entryName, fileName] of slice) {
       try {
-        const rawBytes = extractZipEntry(parsed.raw, zipIndex, entryName);
+        const remaining = Math.max(0, MAX_APKG_MEDIA_TOTAL_BYTES - totalMediaBytes);
+        const cap = Math.min(MAX_APKG_MEDIA_ENTRY_BYTES, remaining);
+        if (cap <= 0) {
+          batchFailed++;
+          continue;
+        }
+        const rawBytes = extractZipEntry(parsed.raw, zipIndex, entryName, cap);
         if (!rawBytes) {
           batchFailed++;
           continue;
         }
-        const bytes = parsed.zstdMedia || isZstd(rawBytes) ? maybeZstd(rawBytes, fileName) : rawBytes;
+        const bytes =
+          parsed.zstdMedia || isZstd(rawBytes)
+            ? maybeZstd(rawBytes, fileName, cap)
+            : rawBytes;
+        totalMediaBytes += bytes.byteLength;
         out.push([fileName, new Blob([bytes as BlobPart], { type: mimeOf(fileName) })]);
       } catch {
         batchFailed++;

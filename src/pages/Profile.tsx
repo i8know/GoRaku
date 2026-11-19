@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const user = useAppStore((s) => s.user);
   const decks = useAppStore((s) => s.decks);
   const settings = useAppStore((s) => s.settings);
+  const deckLimits = useAppStore((s) => s.deckLimits);
   const libraryItems = useAppStore((s) => s.libraryItems);
   const updateUser = useAppStore((s) => s.updateUser);
   const srsCards = useReviewStore((s) => s.srsCards);
@@ -43,13 +44,13 @@ export default function ProfilePage() {
     for (const d of decks) {
       const children = decks.filter((c) => c.parentId === d.id);
       if (children.length > 0) {
-        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks));
+        m.set(d.id, aggregateParentStats(d, children, srsCards, newIntroduced, settings, decks, Date.now(), deckLimits));
       } else {
-        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings));
+        m.set(d.id, liveDeckStats(d, srsCards[d.id], newIntroduced[d.id], settings, Date.now(), deckLimits));
       }
     }
     return m;
-  }, [decks, srsCards, newIntroduced, settings]);
+  }, [decks, srsCards, newIntroduced, settings, deckLimits]);
 
   const rootDecks = useMemo(() => decks.filter((d) => !d.parentId), [decks]);
   const leafDecks = useMemo(
