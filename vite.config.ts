@@ -106,7 +106,13 @@ function figmaSiteConfiguration(
   const headEnd = config.customScripts?.headEnd ?? ''
   const bodyStart = config.customScripts?.bodyStart ?? ''
   const bodyEnd = config.customScripts?.bodyEnd ?? ''
-  const robotsTxt = config.robots?.index === false ? 'User-agent: *\nDisallow: /\n' : ''
+  const allowIndex = process.env.ALLOW_INDEX === '1'
+  const disallowRobots = !allowIndex && config.robots?.index === false
+  const robotsTxt = allowIndex
+    ? 'User-agent: *\nAllow: /\n'
+    : disallowRobots
+      ? 'User-agent: *\nDisallow: /\n'
+      : ''
 
   return {
     name: 'figma-site-configuration',
@@ -152,7 +158,7 @@ function figmaSiteConfiguration(
         if (description) {
           tags.push({ tag: 'meta', attrs: { name: 'description', content: description }, injectTo: 'head' })
         }
-        if (config.robots?.index === false) {
+        if (disallowRobots) {
           tags.push({ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' }, injectTo: 'head' })
         }
         if (favicon) {
