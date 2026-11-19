@@ -20,8 +20,13 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
-  const [name, setName] = useState(user?.name || "Akira");
+  const [name, setName] = useState(user?.name || "");
   const [level, setLevel] = useState(user?.level || "N3");
+
+  useEffect(() => {
+    setName(user?.name || "");
+    setLevel(user?.level || "N3");
+  }, [user?.name, user?.level]);
   const [newCards, setNewCards] = useState(settings.newCards);
   const [maxReview, setMaxReview] = useState(settings.maxReview);
   const [dayStartHour, setDayStartHour] = useState(settings.dayStartHour ?? 4);

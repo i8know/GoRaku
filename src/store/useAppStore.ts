@@ -114,7 +114,7 @@ export interface MinedCard {
 
 interface AppState {
   user: { name: string; email: string; level: string } | null;
-  login: (name: string, email: string) => void;
+  setAuthUser: (user: { name: string; email: string; level: string } | null) => void;
   logout: () => void;
   updateUser: (name: string, level: string) => void;
   decks: DeckItem[];
@@ -151,8 +151,8 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      user: { name: "Akira", email: "akira@immersion.jp", level: "N3" },
-      login: (name, email) => set({ user: { name, email, level: "N3" } }),
+      user: null,
+      setAuthUser: (user) => set({ user }),
       logout: () => set({ user: null }),
       updateUser: (name, level) =>
         set((state) => ({
@@ -445,13 +445,22 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "japanese-learning-storage",
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => safeAppStateStorage),
+      // Status user diturunkan dari sesi Supabase Auth di useAuthStore, bukan disimpan statis di localStorage.
+      partialize: (state) => ({
+        decks: state.decks,
+        minedQueue: state.minedQueue,
+        libraryItems: state.libraryItems,
+        settings: state.settings,
+        deckLimits: state.deckLimits,
+      }),
       // v2: every deck is "live" (cards in IndexedDB). The old demo decks carried fake
       // due/total/progress numbers; convert them to real seeded decks.
       // v3: adds settings.dayStartHour (default 4).
       // v4: adds settings.desiredRetention (default 0.9).
       // v5: adds deckLimits ({}) and settings.newOrder ("urutan").
+      // v6: drops legacy mock `user` from persisted localStorage in favor of Supabase Auth.
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<AppState>;
         if (version < 2 && Array.isArray(state.decks)) {
@@ -460,6 +469,9 @@ export const useAppStore = create<AppState>()(
               ? d
               : { ...d, source: "manual" as const, due: 0, progress: 0, total: SEED_TOTALS[d.id] ?? 0 },
           );
+        }
+        if (version < 6) {
+          state.user = null;
         }
         if (!state.deckLimits || typeof state.deckLimits !== "object" || Array.isArray(state.deckLimits)) {
           state.deckLimits = {};

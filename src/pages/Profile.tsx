@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead } from "../ui";
 import { useAppStore } from "../store/useAppStore";
+import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
 import { liveDeckStats, type LiveDeckStats } from "../lib/deckStats";
 import { aggregateParentStats, getLeafDescendantDecks } from "../lib/deckSubdecks";
@@ -31,10 +32,15 @@ export default function ProfilePage() {
     };
   }, []);
   const [editMode, setEditMode] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.name || "Akira");
+  const [displayName, setDisplayName] = useState(user?.name || "");
   const [nameError, setNameError] = useState("");
   const [statusNotice, setStatusNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const signOut = useAuthStore((s) => s.signOut);
+
+  useEffect(() => {
+    setDisplayName(user?.name || "");
+  }, [user?.name]);
 
   if (!user) return <div className="prof-empty"><p>Silakan login terlebih dahulu.</p></div>;
 
@@ -104,9 +110,9 @@ export default function ProfilePage() {
     setStatusNotice("Progres berhasil diekspor.");
   };
 
-  const handleDeleteAccount = () => {
-    useAppStore.getState().logout();
-    navigate("/login");
+  const handleDeleteAccount = async () => {
+    await signOut();
+    navigate("/", { replace: true });
   };
 
   return (

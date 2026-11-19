@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import PageTransition, { FrozenOutlet } from "./PageTransition";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
+import { useAuthStore } from "../store/useAuthStore";
 import { reviewedToday, useReviewStore, useReviewStoreHydrated } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
@@ -75,7 +76,12 @@ export default function ProtectedLayout() {
   const reviewHydrated = useReviewStoreHydrated();
   const location = useLocation();
   const navigate = useNavigate();
-  const logout = useAppStore((s) => s.logout);
+  const signOut = useAuthStore((s) => s.signOut);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
 
   // User's manual sidebar collapse preference
   const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
@@ -257,8 +263,6 @@ export default function ProtectedLayout() {
     return () => window.removeEventListener("mousedown", onOutside);
   }, [notifOpen]);
 
-  if (!user) return <Navigate to="/login" replace />;
-
   if (!reviewHydrated) {
     return (
       <div
@@ -270,6 +274,8 @@ export default function ProtectedLayout() {
       </div>
     );
   }
+
+  if (!user) return <Navigate to="/login" replace />;
 
   const active =
     location.pathname === "/settings"
@@ -1105,7 +1111,7 @@ export default function ProtectedLayout() {
               </div>
             </Link>
             {!effectiveCollapsed && (
-              <Button className="icon-button" ariaLabel="Keluar" onClick={logout}>
+              <Button className="icon-button" ariaLabel="Keluar" onClick={() => void handleLogout()}>
                 <Icon name="close" size={16} />
               </Button>
             )}
