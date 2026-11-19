@@ -1,10 +1,11 @@
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
-import { normalizeBasePath, resolveBaseAssetHref } from './src/lib/basePath'
+import { normalizeBasePath, resolveBaseAssetHref } from './src/lib/basePath.ts'
 
 
 // Vite config — https://vitejs.dev/config/
@@ -125,6 +126,16 @@ function figmaSiteConfiguration(
         fileName: 'robots.txt',
         source: robotsTxt,
       })
+    },
+    closeBundle() {
+      // GitHub Pages SPA fallback: salin dist/index.html ke dist/404.html saat APP_BASE_PATH disetel
+      if (!process.env.APP_BASE_PATH) return
+      const outDir = path.resolve(import.meta.dirname, 'dist')
+      const indexHtml = path.join(outDir, 'index.html')
+      const fallbackHtml = path.join(outDir, '404.html')
+      if (fs.existsSync(indexHtml)) {
+        fs.copyFileSync(indexHtml, fallbackHtml)
+      }
     },
     transformIndexHtml: {
       order: 'pre',
