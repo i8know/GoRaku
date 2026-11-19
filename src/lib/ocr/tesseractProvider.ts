@@ -8,6 +8,33 @@ import {
   type OcrRecognitionResult,
   type OcrRecognizeOptions,
 } from "./ocrProvider";
+import { normalizeBasePath } from "../basePath";
+
+/**
+ * Membangun URL aset lokal Tesseract (`workerPath`, `corePath`, `langPath`)
+ * dengan memperhitungkan `import.meta.env.BASE_URL` (mis. `/` atau `/GoRaku/`).
+ */
+export function buildTesseractAssetUrls(
+  variant: OcrModelVariant,
+  baseUrl: string = import.meta.env.BASE_URL ?? "/",
+  origin: string = typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "http://localhost",
+): {
+  workerPath: string;
+  corePath: string;
+  langPath: string;
+} {
+  const normalizedBase = normalizeBasePath(baseUrl);
+  return {
+    workerPath: new URL(`${normalizedBase}tesseract/worker.min.js`, origin).href,
+    corePath: new URL(`${normalizedBase}tesseract`, origin).href,
+    langPath: new URL(
+      `${normalizedBase}tesseract/lang-data/${variant}`,
+      origin,
+    ).href,
+  };
+}
 
 function formatProgressStatusId(rawStatus: string, lang: OcrLanguage): string {
   const s = (rawStatus || "").toLowerCase();
@@ -90,15 +117,12 @@ export class TesseractProvider implements OcrProvider {
           (tesseractMod as unknown as { default: { createWorker: typeof tesseractMod.createWorker } }).default
             ?.createWorker;
 
-        const origin =
-          typeof window !== "undefined" && window.location?.origin
-            ? window.location.origin
-            : "";
+        const assetUrls = buildTesseractAssetUrls(variant);
 
         const worker = (await createWorker(lang, 1, {
-          workerPath: `${origin}/tesseract/worker.min.js`,
-          corePath: `${origin}/tesseract`,
-          langPath: `${origin}/tesseract/lang-data/${variant}`,
+          workerPath: assetUrls.workerPath,
+          corePath: assetUrls.corePath,
+          langPath: assetUrls.langPath,
           cachePath: `goraku-tess-${variant}`,
           gzip: true,
           workerBlobURL: false,
