@@ -503,7 +503,9 @@ export function limitsFor(
   deckLimits?: Record<string, DeckLimitOverride>,
 ): { newCards: number; maxReview: number } {
   const map = deckLimits ?? useAppStore.getState()?.deckLimits ?? {};
-  const override = map[deckId];
+  const override = Object.prototype.hasOwnProperty.call(map, deckId)
+    ? map[deckId]
+    : undefined;
   return {
     newCards:
       typeof override?.newCards === "number" && Number.isFinite(override.newCards)

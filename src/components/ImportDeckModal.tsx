@@ -16,6 +16,7 @@ import type {
 } from "../workers/apkgImport.worker";
 import { renderJapanese, ROLE_LABELS, ROLES, toPlain, type FieldMapping, type Role } from "../lib/ankiText";
 import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
+import { speakJapanese } from "../lib/tts";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -35,8 +36,6 @@ const COLORS = ["coral", "indigo", "sage", "ochre", "plum", "slate"];
 const KANJI_SUGGEST = ["札", "語", "単", "漢", "学", "日", "初", "魂", "話"];
 
 const autoKanji = (t: string) => (t.match(/[\u3400-\u9fff]/g) ?? []).slice(0, 2).join("") || "札";
-const ttsUrl = (text: string) =>
-  `https://translate.google.com/translate_tts?ie=UTF-8&tl=ja&client=tw-ob&q=${encodeURIComponent(text)}`;
 
 interface Props {
   initialFile?: File | null;
@@ -1258,8 +1257,11 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                           aria-label="Putar suara"
                           title="Putar Audio"
                           onClick={() => {
-                            const src = previewAudioUrl ?? ttsUrl(preview.word);
-                            void new Audio(src).play().catch(() => undefined);
+                            if (previewAudioUrl) {
+                              void new Audio(previewAudioUrl).play().catch(() => undefined);
+                            } else {
+                              speakJapanese(preview.reading || preview.word);
+                            }
                           }}
                         >
                           <Icon name="volume" size={15} />

@@ -611,6 +611,9 @@ function download(name: string, mime: string, body: string) {
 
 const slug = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "deck";
 
+export const neutralizeCsvCell = (s: string): string =>
+  /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+
 export async function exportDeck(deckId: string, title: string, format: "csv" | "json"): Promise<number> {
   const cards = await getCards(deckId);
   const srs = useReviewStore.getState().srsCards[deckId] ?? {};
@@ -618,7 +621,7 @@ export async function exportDeck(deckId: string, title: string, format: "csv" | 
     const body = { title, exportedAt: new Date().toISOString(), cards: cards.map(({ deckId: _d, ...c }) => ({ ...c, srs: srs[c.id] ?? null })) };
     download(`${slug(title)}.json`, "application/json", JSON.stringify(body, null, 2));
   } else {
-    const cell = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const cell = (s: string) => `"${neutralizeCsvCell(s).replace(/"/g, '""')}"`;
     const rows = [["word", "reading", "meaning", "sentence", "translation", "tags"].join(",")];
     for (const c of cards) rows.push([c.word, c.reading, toPlain(c.meaning), toPlain(c.sentence), toPlain(c.translation), (c.tags ?? []).join(" ")].map(cell).join(","));
     // BOM so Excel opens Japanese text correctly.

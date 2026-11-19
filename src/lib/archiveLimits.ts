@@ -98,6 +98,11 @@ export function zstdDecompressWithLimit(
   return joinChunks(chunks, totalBytes);
 }
 
+/** Memastikan kunci objek dinamis aman dari mutasi prototype (__proto__, constructor, prototype). */
+export function isSafeObjectKey(key: string): boolean {
+  return key !== "__proto__" && key !== "constructor" && key !== "prototype";
+}
+
 /** Memastikan URL eksternal hanya memakai skema HTTP(S) yang aman. */
 export function sanitizeHttpUrl(raw: unknown): string | undefined {
   if (typeof raw !== "string") return undefined;

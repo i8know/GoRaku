@@ -703,6 +703,43 @@ class Resources {
     }
 }
 
+const isDangerousEpubUri = val => {
+    if (typeof val !== 'string') return false
+    const norm = val.replace(/[\u0000-\u0020\u007f]+/g, '')
+    return /^(?:javascript|vbscript):|^data:(?:text\/html|application\/xhtml\+xml)/i.test(norm)
+}
+
+const EPUB_URI_ATTRS = ['href', 'src', 'poster', 'data', 'action', 'formaction', 'background', 'srcset']
+
+export const sanitizeEpubDom = doc => {
+    if (!doc?.querySelectorAll) return doc
+    for (const el of doc.querySelectorAll('script, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link[as="script" i]')) {
+        el.remove()
+    }
+    for (const el of doc.querySelectorAll('set, animate')) {
+        const attrName = el.getAttribute('attributeName') ?? ''
+        if (/^on|^href$|^xlink:href$/i.test(attrName)) el.remove()
+    }
+    for (const el of doc.querySelectorAll('*')) {
+        for (const attr of Array.from(el.attributes)) {
+            const name = attr.name.toLowerCase()
+            if (name.startsWith('on')) {
+                el.removeAttributeNode(attr)
+                continue
+            }
+            const hasBadUri = name === 'srcset'
+                ? attr.value.split(',').some(part => isDangerousEpubUri(part.trim()))
+                : EPUB_URI_ATTRS.includes(name) && isDangerousEpubUri(attr.value)
+            if (hasBadUri) {
+                el.removeAttributeNode(attr)
+            } else if (attr.namespaceURI === NS.XLINK && attr.localName === 'href' && isDangerousEpubUri(attr.value)) {
+                el.removeAttributeNS(NS.XLINK, 'href')
+            }
+        }
+    }
+    return doc
+}
+
 class Loader {
     #cache = new Map()
     #children = new Map()
@@ -821,36 +858,7 @@ class Loader {
                 doc = new DOMParser().parseFromString(str, item.mediaType)
             }
             // Strip active/dangerous elements before resolving or serializing subresources
-            for (const el of doc.querySelectorAll('script, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link[as="script" i]')) {
-                el.remove()
-            }
-            for (const el of doc.querySelectorAll('set, animate')) {
-                const attrName = el.getAttribute('attributeName') ?? ''
-                if (/^on|^href$|^xlink:href$/i.test(attrName)) el.remove()
-            }
-            const isDangerousUri = val => {
-                if (typeof val !== 'string') return false
-                const norm = val.replace(/[\u0000-\u0020\u007f]+/g, '')
-                return /^(?:javascript|vbscript):|^data:(?:text\/html|application\/xhtml\+xml)/i.test(norm)
-            }
-            const uriAttrs = ['href', 'src', 'poster', 'data', 'action', 'formaction', 'background', 'srcset']
-            for (const el of doc.querySelectorAll('*')) {
-                for (const attr of Array.from(el.attributes)) {
-                    const name = attr.name.toLowerCase()
-                    if (name.startsWith('on')) {
-                        el.removeAttributeNode(attr)
-                        continue
-                    }
-                    const hasBadUri = name === 'srcset'
-                        ? attr.value.split(',').some(part => isDangerousUri(part.trim()))
-                        : uriAttrs.includes(name) && isDangerousUri(attr.value)
-                    if (hasBadUri) {
-                        el.removeAttributeNode(attr)
-                    } else if (attr.namespaceURI === NS.XLINK && attr.localName === 'href' && isDangerousUri(attr.value)) {
-                        el.removeAttributeNS(NS.XLINK, 'href')
-                    }
-                }
-            }
+            sanitizeEpubDom(doc)
             // replace hrefs in XML processing instructions
             // this is mainly for SVGs that use xml-stylesheet
             if ([MIME.XHTML, MIME.SVG].includes(item.mediaType)) {
@@ -1086,7 +1094,7 @@ ${doc.querySelector('parsererror').innerText}`)
     }
     async loadDocument(item) {
         const str = await this.loadText(item.href)
-        return this.parser.parseFromString(str, item.mediaType)
+        return sanitizeEpubDom(this.parser.parseFromString(str, item.mediaType))
     }
     getMediaOverlay() {
         return new MediaOverlay(this, this.#loadXML.bind(this))

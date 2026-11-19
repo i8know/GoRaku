@@ -375,10 +375,25 @@ export function waitForReviewStoreHydration(): Promise<void> {
 }
 
 function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
+  const isSafeKey = (k: string) =>
+    k !== "__proto__" && k !== "constructor" && k !== "prototype";
   const raw = (persistedState ?? {}) as Partial<ReviewStore>;
+  const nextSrs: ReviewStore["srsCards"] = {};
+  if (raw.srsCards && typeof raw.srsCards === "object") {
+    for (const [deckId, deckMap] of Object.entries(raw.srsCards)) {
+      if (!isSafeKey(deckId) || !deckMap || typeof deckMap !== "object") continue;
+      const cleanDeck: Record<string, SRSCard> = {};
+      for (const [cardId, card] of Object.entries(deckMap)) {
+        if (!isSafeKey(cardId) || !card || typeof card !== "object") continue;
+        cleanDeck[cardId] = card;
+      }
+      nextSrs[deckId] = cleanDeck;
+    }
+  }
   const nextIntro: ReviewStore["newIntroduced"] = {};
   if (raw.newIntroduced && typeof raw.newIntroduced === "object") {
     for (const [k, v] of Object.entries(raw.newIntroduced)) {
+      if (!isSafeKey(k)) continue;
       if (v && typeof v.date === "string") {
         nextIntro[k] = { ...v, date: normalizeStudyDayKey(v.date) };
       }
@@ -387,6 +402,7 @@ function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
   const nextAct: ReviewStore["activity"] = {};
   if (raw.activity && typeof raw.activity === "object") {
     for (const [k, v] of Object.entries(raw.activity)) {
+      if (!isSafeKey(k)) continue;
       if (v && typeof v.date === "string") {
         nextAct[k] = { ...v, date: normalizeStudyDayKey(v.date) };
       }
@@ -394,6 +410,7 @@ function migrateReviewState(persistedState: unknown): Partial<ReviewStore> {
   }
   return {
     ...raw,
+    ...(raw.srsCards ? { srsCards: nextSrs } : {}),
     ...(raw.newIntroduced ? { newIntroduced: nextIntro } : {}),
     ...(raw.activity ? { activity: nextAct } : {}),
   };
