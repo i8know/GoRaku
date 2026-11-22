@@ -67,9 +67,9 @@ export default function TermsOfServicePage() {
               4. Kontak Pengelola Layanan
             </h2>
             <p>
-              Nama Pengelola: <strong>[ISI OLEH PEMILIK]</strong>
+              Nama Pengelola: <strong>Royharto Bonifasius Manullang</strong>
               <br />
-              Email Dukungan &amp; Pertanyaan Hukum: <strong>[ISI OLEH PEMILIK]</strong>
+              Email Dukungan &amp; Pertanyaan Hukum: <strong>agnesmanalu123@gmail.com</strong>
             </p>
           </section>
         </div>

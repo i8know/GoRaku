@@ -66,9 +66,9 @@ export default function PrivacyPolicyPage() {
               3. Pengelola &amp; Kontak Privasi
             </h2>
             <p>
-              Pengelola layanan: <strong>[ISI OLEH PEMILIK]</strong>
+              Pengelola layanan: <strong>Royharto Bonifasius Manullang</strong>
               <br />
-              Email kontak privasi / permintaan data: <strong>[ISI OLEH PEMILIK]</strong>
+              Email kontak privasi / permintaan data: <strong>agnesmanalu123@gmail.com</strong>
             </p>
           </section>
 
