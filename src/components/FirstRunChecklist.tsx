@@ -1,25 +1,16 @@
 import { useEffect, useState } from "react";
+import { getScopedStorageItem, setScopedStorageItem } from "../lib/userStorageScope";
 import { Hanko, Icon } from "../ui";
 
 export const FIRST_RUN_DISMISSED_KEY = "goraku.firstRun.dismissed";
 export const FIRST_RUN_COMPLETED_SHOWN_KEY = "goraku.firstRun.completedShown";
 
 function readStorageFlag(key: string): boolean {
-  try {
-    return typeof localStorage !== "undefined" && localStorage.getItem(key) === "1";
-  } catch {
-    return false;
-  }
+  return getScopedStorageItem(key) === "1";
 }
 
 function writeStorageFlag(key: string, value: "1"): void {
-  try {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(key, value);
-    }
-  } catch {
-    // Abaikan pembatasan penyimpanan lokal / mode privat
-  }
+  setScopedStorageItem(key, value);
 }
 
 export interface FirstRunChecklistProps {

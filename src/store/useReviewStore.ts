@@ -121,6 +121,8 @@ interface ReviewStore {
     opts?: RestoreCardOptions,
   ) => void;
   removeDeck: (deckId: string) => void;
+  /** Mengosongkan state ulasan di RAM saat perpindahan atau keluar akun (gunakan dalam withPersistWriteSuppressed). */
+  resetReviewState: () => void;
 }
 
 export interface DeckActivity {
@@ -319,6 +321,12 @@ export const useReviewStore = create<ReviewStore>()(
           return { srsCards, newIntroduced, activity };
         });
       },
+      resetReviewState: () =>
+        set({
+          srsCards: {},
+          newIntroduced: {},
+          activity: {},
+        }),
     }),
     {
       name: "japanese-review-storage",

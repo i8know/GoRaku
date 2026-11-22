@@ -7,6 +7,7 @@ import {
   type DictionaryRecord,
 } from "../lib/lexiconDb";
 import { sanitizeHttpUrl } from "../lib/archiveLimits";
+import { getActiveStorageUserId } from "../lib/userStorageScope";
 import { Icon } from "../ui";
 import type {
   YomitanImportStage,
@@ -267,6 +268,7 @@ export default function DictionaryManagerModal({
         buffer,
         fileName: file.name,
         replaceExisting,
+        userId: getActiveStorageUserId(),
       };
       worker.postMessage(req, [buffer]);
     } catch (err) {

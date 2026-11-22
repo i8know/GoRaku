@@ -12,6 +12,7 @@ import {
   sanitizeQuestionPack,
   validateQuestionPack
 } from "./questionPack";
+import { getQuestionPackDbName } from "./userStorageScope";
 
 const SEED_PACK_ID = "jlpt-n5-seed-pack-v1";
 const SEED_PACK_VERSION = "1.0.0";
@@ -19,15 +20,29 @@ const SEED_PACK_VERSION = "1.0.0";
 class QuestionPackDatabase extends Dexie {
   packs!: Table<QuestionPack, string>;
 
-  constructor() {
-    super("ma-immersion-question-packs");
+  constructor(dbName = getQuestionPackDbName()) {
+    super(dbName);
     this.version(1).stores({
       packs: "id, level, version, createdAt"
     });
   }
 }
 
-export const questionPackDb = new QuestionPackDatabase();
+export let questionPackDb = new QuestionPackDatabase();
+
+/**
+ * Mengganti instance Dexie paket soal ujian ke ruang penyimpanan milik pengguna aktif.
+ */
+export function switchQuestionPackDatabaseScope(userId: string | null): void {
+  const targetName = getQuestionPackDbName(userId);
+  if (questionPackDb.name === targetName) return;
+  try {
+    questionPackDb.close();
+  } catch {
+    // Abaikan galat saat menutup instance lama
+  }
+  questionPackDb = new QuestionPackDatabase(targetName);
+}
 
 /**
  * Menyimpan atau memperbarui QuestionPack ke IndexedDB.

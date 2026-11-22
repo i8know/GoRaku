@@ -29,6 +29,7 @@ import {
   isQuotaError,
   putCards,
   putMedia,
+  switchDeckDatabaseScope,
   type StoredCard,
 } from "../lib/deckDb";
 import type { SRSCard } from "../lib/srs";
@@ -92,6 +93,7 @@ export interface WorkerParsedSummary {
 }
 
 export interface WorkerCommitOptions {
+  userId?: string | null;
   deckId: string;
   isNewDeck: boolean;
   selectedDeckIds: string[];
@@ -124,6 +126,7 @@ export interface WorkerCommitResult {
 }
 
 export type WorkerRequest =
+  | { type: "set-user-scope"; userId: string | null }
   | { type: "parse-file"; file: File }
   | { type: "parse-preset"; preset: PresetDeck }
   | { type: "preview-media"; requestId: number; name: string }
@@ -564,13 +567,18 @@ async function handleCommitImport(options: WorkerCommitOptions) {
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const msg = event.data;
   try {
-    if (msg.type === "parse-file") {
+    if (msg.type === "set-user-scope") {
+      await switchDeckDatabaseScope(msg.userId ?? null);
+    } else if (msg.type === "parse-file") {
       await handleParseFile(msg.file);
     } else if (msg.type === "parse-preset") {
       handleParsePreset(msg.preset);
     } else if (msg.type === "preview-media") {
       await handlePreviewMedia(msg.requestId, msg.name);
     } else if (msg.type === "commit-import") {
+      if (msg.options.userId !== undefined) {
+        await switchDeckDatabaseScope(msg.options.userId ?? null);
+      }
       await handleCommitImport(msg.options);
     }
   } catch (err) {

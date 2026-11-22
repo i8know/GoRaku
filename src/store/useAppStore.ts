@@ -2,6 +2,11 @@ import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { clampDayStartHour, DEFAULT_DAY_START_HOUR, studyDayKey } from "../lib/studyDay";
 import { clampDesiredRetention, DEFAULT_DESIRED_RETENTION } from "../lib/fsrsScheduler";
+import {
+  getScopedKey,
+  isBlockedUnauthenticatedStorageAccess,
+  isPersistWriteSuppressed,
+} from "../lib/userStorageScope";
 
 export type NewCardOrder = "urutan" | "acak";
 
@@ -14,36 +19,42 @@ const fallbackAppMemoryStorage = new Map<string, string>();
 
 const safeAppStateStorage: StateStorage = {
   getItem: (name) => {
+    if (isBlockedUnauthenticatedStorageAccess()) return null;
+    const scopedName = getScopedKey(name);
     try {
       if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
-        return localStorage.getItem(name);
+        return localStorage.getItem(scopedName);
       }
     } catch {
       /* fallback to memory */
     }
-    return fallbackAppMemoryStorage.get(name) ?? null;
+    return fallbackAppMemoryStorage.get(scopedName) ?? null;
   },
   setItem: (name, value) => {
+    if (isPersistWriteSuppressed() || isBlockedUnauthenticatedStorageAccess()) return;
+    const scopedName = getScopedKey(name);
     try {
       if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
-        localStorage.setItem(name, value);
+        localStorage.setItem(scopedName, value);
         return;
       }
     } catch {
       /* fallback to memory */
     }
-    fallbackAppMemoryStorage.set(name, value);
+    fallbackAppMemoryStorage.set(scopedName, value);
   },
   removeItem: (name) => {
+    if (isPersistWriteSuppressed() || isBlockedUnauthenticatedStorageAccess()) return;
+    const scopedName = getScopedKey(name);
     try {
       if (typeof localStorage !== "undefined" && typeof localStorage.removeItem === "function") {
-        localStorage.removeItem(name);
+        localStorage.removeItem(scopedName);
         return;
       }
     } catch {
       /* fallback to memory */
     }
-    fallbackAppMemoryStorage.delete(name);
+    fallbackAppMemoryStorage.delete(scopedName);
   },
 };
 
@@ -114,7 +125,7 @@ export interface MinedCard {
 
 interface AppState {
   user: { name: string; email: string; level: string } | null;
-  login: (name: string, email: string) => void;
+  setAuthUser: (user: { name: string; email: string; level: string } | null) => void;
   logout: () => void;
   updateUser: (name: string, level: string) => void;
   decks: DeckItem[];
@@ -146,159 +157,191 @@ interface AppState {
   deckLimits: Record<string, DeckLimitOverride>;
   setDeckLimits: (deckId: string, limits: DeckLimitOverride | null) => void;
   updateSettings: (settings: Partial<AppState["settings"]>) => void;
+  /** Mengembalikan seluruh data aplikasi ke awal bersih (gunakan di dalam withPersistWriteSuppressed). */
+  resetUserData: () => void;
+}
+
+export function createInitialDecks(): DeckItem[] {
+  return [
+    {
+      id: "ps-root",
+      title: "Philia Space",
+      level: "Campuran • Core",
+      kind: "Core",
+      due: 0,
+      total: 52,
+      progress: 0,
+      kanji: "宙",
+      color: "indigo",
+      updated: "Hari ini",
+      source: "manual",
+      subdeckIds: ["ps-bi"],
+    },
+    {
+      id: "ps-bi",
+      parentId: "ps-root",
+      title: "Bahasa Indonesia",
+      subdeckName: "Bahasa Indonesia",
+      level: "Campuran • Core",
+      kind: "Core",
+      due: 0,
+      total: 52,
+      progress: 0,
+      kanji: "印",
+      color: "slate",
+      updated: "Hari ini",
+      source: "manual",
+      subdeckIds: ["ps-ankidrone", "ps-kotoba"],
+    },
+    {
+      id: "ps-ankidrone",
+      parentId: "ps-bi",
+      title: "Ankidrone Core 10K",
+      subdeckName: "Ankidrone Core 10K",
+      level: "Core 10K",
+      kind: "Core",
+      due: 0,
+      total: 10,
+      progress: 0,
+      kanji: "単",
+      color: "plum",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    {
+      id: "ps-kotoba",
+      parentId: "ps-bi",
+      title: "Kotoba N5-N1",
+      subdeckName: "Kotoba N5-N1",
+      level: "N5-N1 • Core",
+      kind: "Core",
+      due: 0,
+      total: 42,
+      progress: 0,
+      kanji: "語",
+      color: "ochre",
+      updated: "Hari ini",
+      source: "manual",
+      subdeckIds: ["ps-n1", "ps-n2", "ps-n3", "ps-n4", "ps-n5"],
+    },
+    {
+      id: "ps-n1",
+      parentId: "ps-kotoba",
+      title: "N1",
+      subdeckName: "N1",
+      level: "N1 • Core",
+      kind: "Core",
+      due: 0,
+      total: 8,
+      progress: 0,
+      kanji: "極",
+      color: "plum",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    {
+      id: "ps-n2",
+      parentId: "ps-kotoba",
+      title: "N2",
+      subdeckName: "N2",
+      level: "N2 • Core",
+      kind: "Core",
+      due: 0,
+      total: 8,
+      progress: 0,
+      kanji: "上",
+      color: "ochre",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    {
+      id: "ps-n3",
+      parentId: "ps-kotoba",
+      title: "N3",
+      subdeckName: "N3",
+      level: "N3 • Core",
+      kind: "Core",
+      due: 0,
+      total: 8,
+      progress: 0,
+      kanji: "中",
+      color: "indigo",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    {
+      id: "ps-n4",
+      parentId: "ps-kotoba",
+      title: "N4",
+      subdeckName: "N4",
+      level: "N4 • Core",
+      kind: "Core",
+      due: 0,
+      total: 8,
+      progress: 0,
+      kanji: "基",
+      color: "sage",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    {
+      id: "ps-n5",
+      parentId: "ps-kotoba",
+      title: "N5",
+      subdeckName: "N5",
+      level: "N5 • Core",
+      kind: "Core",
+      due: 0,
+      total: 10,
+      progress: 0,
+      kanji: "初",
+      color: "coral",
+      updated: "Hari ini",
+      source: "manual",
+    },
+    { id: "1", title: "Bahasa Jepang Sehari-hari", level: "N4 • Core", kind: "Core", due: 0, total: SEED_TOTALS["1"], progress: 0, kanji: "日常", color: "coral", updated: "Hari ini", source: "manual" },
+    { id: "2", title: "Frieren: Beyond Journey", level: "Anime • Fantasy", kind: "Anime", due: 0, total: SEED_TOTALS["2"], progress: 0, kanji: "葬送", color: "indigo", updated: "Kemarin", source: "manual" },
+    { id: "3", title: "Kitchen — Banana Yoshimoto", level: "Novel • N3", kind: "Novel", due: 0, total: SEED_TOTALS["3"], progress: 0, kanji: "小説", color: "sage", updated: "2 hari lalu", source: "manual" },
+  ];
+}
+
+export function createInitialMinedQueue(): MinedCard[] {
+  return [
+    { id: "m1", word: "寿命", reading: "じゅみょう", meaning: "umur; masa hidup", src: "葬送のフリーレン", deck: "Frieren: Beyond Journey" },
+    { id: "m2", word: "届く", reading: "とどく", meaning: "sampai; tersampaikan", src: "ブルーピリオド", deck: "Bahasa Jepang Sehari-hari" },
+  ];
+}
+
+export function createInitialSettings(): AppState["settings"] {
+  return {
+    newCards: 15,
+    maxReview: 120,
+    dayStartHour: DEFAULT_DAY_START_HOUR,
+    desiredRetention: DEFAULT_DESIRED_RETENTION,
+    newOrder: "urutan",
+    furi: true,
+    audio: true,
+    romaji: false,
+    remind: true,
+    time: "19:30",
+    weekly: true,
+    size: "Sedang",
+  };
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      user: { name: "Akira", email: "akira@immersion.jp", level: "N3" },
-      login: (name, email) => set({ user: { name, email, level: "N3" } }),
-      logout: () => set({ user: null }),
+      user: null,
+      setAuthUser: (user) =>
+        set((state) => (state.user === null && user === null ? state : { user })),
+      logout: () =>
+        set((state) => (state.user === null ? state : { user: null })),
       updateUser: (name, level) =>
         set((state) => ({
           user: state.user ? { ...state.user, name, level } : null,
         })),
-      decks: [
-        {
-          id: "ps-root",
-          title: "Philia Space",
-          level: "Campuran • Core",
-          kind: "Core",
-          due: 0,
-          total: 52,
-          progress: 0,
-          kanji: "宙",
-          color: "indigo",
-          updated: "Hari ini",
-          source: "manual",
-          subdeckIds: ["ps-bi"],
-        },
-        {
-          id: "ps-bi",
-          parentId: "ps-root",
-          title: "Bahasa Indonesia",
-          subdeckName: "Bahasa Indonesia",
-          level: "Campuran • Core",
-          kind: "Core",
-          due: 0,
-          total: 52,
-          progress: 0,
-          kanji: "印",
-          color: "slate",
-          updated: "Hari ini",
-          source: "manual",
-          subdeckIds: ["ps-ankidrone", "ps-kotoba"],
-        },
-        {
-          id: "ps-ankidrone",
-          parentId: "ps-bi",
-          title: "Ankidrone Core 10K",
-          subdeckName: "Ankidrone Core 10K",
-          level: "Core 10K",
-          kind: "Core",
-          due: 0,
-          total: 10,
-          progress: 0,
-          kanji: "単",
-          color: "plum",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        {
-          id: "ps-kotoba",
-          parentId: "ps-bi",
-          title: "Kotoba N5-N1",
-          subdeckName: "Kotoba N5-N1",
-          level: "N5-N1 • Core",
-          kind: "Core",
-          due: 0,
-          total: 42,
-          progress: 0,
-          kanji: "語",
-          color: "ochre",
-          updated: "Hari ini",
-          source: "manual",
-          subdeckIds: ["ps-n1", "ps-n2", "ps-n3", "ps-n4", "ps-n5"],
-        },
-        {
-          id: "ps-n1",
-          parentId: "ps-kotoba",
-          title: "N1",
-          subdeckName: "N1",
-          level: "N1 • Core",
-          kind: "Core",
-          due: 0,
-          total: 8,
-          progress: 0,
-          kanji: "極",
-          color: "plum",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        {
-          id: "ps-n2",
-          parentId: "ps-kotoba",
-          title: "N2",
-          subdeckName: "N2",
-          level: "N2 • Core",
-          kind: "Core",
-          due: 0,
-          total: 8,
-          progress: 0,
-          kanji: "上",
-          color: "ochre",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        {
-          id: "ps-n3",
-          parentId: "ps-kotoba",
-          title: "N3",
-          subdeckName: "N3",
-          level: "N3 • Core",
-          kind: "Core",
-          due: 0,
-          total: 8,
-          progress: 0,
-          kanji: "中",
-          color: "indigo",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        {
-          id: "ps-n4",
-          parentId: "ps-kotoba",
-          title: "N4",
-          subdeckName: "N4",
-          level: "N4 • Core",
-          kind: "Core",
-          due: 0,
-          total: 8,
-          progress: 0,
-          kanji: "基",
-          color: "sage",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        {
-          id: "ps-n5",
-          parentId: "ps-kotoba",
-          title: "N5",
-          subdeckName: "N5",
-          level: "N5 • Core",
-          kind: "Core",
-          due: 0,
-          total: 10,
-          progress: 0,
-          kanji: "初",
-          color: "coral",
-          updated: "Hari ini",
-          source: "manual",
-        },
-        { id: "1", title: "Bahasa Jepang Sehari-hari", level: "N4 • Core", kind: "Core", due: 0, total: SEED_TOTALS["1"], progress: 0, kanji: "日常", color: "coral", updated: "Hari ini", source: "manual" },
-        { id: "2", title: "Frieren: Beyond Journey", level: "Anime • Fantasy", kind: "Anime", due: 0, total: SEED_TOTALS["2"], progress: 0, kanji: "葬送", color: "indigo", updated: "Kemarin", source: "manual" },
-        { id: "3", title: "Kitchen — Banana Yoshimoto", level: "Novel • N3", kind: "Novel", due: 0, total: SEED_TOTALS["3"], progress: 0, kanji: "小説", color: "sage", updated: "2 hari lalu", source: "manual" },
-      ],
+      decks: createInitialDecks(),
       addDeck: (newDeck) => {
         const id = Date.now().toString();
         set((state) => ({
@@ -364,10 +407,7 @@ export const useAppStore = create<AppState>()(
               }),
           };
         }),
-      minedQueue: [
-        { id: "m1", word: "寿命", reading: "じゅみょう", meaning: "umur; masa hidup", src: "葬送のフリーレン", deck: "Frieren: Beyond Journey" },
-        { id: "m2", word: "届く", reading: "とどく", meaning: "sampai; tersampaikan", src: "ブルーピリオド", deck: "Bahasa Jepang Sehari-hari" },
-      ],
+      minedQueue: createInitialMinedQueue(),
       addMinedCard: (card) =>
         set((state) => ({
           minedQueue: [{ ...card, id: Date.now().toString() }, ...state.minedQueue],
@@ -384,20 +424,7 @@ export const useAppStore = create<AppState>()(
             ? state.libraryItems.filter((t) => t !== title)
             : [...state.libraryItems, title],
         })),
-      settings: {
-        newCards: 15,
-        maxReview: 120,
-        dayStartHour: DEFAULT_DAY_START_HOUR,
-        desiredRetention: DEFAULT_DESIRED_RETENTION,
-        newOrder: "urutan",
-        furi: true,
-        audio: true,
-        romaji: false,
-        remind: true,
-        time: "19:30",
-        weekly: true,
-        size: "Sedang",
-      },
+      settings: createInitialSettings(),
       deckLimits: {},
       setDeckLimits: (deckId, limits) =>
         set((state) => {
@@ -442,16 +469,34 @@ export const useAppStore = create<AppState>()(
                 : (state.settings.newOrder ?? "urutan"),
           },
         })),
+      resetUserData: () =>
+        set({
+          user: null,
+          decks: createInitialDecks(),
+          minedQueue: createInitialMinedQueue(),
+          libraryItems: [],
+          settings: createInitialSettings(),
+          deckLimits: {},
+        }),
     }),
     {
       name: "japanese-learning-storage",
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => safeAppStateStorage),
+      // Status user diturunkan dari sesi Supabase Auth di useAuthStore, bukan disimpan statis di localStorage.
+      partialize: (state) => ({
+        decks: state.decks,
+        minedQueue: state.minedQueue,
+        libraryItems: state.libraryItems,
+        settings: state.settings,
+        deckLimits: state.deckLimits,
+      }),
       // v2: every deck is "live" (cards in IndexedDB). The old demo decks carried fake
       // due/total/progress numbers; convert them to real seeded decks.
       // v3: adds settings.dayStartHour (default 4).
       // v4: adds settings.desiredRetention (default 0.9).
       // v5: adds deckLimits ({}) and settings.newOrder ("urutan").
+      // v6: drops legacy mock `user` from persisted localStorage in favor of Supabase Auth.
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<AppState>;
         if (version < 2 && Array.isArray(state.decks)) {
@@ -460,6 +505,9 @@ export const useAppStore = create<AppState>()(
               ? d
               : { ...d, source: "manual" as const, due: 0, progress: 0, total: SEED_TOTALS[d.id] ?? 0 },
           );
+        }
+        if (version < 6) {
+          state.user = null;
         }
         if (!state.deckLimits || typeof state.deckLimits !== "object" || Array.isArray(state.deckLimits)) {
           state.deckLimits = {};

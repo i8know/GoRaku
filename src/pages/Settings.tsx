@@ -1,8 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
+import SignOutButton from "../components/SignOutButton";
 import { useAppStore } from "../store/useAppStore";
+import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
+import { normalizeJlptLevel } from "../lib/supabase";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { clearAllReviewLogs } from "../lib/deckDb";
 import { flushReviewStorageWrites } from "../lib/reviewStorage";
@@ -17,11 +20,19 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
   const navigate = useNavigate();
   const user = useAppStore((s) => s.user);
   const updateUser = useAppStore((s) => s.updateUser);
+  const authUser = useAuthStore((s) => s.user);
+  const updateProfile = useAuthStore((s) => s.updateProfile);
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
-  const [name, setName] = useState(user?.name || "Akira");
-  const [level, setLevel] = useState(user?.level || "N3");
+  const [name, setName] = useState(user?.name || "");
+  const [level, setLevel] = useState(user?.level || "N4");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setName(user?.name || "");
+    setLevel(user?.level || "N4");
+  }, [user?.name, user?.level]);
   const [newCards, setNewCards] = useState(settings.newCards);
   const [maxReview, setMaxReview] = useState(settings.maxReview);
   const [dayStartHour, setDayStartHour] = useState(settings.dayStartHour ?? 4);
@@ -66,14 +77,15 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
     void listDictionaries().then(setDictionaries).catch(() => {});
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const cleanName = name.trim();
     if (!cleanName) {
       notify("Nama panggilan tidak boleh kosong");
       return;
     }
-    setName(cleanName);
-    updateUser(cleanName, level);
+    const normalizedLevel = normalizeJlptLevel(level);
+    setSaving(true);
+
     updateSettings({
       newCards,
       maxReview,
@@ -88,23 +100,63 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
       weekly,
       size,
     });
+
+    if (authUser) {
+      const res = await updateProfile({
+        display_name: cleanName,
+        jlpt_level: normalizedLevel,
+      });
+      setSaving(false);
+      if (res.error) {
+        notify(`Preferensi belajar disimpan, tetapi profil akun gagal disinkronkan: ${res.error}`);
+        return;
+      }
+    } else {
+      setSaving(false);
+      updateUser(cleanName, normalizedLevel);
+    }
+
+    setName(cleanName);
+    setLevel(normalizedLevel);
     notify("Pengaturan disimpan");
   };
 
   return (
     <>
       <PageHead eyebrow="PREFERENSI" title="Pengaturan" accent="設定" copy="Atur ritme belajar, tampilan kartu, dan pengingat sesuai caramu.">
-        <Button className="pg-primary" onClick={handleSave}><Icon name="check" size={17} /> Simpan perubahan</Button>
+        <Button className="pg-primary" disabled={saving} onClick={() => void handleSave()}>
+          <Icon name="check" size={17} /> {saving ? "Menyimpan…" : "Simpan perubahan"}
+        </Button>
       </PageHead>
 
       <div className="st-grid">
         <section className="st-card">
           <div className="st-title"><span><Icon name="user" size={18} /></span><div><h2>Profil</h2><p>Identitas dan target belajarmu</p></div></div>
-          <div className="st-profile"><div className="avatar st-avatar">{(name.trim() || "P").charAt(0).toUpperCase()}</div><div><strong>{name.trim() || "Pelajar"}</strong><small>Level 14 • bergabung Januari 2026</small></div></div>
+          <div className="st-profile"><div className="avatar st-avatar">{(name.trim() || "P").charAt(0).toUpperCase()}</div><div><strong>{name.trim() || "Pelajar"}</strong><small>Target {level} • {authUser?.email || user?.email || "Akun GoRaku"}</small></div></div>
           <label className="field"><span>Nama panggilan</span><input value={name} maxLength={40} required onChange={(e) => setName(e.target.value)} /></label>
           <label className="field"><span>Target level JLPT</span>
             <select value={level} onChange={(e) => setLevel(e.target.value)}>{["N5", "N4", "N3", "N2", "N1"].map((l) => <option key={l}>{l}</option>)}</select>
           </label>
+        </section>
+
+        <section className="st-card" aria-labelledby="settings-account-heading">
+          <div className="st-title">
+            <span><Icon name="lock" size={18} /></span>
+            <div>
+              <h2 id="settings-account-heading">Akun</h2>
+              <p>Sesi masuk pada perangkat ini</p>
+            </div>
+          </div>
+          <div className="st-row">
+            <div>
+              <strong>Email</strong>
+              <small>{authUser?.email || user?.email || "-"}</small>
+            </div>
+            <SignOutButton variant="label" />
+          </div>
+          <p className="st-note mt-3">
+            Data belajarmu tetap tersimpan di perangkat ini. Sinkronisasi antar perangkat belum aktif.
+          </p>
         </section>
 
         <section className="st-card">
@@ -162,6 +214,12 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
             aria-label="Pilih berkas JSON jadwal belajar"
           />
           <div className="st-actions">
+            <Button className="outline-button" onClick={() => navigate("/privasi")}>
+              <Icon name="lock" size={16} /> Kebijakan Privasi
+            </Button>
+            <Button className="outline-button" onClick={() => navigate("/syarat")}>
+              <Icon name="bookmark" size={16} /> Syarat Penggunaan
+            </Button>
             <Button className="outline-button" onClick={() => navigate("/license")}>
               <Icon name="bookmark" size={16} /> Lisensi &amp; Atribusi Sumber Data
             </Button>

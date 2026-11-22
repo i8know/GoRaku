@@ -1,8 +1,9 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import PageTransition from './components/PageTransition'
+import ProtectedRoute from './components/ProtectedRoute'
 import ToastContainer from './components/ToastContainer'
 import LandingPage from './pages/Landing'
 import './aizome.css'
@@ -10,9 +11,16 @@ import './index.css'
 import './pages.css'
 import './decks.css'
 import { useToastStore } from './store/useToastStore'
+import { useAuthStore } from './store/useAuthStore'
+import { initUserStorageScopeSync } from './lib/userScopeCoordinator'
+
+initUserStorageScopeSync()
 
 const ProtectedLayout = lazy(() => import('./components/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfService'))
 const App = lazy(() => import('./App'))
 const DecksPage = lazy(() => import('./pages/Decks'))
 const DeckDetailPage = lazy(() => import('./pages/DeckDetail'))
@@ -69,22 +77,48 @@ function AppRoutes() {
             </PageTransition>
           }
         />
+        <Route
+          path="/atur-ulang-sandi"
+          element={
+            <PageTransition routeKey="/atur-ulang-sandi">
+              <ResetPasswordPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/privasi"
+          element={
+            <PageTransition routeKey="/privasi">
+              <PrivacyPolicyPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/syarat"
+          element={
+            <PageTransition routeKey="/syarat">
+              <TermsOfServicePage />
+            </PageTransition>
+          }
+        />
 
         {/* Protected Routes */}
-        <Route element={<ProtectedLayout />}>
-          <Route path="/beranda" element={<App />} />
-          <Route path="/deck" element={<DecksPage onCreate={() => {}} notify={notify} />} />
-          <Route path="/deck/:deckId" element={<DeckDetailPage notify={notify} />} />
-          <Route path="/deck/:deckId/review" element={<ReviewPage />} />
-          <Route path="/mining" element={<MiningPage notify={notify} />} />
-          <Route path="/library" element={<LibraryPage onAdd={() => {}} notify={notify} />} />
-          <Route path="/library/:bookId" element={<ReaderPage notify={notify} />} />
-          <Route path="/manga/:bookId" element={<MangaReaderPage notify={notify} />} />
-          <Route path="/progress" element={<ProgressPage />} />
-          <Route path="/exam" element={<ExamPage notify={notify} />} />
-          <Route path="/license" element={<LicenseAttributionPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage notify={notify} />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedLayout />}>
+            <Route path="/beranda" element={<App />} />
+            <Route path="/deck" element={<DecksPage onCreate={() => {}} notify={notify} />} />
+            <Route path="/deck/:deckId" element={<DeckDetailPage notify={notify} />} />
+            <Route path="/deck/:deckId/review" element={<ReviewPage />} />
+            <Route path="/mining" element={<MiningPage notify={notify} />} />
+            <Route path="/library" element={<LibraryPage onAdd={() => {}} notify={notify} />} />
+            <Route path="/library/:bookId" element={<ReaderPage notify={notify} />} />
+            <Route path="/manga/:bookId" element={<MangaReaderPage notify={notify} />} />
+            <Route path="/progress" element={<ProgressPage />} />
+            <Route path="/exam" element={<ExamPage notify={notify} />} />
+            <Route path="/license" element={<LicenseAttributionPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage notify={notify} />} />
+          </Route>
         </Route>
 
         {/* Fallback */}
@@ -103,11 +137,21 @@ function AppRoutes() {
   );
 }
 
+function AuthBootstrap({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const unsubscribe = useAuthStore.getState().init();
+    return unsubscribe;
+  }, []);
+  return <>{children}</>;
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-      <AppRoutes />
-      <ToastContainer />
+      <AuthBootstrap>
+        <AppRoutes />
+        <ToastContainer />
+      </AuthBootstrap>
     </BrowserRouter>
   </React.StrictMode>,
 )

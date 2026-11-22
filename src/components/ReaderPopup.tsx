@@ -8,6 +8,7 @@ import { sanitizeInline } from "../lib/ankiText";
 import type { LookupResultItem } from "../lib/dictionaryLookup";
 import type { ExtractedSentence } from "../lib/sentenceExtractor";
 import { speakJapanese } from "../lib/tts";
+import { getScopedStorageItem, setScopedStorageItem } from "../lib/userStorageScope";
 import { useAppStore } from "../store/useAppStore";
 import { Icon } from "../ui";
 
@@ -78,7 +79,7 @@ export default function ReaderPopup({
   const activeItem: LookupResultItem | undefined = results[selectedIndex] ?? results[0];
 
   const [selectedDeckId, setSelectedDeckId] = useState<string>(() => {
-    const saved = localStorage.getItem(LAST_DECK_STORAGE_KEY);
+    const saved = getScopedStorageItem(LAST_DECK_STORAGE_KEY);
     if (saved && decks.some((d) => d.id === saved)) return saved;
     return decks[0]?.id ?? "1";
   });
@@ -147,7 +148,7 @@ export default function ReaderPopup({
 
   useEffect(() => {
     if (selectedDeckId) {
-      localStorage.setItem(LAST_DECK_STORAGE_KEY, selectedDeckId);
+      setScopedStorageItem(LAST_DECK_STORAGE_KEY, selectedDeckId);
       void getDeckDuplicateKeys(selectedDeckId)
         .then(setDuplicateKeys)
         .catch(() => setDuplicateKeys(new Set()));

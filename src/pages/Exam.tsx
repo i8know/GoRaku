@@ -16,6 +16,7 @@ import { calculateOfficialJLPTScore } from "../components/jlpt/jlptScoring";
 import { loadQuestionsForTestAndSection } from "../components/jlpt/mockTestLoader";
 import type { QuestionItem } from "../lib/questionPack";
 import { jlptDyeStep } from "../lib/dye";
+import { getScopedStorageItem, setScopedStorageItem } from "../lib/userStorageScope";
 import { Icon } from "../ui";
 
 const AudioCheckModal = lazy(() => import("../components/jlpt/AudioCheckModal"));
@@ -869,10 +870,10 @@ export default function ExamPage({ notify }: ExamPageProps) {
     result: SectionSessionResult;
   } | null>(null);
 
-  // Riwayat Sesi Tersimpan (di-cache di localStorage)
+  // Riwayat Sesi Tersimpan (di-cache per pengguna di localStorage)
   const [sessions, setSessions] = useState<Record<string, SectionSessionResult>>(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_SESSIONS);
+      const raw = getScopedStorageItem(STORAGE_KEY_SESSIONS);
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
@@ -881,11 +882,7 @@ export default function ExamPage({ notify }: ExamPageProps) {
 
   // Simpan riwayat sesi ke localStorage saat berubah
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
-    } catch (err) {
-      console.warn("Gagal menyimpan sesi ujian ke localStorage:", err);
-    }
+    setScopedStorageItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
   }, [sessions]);
 
   // Ringkasan dan label netral untuk tampilan antarmuka (tanpa menyentuh data internal)

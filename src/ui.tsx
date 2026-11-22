@@ -6,7 +6,7 @@ export type IconName =
   | "arrow" | "flame" | "clock" | "play" | "close" | "check" | "filter" | "star" | "volume"
   | "target" | "trash" | "sparkle" | "grid" | "list" | "upload" | "bookmark" | "user" | "calendar"
   | "edit" | "bolt" | "lock" | "key" | "download" | "refresh" | "alert" | "deck" | "arrow-left" | "eye"
-  | "chevron-down" | "chevron-up";
+  | "chevron-down" | "chevron-up" | "logout";
 
 export function Icon({ name, size = 20, className }: { name: IconName; size?: number; className?: string }) {
   const paths: Record<IconName, ReactNode> = {
@@ -49,6 +49,7 @@ export function Icon({ name, size = 20, className }: { name: IconName; size?: nu
     eye: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" /><circle cx="12" cy="12" r="3" /></>,
     "chevron-down": <path d="m6 9 6 6 6-6" />,
     "chevron-up": <path d="m18 15-6-6-6 6" />,
+    logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">

@@ -17,6 +17,7 @@
     "review:workflow": "tsx tools/reviewWorkflow.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.119.2",
     "dexie": "^4.4.7",
     "fflate": "^0.8.3",
     "framer-motion": "^14.1.0",

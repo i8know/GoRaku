@@ -1,4 +1,4 @@
-import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs'
@@ -6,6 +6,7 @@ import path from 'node:path'
 
 import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
 import { normalizeBasePath, resolveBaseAssetHref } from './src/lib/basePath.ts'
+import { injectSupabaseConnectSrc } from './src/lib/csp.ts'
 
 
 // Vite config — https://vitejs.dev/config/
@@ -15,6 +16,11 @@ export default defineConfig(({ mode }) => {
   const basePath = normalizeBasePath(
     process.env.FIGMA_PUBLIC_URL || process.env.APP_BASE_PATH,
   )
+  const loadedEnv = loadEnv(mode, process.cwd(), 'VITE_')
+  const rawSupabaseUrl =
+    'VITE_SUPABASE_URL' in process.env
+      ? (process.env.VITE_SUPABASE_URL ?? '')
+      : (loadedEnv.VITE_SUPABASE_URL ?? '')
 
   return {
     base: basePath,
@@ -23,9 +29,10 @@ export default defineConfig(({ mode }) => {
       minify: !emitSourcemaps,
     },
     plugins: [
-react(),
+      react(),
       tailwindcss(),
       figmaSiteConfiguration(siteConfiguration, basePath),
+      supabaseCspPlugin(rawSupabaseUrl),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
@@ -76,6 +83,19 @@ type FigmaSiteConfiguration = {
   }
   accessibility?: {
     addBypassLinks?: boolean
+  }
+}
+
+/** Menyuntikkan origin exact `VITE_SUPABASE_URL` ke direktif `connect-src` CSP saat build/dev. */
+function supabaseCspPlugin(rawSupabaseUrl: string): Plugin {
+  return {
+    name: 'goraku-supabase-csp',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        return injectSupabaseConnectSrc(html, rawSupabaseUrl)
+      },
+    },
   }
 }
 

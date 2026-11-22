@@ -432,6 +432,8 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   .top-actions { gap: 4px; }
   .streak { min-height: 44px; min-width: 44px; justify-content: center; padding: 6px 10px; }
   .icon-button { border: 0; padding: 7px; min-width: 44px; min-height: 44px; }
+  .topbar-profile-link { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .signout-btn, .prof-edit-btn { min-height: 44px; }
   .avatar { width: 32px; height: 32px; }
   .content { padding: 24px 16px calc(96px + env(safe-area-inset-bottom)); }
   .app-shell { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
@@ -1103,10 +1105,11 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 /* Layout updates */
 .user-profile {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 8px;
+  gap: 8px;
+  padding: 8px 6px;
   border: 1px solid rgba(188, 214, 226, 0.18);
   border-radius: 12px;
   margin-top: 12px;
@@ -1122,6 +1125,7 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
 .app-shell:not(.mobile-drawer-open) .user-profile > a {
   justify-content: center;
   gap: 0 !important;
+  flex: 0 0 auto !important;
 }
 
 .app-shell:not(.mobile-drawer-open) .sb-quick-add {
@@ -1139,28 +1143,65 @@ kbd { border: 1px solid var(--garis); border-radius: 5px; padding: 2px 6px; back
   }
 }
 
-.user-profile .icon-button {
-  display: none;
-  border-left: 0;
-  padding: 6px;
-  min-width: 32px;
-  min-height: 32px;
-  color: var(--mizu);
-  border-radius: 8px;
+.signout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
 }
 
-.user-profile .icon-button:hover {
-  background: rgba(255, 255, 255, 0.12);
+.signout-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.signout-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(188, 214, 226, 0.22);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--mizu);
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.signout-icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--mizu);
   color: #fff;
 }
 
+.signout-icon-btn:focus-visible {
+  outline: 2px solid var(--mizu);
+  outline-offset: 2px;
+}
+
+.signout-icon-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.user-profile .sidebar-signout-btn {
+  width: 38px;
+  height: 38px;
+}
+
 .app-shell.mobile-drawer-open .user-profile {
+  flex-direction: row;
   justify-content: space-between;
   padding: 10px 12px;
 }
 
-.app-shell.mobile-drawer-open .user-profile .icon-button {
-  display: inline-flex;
+.app-shell.mobile-drawer-open .user-profile .sidebar-signout-btn {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
 }
 
 /* Nav link styling (for Link components) */
@@ -1634,10 +1675,18 @@ a.nav-item {
   font-size: 12px;
 }
 
+.prof-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
 .prof-edit-btn {
   border: 1px solid var(--garis);
   border-radius: 8px;
   padding: 10px 16px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1651,6 +1700,13 @@ a.nav-item {
   background: var(--mizu-soft);
   border-color: var(--ai);
   color: var(--ai);
+}
+
+@media (max-width: 720px) {
+  .signout-btn,
+  .prof-edit-btn {
+    min-height: 44px;
+  }
 }
 
 .prof-edit-form {

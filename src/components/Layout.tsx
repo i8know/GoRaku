@@ -4,17 +4,34 @@ import { AnimatePresence, motion } from "framer-motion";
 import PageTransition, { FrozenOutlet } from "./PageTransition";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
+import { useAuthStore } from "../store/useAuthStore";
+import { useToastStore } from "../store/useToastStore";
 import { reviewedToday, useReviewStore, useReviewStoreHydrated } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
 import { listNovels } from "../lib/bookStorage";
 import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
+import ConsentUpdateModal, { needsConsentUpdate } from "./ConsentUpdateModal";
+import LegacyAdoptionModal from "./LegacyAdoptionModal";
+import SignOutButton, {
+  markIntentionalSignOut,
+  scheduleIntentionalSignOutReset,
+} from "./SignOutButton";
+import {
+  shouldPromptLegacyAdoption,
+  type LegacyDataSummary,
+} from "../lib/legacyAdoption";
+import {
+  getScopedStorageItem,
+  LEGACY_SIDEBAR_COLLAPSED_KEY,
+  setScopedStorageItem,
+} from "../lib/userStorageScope";
 
 const CommandPaletteModal = lazy(() => import("./CommandPaletteModal"));
 const DictionaryManagerModal = lazy(() => import("./DictionaryManagerModal"));
 
-const SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
+const SIDEBAR_COLLAPSED_KEY = LEGACY_SIDEBAR_COLLAPSED_KEY;
 
 const navItems = [
   { label: "Beranda", shortLabel: "Beranda", kanji: "家", jp: "学習・概要", path: "/beranda", icon: "home" as const },
@@ -75,16 +92,47 @@ export default function ProtectedLayout() {
   const reviewHydrated = useReviewStoreHydrated();
   const location = useLocation();
   const navigate = useNavigate();
-  const logout = useAppStore((s) => s.logout);
+  const signOut = useAuthStore((s) => s.signOut);
+  const authUser = useAuthStore((s) => s.user);
+  const authProfile = useAuthStore((s) => s.profile);
+  const updateAuthProfile = useAuthStore((s) => s.updateProfile);
+  const consentRequired = needsConsentUpdate(authProfile);
+  const [legacyPromptSummary, setLegacyPromptSummary] = useState<LegacyDataSummary | null>(null);
+  const [adoptedDataRefreshKey, setAdoptedDataRefreshKey] = useState(0);
 
-  // User's manual sidebar collapse preference
-  const [userCollapsed, setUserCollapsed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-    } catch {
-      return false;
+  useEffect(() => {
+    let cancelled = false;
+    if (!authUser?.id) {
+      setLegacyPromptSummary(null);
+      return;
     }
-  });
+    void shouldPromptLegacyAdoption(authUser.id)
+      .then((summary) => {
+        if (!cancelled) setLegacyPromptSummary(summary);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser?.id]);
+
+  const handleLogout = async () => {
+    markIntentionalSignOut();
+    try {
+      const res = await signOut();
+      if (res?.error) {
+        useToastStore.getState().notify(res.error);
+      }
+      navigate("/login", { replace: true, state: null });
+    } finally {
+      scheduleIntentionalSignOutReset();
+    }
+  };
+
+  // User's manual sidebar collapse preference (disimpan per pengguna)
+  const [userCollapsed, setUserCollapsed] = useState<boolean>(
+    () => getScopedStorageItem(SIDEBAR_COLLAPSED_KEY) === "1",
+  );
   // Allow user to override auto-collapse while inside Reader or Review
   const [focusOverrideExpanded, setFocusOverrideExpanded] = useState(false);
   const [quickOpen, setQuickOpen] = useState(true);
@@ -136,11 +184,7 @@ export default function ProtectedLayout() {
     }
     setUserCollapsed((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-      } catch {
-        // ignore storage errors
-      }
+      setScopedStorageItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
       return next;
     });
   };
@@ -257,8 +301,6 @@ export default function ProtectedLayout() {
     return () => window.removeEventListener("mousedown", onOutside);
   }, [notifOpen]);
 
-  if (!user) return <Navigate to="/login" replace />;
-
   if (!reviewHydrated) {
     return (
       <div
@@ -270,6 +312,8 @@ export default function ProtectedLayout() {
       </div>
     );
   }
+
+  if (!user) return <Navigate to="/login" replace />;
 
   const active =
     location.pathname === "/settings"
@@ -1104,11 +1148,11 @@ export default function ProtectedLayout() {
                 </small>
               </div>
             </Link>
-            {!effectiveCollapsed && (
-              <Button className="icon-button" ariaLabel="Keluar" onClick={logout}>
-                <Icon name="close" size={16} />
-              </Button>
-            )}
+            <SignOutButton
+              variant="icon"
+              className="sidebar-signout-btn"
+              onBeforeSignOut={() => setMobileDrawerOpen(false)}
+            />
           </div>
         </div>
       </aside>
@@ -1120,7 +1164,7 @@ export default function ProtectedLayout() {
               type="button"
               onClick={() => setMobileDrawerOpen((v) => !v)}
               aria-label="Buka menu sidebar"
-              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[40px] min-h-[40px]"
+              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[44px] min-h-[44px]"
             >
               ☰
             </button>
@@ -1265,7 +1309,12 @@ export default function ProtectedLayout() {
               )}
             </div>
 
-            <Link to="/profile" style={{ textDecoration: "none" }}>
+            <Link
+              to="/profile"
+              className="topbar-profile-link"
+              aria-label={`Profil ${user.name}`}
+              style={{ textDecoration: "none" }}
+            >
               <div className="profile">
                 <div className="avatar">{user.name.charAt(0)}</div>
                 <div>
@@ -1278,7 +1327,10 @@ export default function ProtectedLayout() {
         </header>
         <div className="content">
           <AnimatePresence mode="wait" initial={false}>
-            <PageTransition key={location.pathname} routeKey={location.pathname}>
+            <PageTransition
+              key={`${location.pathname}:${adoptedDataRefreshKey}`}
+              routeKey={location.pathname}
+            >
               <FrozenOutlet />
             </PageTransition>
           </AnimatePresence>
@@ -1312,6 +1364,31 @@ export default function ProtectedLayout() {
             onDictionariesChanged={setDictionaries}
           />
         </Suspense>
+      )}
+      <ConsentUpdateModal
+        open={Boolean(authUser && consentRequired)}
+        onAccept={(patch) =>
+          updateAuthProfile({
+            display_name: authProfile?.display_name || user.name || "Pelajar GoRaku",
+            jlpt_level: authProfile?.jlpt_level || user.level || "N4",
+            ...patch,
+          })
+        }
+        onSignOut={handleLogout}
+      />
+      {authUser && !consentRequired && legacyPromptSummary && (
+        <LegacyAdoptionModal
+          open={Boolean(legacyPromptSummary)}
+          userId={authUser.id}
+          userEmail={authUser.email ?? ""}
+          summary={legacyPromptSummary}
+          onClose={() => setLegacyPromptSummary(null)}
+          onAdopted={() => {
+            setLegacyPromptSummary(null);
+            setAdoptedDataRefreshKey((n) => n + 1);
+            void listDictionaries().then(setDictionaries).catch(() => {});
+          }}
+        />
       )}
     </div>
   );

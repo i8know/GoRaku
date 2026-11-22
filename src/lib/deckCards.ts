@@ -8,6 +8,7 @@ import { toHiragana } from "./kana";
 import { compressBubbleImageForCard } from "./mangaCoordinates";
 import { SEED_TOTALS, useAppStore } from "../store/useAppStore";
 import { useReviewStore, waitForReviewStoreHydration } from "../store/useReviewStore";
+import { setScopedStorageItem } from "./userStorageScope";
 
 export const DECK_LEVELS = ["N5", "N4", "N3", "N2", "N1", "Campuran"] as const;
 export const DECK_KINDS = ["Core", "Anime", "Novel", "Manga", "YouTube"] as const;
@@ -334,13 +335,7 @@ async function seedStarterDecks(): Promise<void> {
     }
   }
 
-  try {
-    if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
-      localStorage.setItem(SEED_FLAG, "1");
-    }
-  } catch {
-    /* abaikan bila localStorage diblokir */
-  }
+  setScopedStorageItem(SEED_FLAG, "1");
 }
 
 function commonSubdeckRoot(subdecks: string[]): string {
@@ -396,6 +391,10 @@ async function recoverOrphanedDecks(): Promise<void> {
 }
 
 let seedPromise: Promise<void> | null = null;
+export function resetDeckCardsSeedState(): void {
+  seedPromise = null;
+}
+
 export async function ensureSeeded(): Promise<void> {
   if (!seedPromise) {
     seedPromise = seedStarterDecks().catch((e) => console.warn("Seeding skipped", e));
