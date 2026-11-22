@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
+import SignOutButton from "../components/SignOutButton";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
@@ -136,6 +137,26 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
           <label className="field"><span>Target level JLPT</span>
             <select value={level} onChange={(e) => setLevel(e.target.value)}>{["N5", "N4", "N3", "N2", "N1"].map((l) => <option key={l}>{l}</option>)}</select>
           </label>
+        </section>
+
+        <section className="st-card" aria-labelledby="settings-account-heading">
+          <div className="st-title">
+            <span><Icon name="lock" size={18} /></span>
+            <div>
+              <h2 id="settings-account-heading">Akun</h2>
+              <p>Sesi masuk pada perangkat ini</p>
+            </div>
+          </div>
+          <div className="st-row">
+            <div>
+              <strong>Email</strong>
+              <small>{authUser?.email || user?.email || "-"}</small>
+            </div>
+            <SignOutButton variant="label" />
+          </div>
+          <p className="st-note mt-3">
+            Data belajarmu tetap tersimpan di perangkat ini. Sinkronisasi antar perangkat belum aktif.
+          </p>
         </section>
 
         <section className="st-card">

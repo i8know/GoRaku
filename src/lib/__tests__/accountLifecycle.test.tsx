@@ -117,7 +117,7 @@ describe("Task 5 — Profil, Privasi/Syarat, Persetujuan, Ekspor Data & Hapus Ak
     expect(privHtml).toContain("Kebijakan Privasi");
     expect(privHtml).toContain("Draf");
     expect(privHtml).toContain("perlu ditinjau");
-    expect(privHtml).toContain("[ISI OLEH PEMILIK]");
+    expect(privHtml).toContain("Pengelola layanan:");
     expect(privHtml).toContain(CURRENT_CONSENT_VERSION);
 
     const termsHtml = renderToString(
@@ -127,7 +127,7 @@ describe("Task 5 — Profil, Privasi/Syarat, Persetujuan, Ekspor Data & Hapus Ak
     );
     expect(termsHtml).toContain("Syarat Penggunaan");
     expect(termsHtml).toContain("Draf");
-    expect(termsHtml).toContain("[ISI OLEH PEMILIK]");
+    expect(termsHtml).toContain("Nama Pengelola:");
 
     const landingHtml = renderToString(
       <MemoryRouter initialEntries={["/"]}>

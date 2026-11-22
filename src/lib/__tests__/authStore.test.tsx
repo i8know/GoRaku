@@ -346,11 +346,25 @@ describe("Task 2 — Validasi Kunci Supabase, useAuthStore, Helper & Route Guard
     }
 
     // 4. LoginPage dalam keadaan tanpa env menampilkan pesan konfigurasi & tombol Masuk dengan Google + tautan Privasi/Syarat
-    const loginHtml = renderToString(
-      <MemoryRouter initialEntries={["/login?error_description=Akses+ditolak"]}>
-        <LoginPage />
-      </MemoryRouter>,
-    );
+    const authInit = useAuthStore.getInitialState();
+    const prevInit = {
+      status: authInit.status,
+      isConfigured: authInit.isConfigured,
+      configError: authInit.configError,
+    };
+    let loginHtml = "";
+    try {
+      authInit.status = "signedOut";
+      authInit.isConfigured = false;
+      authInit.configError = null;
+      loginHtml = renderToString(
+        <MemoryRouter initialEntries={["/login?error_description=Akses+ditolak"]}>
+          <LoginPage />
+        </MemoryRouter>,
+      );
+    } finally {
+      Object.assign(authInit, prevInit);
+    }
     expect(loginHtml).toContain("Autentikasi Belum Dikonfigurasi");
     expect(loginHtml).toContain("Masuk dengan Google");
     expect(loginHtml).toContain("Lupa kata sandi?");

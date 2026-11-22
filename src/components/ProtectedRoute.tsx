@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore, type AuthStatus } from "../store/useAuthStore";
+import { isIntentionalSignOutActive } from "./SignOutButton";
 
 export interface ProtectedRouteProps {
   children?: ReactNode;
@@ -57,7 +58,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (decision.action === "redirect") {
-    return <Navigate to={decision.to} replace state={decision.state} />;
+    const redirectState = isIntentionalSignOutActive() ? null : decision.state;
+    return <Navigate to={decision.to} replace state={redirectState} />;
   }
 
   return children ? <>{children}</> : <Outlet />;

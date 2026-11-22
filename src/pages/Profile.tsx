@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead } from "../ui";
+import SignOutButton from "../components/SignOutButton";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
@@ -236,9 +237,12 @@ export default function ProfilePage() {
                   <h2>{displayName}</h2>
                   <p className="prof-level">Target JLPT {user.level}</p>
                   <p className="prof-email">{user.email}</p>
-                  <Button className="prof-edit-btn" onClick={() => { setEditMode(true); setNameError(""); }}>
-                    <Icon name="edit" size={14} /> Edit profil
-                  </Button>
+                  <div className="prof-header-actions">
+                    <Button className="prof-edit-btn" onClick={() => { setEditMode(true); setNameError(""); }}>
+                      <Icon name="edit" size={14} /> Edit profil
+                    </Button>
+                    <SignOutButton variant="label" />
+                  </div>
                 </>
               ) : (
                 <form className="prof-edit-form" onSubmit={(e) => void handleSaveProfile(e)} noValidate>

@@ -5,6 +5,7 @@ import PageTransition, { FrozenOutlet } from "./PageTransition";
 import { Icon, Button } from "../ui";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { useToastStore } from "../store/useToastStore";
 import { reviewedToday, useReviewStore, useReviewStoreHydrated } from "../store/useReviewStore";
 import { liveDeckStats } from "../lib/deckStats";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
@@ -13,6 +14,10 @@ import { isMangaBook } from "../lib/bookUtils";
 import { speakJapanese } from "../lib/tts";
 import ConsentUpdateModal, { needsConsentUpdate } from "./ConsentUpdateModal";
 import LegacyAdoptionModal from "./LegacyAdoptionModal";
+import SignOutButton, {
+  markIntentionalSignOut,
+  scheduleIntentionalSignOutReset,
+} from "./SignOutButton";
 import {
   shouldPromptLegacyAdoption,
   type LegacyDataSummary,
@@ -112,8 +117,16 @@ export default function ProtectedLayout() {
   }, [authUser?.id]);
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/", { replace: true });
+    markIntentionalSignOut();
+    try {
+      const res = await signOut();
+      if (res?.error) {
+        useToastStore.getState().notify(res.error);
+      }
+      navigate("/login", { replace: true, state: null });
+    } finally {
+      scheduleIntentionalSignOutReset();
+    }
   };
 
   // User's manual sidebar collapse preference (disimpan per pengguna)
@@ -1135,11 +1148,11 @@ export default function ProtectedLayout() {
                 </small>
               </div>
             </Link>
-            {!effectiveCollapsed && (
-              <Button className="icon-button" ariaLabel="Keluar" onClick={() => void handleLogout()}>
-                <Icon name="close" size={16} />
-              </Button>
-            )}
+            <SignOutButton
+              variant="icon"
+              className="sidebar-signout-btn"
+              onBeforeSignOut={() => setMobileDrawerOpen(false)}
+            />
           </div>
         </div>
       </aside>
@@ -1151,7 +1164,7 @@ export default function ProtectedLayout() {
               type="button"
               onClick={() => setMobileDrawerOpen((v) => !v)}
               aria-label="Buka menu sidebar"
-              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[40px] min-h-[40px]"
+              className="mr-1 rounded-lg border border-[var(--garis)] bg-[var(--panel)] px-2.5 py-1.5 text-xs font-bold text-[var(--tinta)] min-w-[44px] min-h-[44px]"
             >
               ☰
             </button>
@@ -1296,7 +1309,12 @@ export default function ProtectedLayout() {
               )}
             </div>
 
-            <Link to="/profile" style={{ textDecoration: "none" }}>
+            <Link
+              to="/profile"
+              className="topbar-profile-link"
+              aria-label={`Profil ${user.name}`}
+              style={{ textDecoration: "none" }}
+            >
               <div className="profile">
                 <div className="avatar">{user.name.charAt(0)}</div>
                 <div>
