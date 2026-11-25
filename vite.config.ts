@@ -10,9 +10,10 @@ import { injectSupabaseConnectSrc } from './src/lib/csp.ts'
 
 
 // Vite config — https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   // .figma/make/deploy-preview passes `--mode development` for cached-preview builds.
   const emitSourcemaps = mode === 'development'
+  const isDevServe = command === 'serve'
   const basePath = normalizeBasePath(
     process.env.FIGMA_PUBLIC_URL || process.env.APP_BASE_PATH,
   )
@@ -32,7 +33,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       figmaSiteConfiguration(siteConfiguration, basePath),
-      supabaseCspPlugin(rawSupabaseUrl),
+      supabaseCspPlugin(rawSupabaseUrl, isDevServe),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
@@ -86,14 +87,14 @@ type FigmaSiteConfiguration = {
   }
 }
 
-/** Menyuntikkan origin exact `VITE_SUPABASE_URL` ke direktif `connect-src` CSP saat build/dev. */
-function supabaseCspPlugin(rawSupabaseUrl: string): Plugin {
+/** Menyuntikkan origin exact `VITE_SUPABASE_URL` (dan `ws: wss:` hanya saat dev serve) ke `connect-src` CSP. */
+function supabaseCspPlugin(rawSupabaseUrl: string, allowDevWebSockets: boolean): Plugin {
   return {
     name: 'goraku-supabase-csp',
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
-        return injectSupabaseConnectSrc(html, rawSupabaseUrl)
+        return injectSupabaseConnectSrc(html, rawSupabaseUrl, { allowDevWebSockets })
       },
     },
   }
