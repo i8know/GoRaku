@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 import {
   evaluateSupabaseConfig,
+  extractSafeUrlAuthError,
   formatSupabaseAuthError,
   getAuthRedirectUrl,
   getPasswordStrength,
@@ -205,9 +206,25 @@ describe("Task 2 — Validasi Kunci Supabase, useAuthStore, Helper & Route Guard
     );
 
     expect(getPasswordStrength("12345").valid).toBe(false);
-    expect(getPasswordStrength("abcdef").score).toBe(1);
+    expect(getPasswordStrength("abcdef").valid).toBe(false);
+    expect(getPasswordStrength("abcdefgh").score).toBe(1);
+    expect(getPasswordStrength("abcdefgh").valid).toBe(true);
     expect(getPasswordStrength("Abcdef12").score).toBe(2);
     expect(getPasswordStrength("GoRaku2026!#").score).toBe(3);
+
+    // Anti content spoofing: error_description bebas di URL tidak boleh dipantulkan mentah
+    const spoofed = extractSafeUrlAuthError(
+      "?error_description=Akun+dibajak+hubungi+https://evil.example",
+      "",
+    );
+    expect(spoofed).not.toContain("evil.example");
+    expect(spoofed).not.toContain("dibajak");
+    expect(spoofed).toContain("Autentikasi gagal");
+    expect(extractSafeUrlAuthError("?error=access_denied", "")).toContain("dibatalkan");
+    expect(extractSafeUrlAuthError("", "#error_code=otp_expired&error_description=evil")).toContain(
+      "kedaluwarsa",
+    );
+    expect(extractSafeUrlAuthError("", "")).toBe("");
   });
 
   it("useAuthStore: restore sesi via getClaims + profiles, sign-in gagal/berhasil, email belum dikonfirmasi, dan sign-out", async () => {
@@ -290,6 +307,29 @@ describe("Task 2 — Validasi Kunci Supabase, useAuthStore, Helper & Route Guard
         redirectTo: expect.stringContaining("/atur-ulang-sandi"),
       },
     );
+
+    // Ubah sandi dengan currentPassword wajib memverifikasi sandi lama terlebih dahulu
+    (okMock.client.auth.signInWithPassword as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      data: { session: null, user: null },
+      error: new Error("Invalid login credentials"),
+    });
+    const wrongCurRes = await useAuthStore
+      .getState()
+      .updatePassword("SandiBaru2026!", "SandiLamaSalah");
+    expect(wrongCurRes.error).toBe("Kata sandi saat ini tidak cocok.");
+    expect(okMock.client.auth.updateUser).not.toHaveBeenCalled();
+
+    (okMock.client.auth.signInWithPassword as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      data: { session: sampleSession, user: sampleUser },
+      error: null,
+    });
+    const okUpdateRes = await useAuthStore
+      .getState()
+      .updatePassword("SandiBaru2026!", "SandiLamaBenar");
+    expect(okUpdateRes.error).toBeNull();
+    expect(okMock.client.auth.updateUser).toHaveBeenCalledWith({
+      password: "SandiBaru2026!",
+    });
 
     cleanup();
   });

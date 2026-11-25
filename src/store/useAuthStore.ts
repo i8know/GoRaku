@@ -19,6 +19,7 @@ import {
 import { useAppStore } from "./useAppStore";
 
 export type AuthStatus = "loading" | "signedOut" | "signedIn";
+export type ProfileLoadState = "idle" | "loaded" | "error";
 
 export interface AuthActionResult {
   error: string | null;
@@ -62,6 +63,7 @@ interface AuthStoreState {
   user: User | null;
   status: AuthStatus;
   profile: ProfileRecord | null;
+  profileLoadState: ProfileLoadState;
   recoveryMode: boolean;
   isConfigured: boolean;
   configError: string | null;
@@ -73,7 +75,7 @@ interface AuthStoreState {
   signInWithGoogle: (redirectPath?: string) => Promise<AuthActionResult>;
   signOut: () => Promise<AuthActionResult>;
   sendPasswordReset: (email: string) => Promise<AuthActionResult>;
-  updatePassword: (newPassword: string) => Promise<AuthActionResult>;
+  updatePassword: (newPassword: string, currentPassword?: string) => Promise<AuthActionResult>;
   resendConfirmation: (email: string) => Promise<AuthActionResult>;
   fetchProfile: () => Promise<ProfileRecord | null>;
   updateProfile: (patch: UpdateProfileParams) => Promise<AuthActionResult>;
@@ -98,9 +100,9 @@ async function notifyScopeHandler(userId: string | null): Promise<void> {
 async function loadUserProfile(
   client: SupabaseClient,
   userId: string,
-): Promise<ProfileRecord | null> {
+): Promise<{ profile: ProfileRecord | null; state: ProfileLoadState }> {
   if (typeof (client as unknown as { from?: unknown }).from !== "function") {
-    return null;
+    return { profile: null, state: "idle" };
   }
   try {
     const { data, error } = await client
@@ -108,10 +110,10 @@ async function loadUserProfile(
       .select("user_id, display_name, jlpt_level, consented_at, consent_version, created_at, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
-    if (error || !data) return null;
-    return data as ProfileRecord;
+    if (error) return { profile: null, state: "error" };
+    return { profile: (data as ProfileRecord | null) ?? null, state: "loaded" };
   } catch {
-    return null;
+    return { profile: null, state: "error" };
   }
 }
 
@@ -123,6 +125,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
       session: null,
       user: null,
       profile: null,
+      profileLoadState: "idle",
       recoveryMode: false,
       status: "signedOut",
     });
@@ -138,8 +141,8 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
 
     const existingProfile =
       get().profile?.user_id === user.id ? get().profile : null;
-    const loadedProfile =
-      (await loadUserProfile(client, user.id)) ?? existingProfile;
+    const fetched = await loadUserProfile(client, user.id);
+    const loadedProfile = fetched.profile ?? existingProfile;
 
     useAppStore
       .getState()
@@ -149,6 +152,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
       session: nextSession,
       user,
       profile: loadedProfile,
+      profileLoadState: fetched.state,
       status: "signedIn",
       ...(extraPatch ?? {}),
     });
@@ -215,6 +219,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
     user: null,
     status: isSupabaseConfigured ? "loading" : "signedOut",
     profile: null,
+    profileLoadState: "idle",
     recoveryMode: false,
     isConfigured: isSupabaseConfigured,
     configError: supabaseConfigError,
@@ -245,6 +250,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
           session: null,
           user: null,
           profile: null,
+          profileLoadState: "idle",
           recoveryMode: false,
           status: "signedOut",
         });
@@ -445,10 +451,30 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
       }
     },
 
-    updatePassword: async (newPassword) => {
+    updatePassword: async (newPassword, currentPassword) => {
       const client = get()._client;
       if (!client) return { error: get().configError || MISSING_CONFIG_ERROR };
       try {
+        if (currentPassword !== undefined) {
+          const email = get().user?.email;
+          if (!currentPassword) {
+            return { error: "Masukkan kata sandi saat ini untuk memverifikasi identitas Anda." };
+          }
+          if (!email) {
+            return { error: "Email akun tidak ditemukan untuk verifikasi kata sandi saat ini." };
+          }
+          const { error: verifyErr } = await client.auth.signInWithPassword({
+            email,
+            password: currentPassword,
+          });
+          if (verifyErr) {
+            const lower = (verifyErr.message ?? "").toLowerCase();
+            if (lower.includes("invalid login credentials")) {
+              return { error: "Kata sandi saat ini tidak cocok." };
+            }
+            return { error: formatSupabaseAuthError(verifyErr) };
+          }
+        }
         const { data, error } = await client.auth.updateUser({
           password: newPassword,
         });
@@ -488,14 +514,16 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
       const client = get()._client;
       const currentUser = get().user;
       if (!client || !currentUser) return null;
-      const loaded = await loadUserProfile(client, currentUser.id);
-      if (loaded) {
-        set({ profile: loaded });
+      const fetched = await loadUserProfile(client, currentUser.id);
+      if (fetched.profile) {
+        set({ profile: fetched.profile, profileLoadState: fetched.state });
         useAppStore
           .getState()
-          .setAuthUser(mapSupabaseUserToAppUser(currentUser, loaded));
+          .setAuthUser(mapSupabaseUserToAppUser(currentUser, fetched.profile));
+      } else {
+        set({ profileLoadState: fetched.state });
       }
-      return loaded;
+      return fetched.profile;
     },
 
     updateProfile: async (patch) => {
@@ -546,7 +574,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
             consent_version:
               patch.consent_version ?? prevProfile?.consent_version ?? null,
           };
-          set({ profile: updatedProfile });
+          set({ profile: updatedProfile, profileLoadState: "loaded" });
           useAppStore
             .getState()
             .setAuthUser(mapSupabaseUserToAppUser(currentUser, updatedProfile));
@@ -580,6 +608,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => {
         session: null,
         user: null,
         profile: null,
+        profileLoadState: "idle",
         status: "signedOut",
         recoveryMode: false,
         isConfigured: isSupabaseConfigured,

@@ -1,8 +1,8 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { deckDexie, getCards, type ReviewLogEntry } from "./deckDb";
 import {
+  clearLegacyLocalData,
   getLegacyAdoptedBy,
-  LEGACY_ADOPTED_BY_KEY,
   LEGACY_DECLINED_KEY_PREFIX,
 } from "./legacyAdoption";
 import { lexiconDb } from "./lexiconDb";
@@ -244,16 +244,20 @@ export async function deleteCurrentUserAccount(options?: {
   }
 
   // Penghapusan di server berhasil -> bersihkan seluruh data lokal milik user ini tanpa menghapus data akun lain
+  const adoptedLegacyByThisUser = getLegacyAdoptedBy() === userId;
   await Promise.allSettled([flushReviewStorageWrites()]);
   await switchUserStorageScope(null);
   await clearScopedLocalDataForUser(userId);
 
+  if (adoptedLegacyByThisUser) {
+    // Hapus juga salinan warisan pra-B1 yang sebelumnya diadopsi akun ini agar tidak tersisa
+    // di perangkat atau ditawarkan ulang kepada akun berikutnya.
+    await clearLegacyLocalData();
+  }
+
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem(`${LEGACY_DECLINED_KEY_PREFIX}::${userId}`);
-      if (getLegacyAdoptedBy() === userId) {
-        localStorage.removeItem(LEGACY_ADOPTED_BY_KEY);
-      }
     }
   } catch {
     // Abaikan galat pembersihan kunci tambahan

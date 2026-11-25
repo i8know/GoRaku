@@ -95,8 +95,12 @@ export default function ProtectedLayout() {
   const signOut = useAuthStore((s) => s.signOut);
   const authUser = useAuthStore((s) => s.user);
   const authProfile = useAuthStore((s) => s.profile);
+  const authProfileLoadState = useAuthStore((s) => s.profileLoadState);
   const updateAuthProfile = useAuthStore((s) => s.updateProfile);
-  const consentRequired = needsConsentUpdate(authProfile);
+  const consentRequired = needsConsentUpdate(authProfile, {
+    profileLoadState: authProfileLoadState,
+    userMetadataConsentVersion: authUser?.user_metadata?.consent_version,
+  });
   const [legacyPromptSummary, setLegacyPromptSummary] = useState<LegacyDataSummary | null>(null);
   const [adoptedDataRefreshKey, setAdoptedDataRefreshKey] = useState(0);
 

@@ -13,6 +13,11 @@ import {
   DELETE_ACCOUNT_CONFIRMATION_WORD,
   deleteCurrentUserAccount,
 } from "../accountData";
+import {
+  adoptLegacyDataForUser,
+  getLegacyAdoptedBy,
+  shouldPromptLegacyAdoption,
+} from "../legacyAdoption";
 import { flushReviewLogs, getCards, putCards, switchDeckDatabaseScope } from "../deckDb";
 import { lexiconDb, switchLexiconDatabaseScope } from "../lexiconDb";
 import { switchQuestionPackDatabaseScope } from "../questionPackStorage";
@@ -140,8 +145,16 @@ describe("Task 5 — Profil, Privasi/Syarat, Persetujuan, Ekspor Data & Hapus Ak
     expect(landingHtml).toContain('href="/syarat"');
   });
 
-  it("mendeteksi kebutuhan pembaruan consent_version dan merender ConsentUpdateModal", () => {
+  it("mendeteksi kebutuhan pembaruan consent_version (termasuk fail-closed saat profil hilang/gagal) dan merender ConsentUpdateModal", () => {
     expect(needsConsentUpdate(null)).toBe(false);
+    expect(needsConsentUpdate(null, { profileLoadState: "loaded" })).toBe(true);
+    expect(needsConsentUpdate(null, { profileLoadState: "error" })).toBe(true);
+    expect(
+      needsConsentUpdate(null, {
+        profileLoadState: "error",
+        userMetadataConsentVersion: CURRENT_CONSENT_VERSION,
+      }),
+    ).toBe(false);
     expect(
       needsConsentUpdate({
         user_id: USER_A,
@@ -384,6 +397,100 @@ describe("Task 5 — Profil, Privasi/Syarat, Persetujuan, Ekspor Data & Hapus Ak
     expect(localStorage.getItem(`goraku-device-id::${USER_A}`)).toBeNull();
     expect(localStorage.getItem(getScopedKey(LEGACY_APP_STORAGE_KEY, USER_B))).toBeTruthy();
     expect(localStorage.getItem("japanese-learning-storage")).toBe('{"legacy":true}');
+
+    cleanup();
+  });
+
+  it("menghapus salinan data warisan pra-B1 ketika akun yang mengadopsinya dihapus sehingga tidak bocor ke akun berikutnya", async () => {
+    initUserStorageScopeSync({ lockUnauthenticated: true });
+
+    // Siapkan data warisan pra-B1
+    localStorage.setItem(
+      LEGACY_APP_STORAGE_KEY,
+      JSON.stringify({
+        state: {
+          decks: [
+            {
+              id: "legacy-private-deck",
+              title: "Deck Pribadi Pra-Akun",
+              level: "N3 • Core",
+              kind: "Core",
+              due: 0,
+              total: 1,
+              progress: 0,
+              kanji: "秘",
+              color: "indigo",
+              updated: "Kemarin",
+            },
+          ],
+          minedQueue: [],
+          libraryItems: [],
+          settings: useAppStore.getState().settings,
+          deckLimits: {},
+        },
+        version: 6,
+      }),
+    );
+
+    const userA = makeUser(USER_A, "email", "adopter@example.com");
+    let currentSession: Session | null = makeSession(userA);
+    let authCb: ((event: string, session: Session | null) => void) | null = null;
+
+    const mockClient = {
+      auth: {
+        getSession: vi.fn(async () => ({ data: { session: currentSession }, error: null })),
+        getClaims: vi.fn(async () => ({
+          data: currentSession ? { claims: { sub: currentSession.user.id } } : null,
+          error: null,
+        })),
+        onAuthStateChange: vi.fn((cb: (event: string, session: Session | null) => void) => {
+          authCb = cb;
+          return { data: { subscription: { unsubscribe: vi.fn() } } };
+        }),
+        signOut: vi.fn(async () => {
+          currentSession = null;
+          authCb?.("SIGNED_OUT", null);
+          return { error: null };
+        }),
+      },
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            maybeSingle: vi.fn(async () => ({
+              data: {
+                user_id: USER_A,
+                display_name: "Adopter",
+                jlpt_level: "N3",
+                consented_at: "2026-11-19T00:00:00.000Z",
+                consent_version: CURRENT_CONSENT_VERSION,
+              },
+              error: null,
+            })),
+          })),
+        })),
+      })),
+      functions: {
+        invoke: vi.fn(async () => ({ data: { deleted: true, userId: USER_A }, error: null })),
+      },
+    } as unknown as SupabaseClient;
+
+    const cleanup = useAuthStore.getState().init(mockClient);
+    await vi.waitFor(() => expect(useAuthStore.getState().status).toBe("signedIn"));
+
+    await adoptLegacyDataForUser(USER_A);
+    expect(getLegacyAdoptedBy()).toBe(USER_A);
+    expect(localStorage.getItem(LEGACY_APP_STORAGE_KEY)).toBeTruthy();
+
+    // Hapus akun pengadopsi -> salinan warisan juga harus ikut terhapus
+    const delRes = await deleteCurrentUserAccount({ userId: USER_A });
+    expect(delRes.error).toBeNull();
+    expect(localStorage.getItem(getScopedKey(LEGACY_APP_STORAGE_KEY, USER_A))).toBeNull();
+    expect(localStorage.getItem(LEGACY_APP_STORAGE_KEY)).toBeNull();
+    expect(getLegacyAdoptedBy()).toBeNull();
+
+    // Pengguna B masuk di peramban yang sama -> tidak boleh ditawari data milik A yang sudah dihapus
+    await switchUserStorageScope(USER_B);
+    expect(await shouldPromptLegacyAdoption(USER_B)).toBeNull();
 
     cleanup();
   });

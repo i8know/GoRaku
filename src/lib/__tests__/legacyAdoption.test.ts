@@ -26,6 +26,7 @@ import {
 } from "../reviewStorage";
 import {
   adoptLegacyDataForUser,
+  clearLegacyLocalData,
   deferLegacyForSession,
   detectLegacyDataSummary,
   getLegacyAdoptedBy,
@@ -459,5 +460,23 @@ describe("Task 4 — Adopsi Data Lokal Lama ke Akun Pertama", () => {
     expect(localStorage.getItem(getScopedKey(LEGACY_APP_STORAGE_KEY, USER_A))).toBeNull();
     expect(useAppStore.getState().decks.some((d) => d.id === "deck-old-1")).toBe(false);
     expect(localStorage.getItem(LEGACY_ADOPTED_BY_KEY)).toBeNull();
+  });
+
+  it("clearLegacyLocalData menghapus seluruh data warisan dan mencegah ditawarkan ke akun berikutnya", async () => {
+    await seedLegacyBrowserData();
+    initUserStorageScopeSync({ lockUnauthenticated: true });
+    await switchUserStorageScope(USER_A);
+
+    expect(await shouldPromptLegacyAdoption(USER_A)).not.toBeNull();
+
+    await clearLegacyLocalData();
+
+    expect(localStorage.getItem(LEGACY_APP_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(LEGACY_REVIEW_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(LEGACY_EXAM_SESSIONS_KEY)).toBeNull();
+    expect(localStorage.getItem(LEGACY_ADOPTED_BY_KEY)).toBeNull();
+    expect((await detectLegacyDataSummary()).hasData).toBe(false);
+    expect(await shouldPromptLegacyAdoption(USER_A)).toBeNull();
+    expect(await shouldPromptLegacyAdoption(USER_B)).toBeNull();
   });
 });

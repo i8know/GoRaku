@@ -8,10 +8,12 @@ import {
 } from "./reviewStorage";
 import { isSupabaseConfigured } from "./supabase";
 import {
+  getActiveStorageUserId,
   getOrCreateDeviceId,
   normalizeScopeUserId,
   setActiveStorageUserId,
   setUnauthenticatedScopeLocked,
+  USER_DB_CLOSE_CHANNEL,
   withPersistWriteSuppressed,
 } from "./userStorageScope";
 import { useAppStore } from "../store/useAppStore";
@@ -72,9 +74,11 @@ export function switchUserStorageScope(userId: string | null): Promise<void> {
   return run;
 }
 
+let closeChannel: BroadcastChannel | null = null;
+
 /**
  * Mengaktifkan proteksi ruang penyimpanan tanpa autentikasi (bila Supabase aktif) dan
- * mendaftarkan pengalih ruang ke store autentikasi.
+ * mendaftarkan pengalih ruang ke store autentikasi serta pendengar penutupan DB lintas tab.
  */
 export function initUserStorageScopeSync(
   options: { lockUnauthenticated?: boolean } = {},
@@ -82,10 +86,34 @@ export function initUserStorageScopeSync(
   const shouldLock = options.lockUnauthenticated ?? isSupabaseConfigured;
   setUnauthenticatedScopeLocked(shouldLock);
   registerAuthScopeChangeHandler(switchUserStorageScope);
+
+  if (!closeChannel && typeof BroadcastChannel === "function") {
+    try {
+      closeChannel = new BroadcastChannel(USER_DB_CLOSE_CHANNEL);
+      closeChannel.onmessage = (ev: MessageEvent) => {
+        const msg = ev.data as { type?: string; userId?: string } | null;
+        if (msg?.type !== "close-user-dbs" || typeof msg.userId !== "string") return;
+        const currentUid = getActiveStorageUserId();
+        if (currentUid && currentUid === normalizeScopeUserId(msg.userId)) {
+          void switchUserStorageScope(null);
+        }
+      };
+    } catch {
+      closeChannel = null;
+    }
+  }
 }
 
 export function resetScopeCoordinatorForTest(): void {
   hasAppliedInitialScope = false;
   appliedScopeUserId = null;
   scopeSwitchQueue = Promise.resolve();
+  if (closeChannel) {
+    try {
+      closeChannel.close();
+    } catch {
+      // Abaikan
+    }
+    closeChannel = null;
+  }
 }
