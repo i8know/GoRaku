@@ -1,4 +1,9 @@
 import { strToU8, zipSync } from "fflate";
+import {
+  MAX_COMIC_INFO_BYTES,
+  MAX_MANGA_IMAGE_ENTRY_BYTES,
+  MAX_ZIP_ENTRIES,
+} from "./archiveLimits";
 import { isQuotaExceededError } from "./bookStorage";
 import {
   lexiconDb,
@@ -434,6 +439,12 @@ export async function addMangaArchiveFile(
       );
     }
 
+    if (entries.length > MAX_ZIP_ENTRIES) {
+      throw new Error(
+        `Arsip "${file.name}" memiliki terlalu banyak entri (melebihi batas aman ${MAX_ZIP_ENTRIES.toLocaleString("id-ID")} entri).`,
+      );
+    }
+
     const entryMap = new Map<string, (typeof entries)[number]>();
     const imagePageNames: string[] = [];
     let comicInfoEntry: (typeof entries)[number] | undefined;
@@ -449,6 +460,14 @@ export async function addMangaArchiveFile(
       }
 
       if (isValidMangaImageEntry(normName)) {
+        if (
+          typeof entry.uncompressedSize === "number" &&
+          entry.uncompressedSize > MAX_MANGA_IMAGE_ENTRY_BYTES
+        ) {
+          throw new Error(
+            `Ukuran halaman "${normName}" melebihi batas aman (${Math.round(MAX_MANGA_IMAGE_ENTRY_BYTES / (1024 * 1024))} MB).`,
+          );
+        }
         entryMap.set(normName, entry);
         imagePageNames.push(normName);
       }
@@ -462,12 +481,22 @@ export async function addMangaArchiveFile(
 
     const sortedPages = naturalSortPageNames(imagePageNames);
 
-    // Baca ComicInfo.xml bila ada (opsional)
+    // Baca ComicInfo.xml bila ada (opsional, dibatasi ukuran aman anti zip-bomb)
     let comicInfo: ComicInfoMetadata = {};
     if (comicInfoEntry?.getData) {
+      if (
+        typeof comicInfoEntry.uncompressedSize === "number" &&
+        comicInfoEntry.uncompressedSize > MAX_COMIC_INFO_BYTES
+      ) {
+        throw new Error(
+          `Ukuran ComicInfo.xml di "${file.name}" melebihi batas aman (${Math.round(MAX_COMIC_INFO_BYTES / (1024 * 1024))} MB).`,
+        );
+      }
       try {
         const xmlText = String(await comicInfoEntry.getData(new TextWriter("utf-8")));
-        comicInfo = parseComicInfoXml(xmlText);
+        if (xmlText.length <= MAX_COMIC_INFO_BYTES) {
+          comicInfo = parseComicInfoXml(xmlText);
+        }
       } catch {
         // ComicInfo.xml opsional; abaikan bila gagal diurai
       }
@@ -766,6 +795,10 @@ export async function createMangaPageSource(
   const { BlobReader, BlobWriter, ZipReader } = await loadZipJs();
   const zipReader = new ZipReader(new BlobReader(fileRec.blob));
   const entries = await zipReader.getEntries();
+  if (entries.length > MAX_ZIP_ENTRIES) {
+    await zipReader.close().catch(() => {});
+    throw new Error("Jumlah entri arsip manga melebihi batas aman.");
+  }
   const entryMap = new Map<string, (typeof entries)[number]>();
 
   for (const entry of entries) {
@@ -789,12 +822,25 @@ export async function createMangaPageSource(
       if (!entry || !entry.getData) {
         throw new Error(`Halaman "${pageName}" tidak ditemukan di dalam arsip.`);
       }
-      const nextTask = zipReadQueue.then(
-        () =>
-          entry.getData!(
-            new BlobWriter(getImageMimeType(pageName)),
-          ) as Promise<Blob>,
-      );
+      if (
+        typeof entry.uncompressedSize === "number" &&
+        entry.uncompressedSize > MAX_MANGA_IMAGE_ENTRY_BYTES
+      ) {
+        throw new Error(
+          `Ukuran halaman "${pageName}" melebihi batas aman (${Math.round(MAX_MANGA_IMAGE_ENTRY_BYTES / (1024 * 1024))} MB).`,
+        );
+      }
+      const nextTask = zipReadQueue.then(async () => {
+        const blob = (await entry.getData!(
+          new BlobWriter(getImageMimeType(pageName)),
+        )) as Blob;
+        if (blob.size > MAX_MANGA_IMAGE_ENTRY_BYTES) {
+          throw new Error(
+            `Ukuran hasil dekompresi halaman "${pageName}" melebihi batas aman.`,
+          );
+        }
+        return blob;
+      });
       zipReadQueue = nextTask.catch(() => {});
       return await nextTask;
     },

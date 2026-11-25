@@ -709,11 +709,30 @@ const isDangerousEpubUri = val => {
     return /^(?:javascript|vbscript):|^data:(?:text\/html|application\/xhtml\+xml)/i.test(norm)
 }
 
+export const sanitizeCssText = css => String(css ?? '')
+    .replace(/expression\s*\(/gi, 'invalid(')
+    .replace(/-moz-binding\s*:/gi, '-invalid-binding:')
+    .replace(/@import\b[^;]*;?/gi, '')
+    .replace(/url\(\s*["']?\s*(?:javascript|vbscript|data\s*:\s*(?:text\/html|application\/xhtml\+xml|image\/svg\+xml))[^)]*\)/gi, 'url("about:invalid")')
+
+const isSafeCssProcessingInstruction = node =>
+    node?.target?.toLowerCase?.() === 'xml-stylesheet'
+    && /\btype\s*=\s*['"]text\/css['"]/i.test(node.data ?? '')
+
 const EPUB_URI_ATTRS = ['href', 'src', 'poster', 'data', 'action', 'formaction', 'background', 'srcset']
 
 export const sanitizeEpubDom = doc => {
     if (!doc?.querySelectorAll) return doc
-    for (const el of doc.querySelectorAll('script, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link[as="script" i]')) {
+    // Strip XML processing instructions (e.g. XSLT xml-stylesheet) except plain text/css
+    let topNode = doc.firstChild
+    while (topNode) {
+        const next = topNode.nextSibling
+        if (topNode.nodeType === 7 && !isSafeCssProcessingInstruction(topNode)) {
+            topNode.remove?.()
+        }
+        topNode = next
+    }
+    for (const el of doc.querySelectorAll('script, handler, listener, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link[as="script" i]')) {
         el.remove()
     }
     for (const el of doc.querySelectorAll('set, animate')) {
@@ -859,20 +878,24 @@ class Loader {
             }
             // Strip active/dangerous elements before resolving or serializing subresources
             sanitizeEpubDom(doc)
-            // replace hrefs in XML processing instructions
-            // this is mainly for SVGs that use xml-stylesheet
+            // replace hrefs in safe CSS XML processing instructions only
             if ([MIME.XHTML, MIME.SVG].includes(item.mediaType)) {
                 let child = doc.firstChild
-                while (child instanceof ProcessingInstruction) {
-                    if (child.data) {
-                        const replacedData = await replaceSeries(child.data,
-                            /(?:^|\s*)(href\s*=\s*['"])([^'"]*)(['"])/i,
-                            (_, p1, p2, p3) => this.loadHref(p2, href, parents)
-                                .then(p2 => `${p1}${p2}${p3}`))
-                        child.replaceWith(doc.createProcessingInstruction(
-                            child.target, replacedData))
+                while (child) {
+                    const next = child.nextSibling
+                    if (child.nodeType === 7) {
+                        if (!isSafeCssProcessingInstruction(child)) {
+                            child.remove?.()
+                        } else if (child.data) {
+                            const replacedData = await replaceSeries(child.data,
+                                /(?:^|\s*)(href\s*=\s*['"])([^'"]*)(['"])/i,
+                                (_, p1, p2, p3) => this.loadHref(p2, href, parents)
+                                    .then(p2 => `${p1}${p2}${p3}`))
+                            child.replaceWith(doc.createProcessingInstruction(
+                                child.target, replacedData))
+                        }
                     }
-                    child = child.nextSibling
+                    child = next
                 }
             }
             // replace hrefs (excluding anchors)
@@ -891,11 +914,6 @@ class Loader {
                     (_, p1, p2, p3) => this.loadHref(p2, href, parents)
                         .then(p2 => `${p1}${p2}${p3}`)))
             // replace and sanitize inline styles
-            const sanitizeCssText = css => css
-                .replace(/expression\s*\(/gi, 'invalid(')
-                .replace(/-moz-binding\s*:/gi, '-invalid-binding:')
-                .replace(/@import\b[^;]*;?/gi, '')
-                .replace(/url\(\s*["']?\s*(?:javascript|vbscript|data\s*:\s*(?:text\/html|application\/xhtml\+xml))[^)]*\)/gi, 'url("about:invalid")')
             for (const el of doc.querySelectorAll('style'))
                 if (el.textContent) el.textContent =
                     sanitizeCssText(await this.replaceCSS(el.textContent, href, parents))
@@ -921,7 +939,7 @@ class Loader {
         }
 
         const result = mediaType === MIME.CSS
-            ? await this.replaceCSS(str, href, parents)
+            ? sanitizeCssText(await this.replaceCSS(str, href, parents))
             : await this.replaceString(str, href, parents)
         return this.createURL(href, result, mediaType, parent)
     }
