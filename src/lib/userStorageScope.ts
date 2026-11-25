@@ -231,6 +231,24 @@ export const ALL_USER_SCOPED_BASE_KEYS = [
   DEVICE_ID_KEY_PREFIX,
 ] as const;
 
+export const USER_DB_CLOSE_CHANNEL = "goraku-close-dbs";
+
+/**
+ * Mengirim sinyal ke tab lain di origin yang sama agar menutup koneksi Dexie milik `userId`
+ * sebelum `indexedDB.deleteDatabase` dijalankan (mencegah penghapusan tersangkut `onblocked`).
+ */
+export async function broadcastCloseUserDatabases(userId: string): Promise<void> {
+  if (typeof BroadcastChannel !== "function") return;
+  try {
+    const ch = new BroadcastChannel(USER_DB_CLOSE_CHANNEL);
+    ch.postMessage({ type: "close-user-dbs", userId });
+    await new Promise<void>((resolve) => setTimeout(resolve, 40));
+    ch.close();
+  } catch {
+    // Abaikan bila BroadcastChannel diblokir lingkungan
+  }
+}
+
 /**
  * Menghapus semua kunci localStorage & DB Dexie milik seorang pengguna dari peramban ini
  * (dipakai pada penghapusan akun / pembersihan sesi lokal pengguna tersebut).
@@ -252,6 +270,7 @@ export async function clearScopedLocalDataForUser(userId: string): Promise<void>
   }
 
   if (typeof indexedDB !== "undefined" && typeof indexedDB.deleteDatabase === "function") {
+    await broadcastCloseUserDatabases(uid);
     const dbNames = [
       getDeckDbName(uid),
       getLexiconDbName(uid),
@@ -261,13 +280,25 @@ export async function clearScopedLocalDataForUser(userId: string): Promise<void>
       dbNames.map(
         (name) =>
           new Promise<void>((resolve) => {
+            let settled = false;
+            const done = () => {
+              if (!settled) {
+                settled = true;
+                resolve();
+              }
+            };
             try {
               const req = indexedDB.deleteDatabase(name);
-              req.onsuccess = () => resolve();
-              req.onerror = () => resolve();
-              req.onblocked = () => resolve();
+              req.onsuccess = done;
+              req.onerror = done;
+              req.onblocked = () => {
+                console.warn(
+                  `[GoRaku Storage] Penghapusan IndexedDB "${name}" diblokir tab lain; menunggu pelepasan koneksi.`,
+                );
+                setTimeout(done, 400);
+              };
             } catch {
-              resolve();
+              done();
             }
           }),
       ),

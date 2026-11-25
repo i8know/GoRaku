@@ -8,7 +8,7 @@ Direktori ini berisi skema database PostgreSQL + Row Level Security (`supabase/m
 
 ### Opsi A — Melalui Supabase Dashboard SQL Editor
 1. Buka dashboard proyek Supabase → **SQL Editor**.
-2. Buka berkas `supabase/migrations/202611190001_init_accounts_b1.sql`, salin seluruh isinya, lalu klik **Run**.
+2. Jalankan migrasi secara berurutan: `supabase/migrations/202611190001_init_accounts_b1.sql` lalu `supabase/migrations/202611240001_harden_constraints.sql`.
 3. Skema bersifat idempoten sehingga aman dijalankan ulang jika ada pembaruan.
 
 ### Opsi B — Melalui Supabase CLI (Opsional)
@@ -26,10 +26,11 @@ npx supabase db push
 Fungsi `supabase/functions/delete-account/index.ts` memverifikasi token JWT pemanggil (`auth.getUser()`) terlebih dahulu, lalu menggunakan `SUPABASE_SERVICE_ROLE_KEY` **secara eksklusif di runtime server Edge Function** untuk memanggil `auth.admin.deleteUser(user.id)`. Data di `public.*` ikut terhapus otomatis melalui `ON DELETE CASCADE`.
 
 ```bash
+npx supabase secrets set ALLOWED_ORIGINS="https://<domain-produksi-anda>"
 npx supabase functions deploy delete-account
 ```
 
-> Variabel `SUPABASE_URL`, `SUPABASE_ANON_KEY`, dan `SUPABASE_SERVICE_ROLE_KEY` disediakan otomatis di lingkungan runtime Edge Functions Supabase. Jangan pernah memasukkan kunci rahasia ke variabel `.env.local` atau `VITE_*`.
+> Variabel `SUPABASE_URL`, `SUPABASE_ANON_KEY`, dan `SUPABASE_SERVICE_ROLE_KEY` disediakan otomatis di lingkungan runtime Edge Functions Supabase. Setel `ALLOWED_ORIGINS` (dipisah koma bila lebih dari satu origin) untuk membatasi CORS ke domain produksi Anda. Jangan pernah memasukkan kunci rahasia ke variabel `.env.local` atau `VITE_*`.
 
 ---
 

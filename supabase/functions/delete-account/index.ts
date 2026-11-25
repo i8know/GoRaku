@@ -5,9 +5,62 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-function jsonResponse(body: Record<string, unknown>, status: number): Response {
+const BASE_CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  Vary: "Origin",
+};
+
+function parseAllowedOrigins(): string[] {
+  const raw = Deno.env.get("ALLOWED_ORIGINS") ?? "";
+  return raw
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+}
+
+function resolveCors(req: Request): {
+  allowed: boolean;
+  headers: Record<string, string>;
+} {
+  const reqOrigin = (req.headers.get("Origin") ?? "").trim().replace(/\/+$/, "");
+  const allowlist = parseAllowedOrigins();
+
+  if (allowlist.length > 0) {
+    if (reqOrigin && !allowlist.includes(reqOrigin)) {
+      return { allowed: false, headers: { ...BASE_CORS_HEADERS } };
+    }
+    return {
+      allowed: true,
+      headers: {
+        ...BASE_CORS_HEADERS,
+        ...(reqOrigin ? { "Access-Control-Allow-Origin": reqOrigin } : {}),
+      },
+    };
+  }
+
+  // Jika ALLOWED_ORIGINS belum disetel di secrets Supabase, tetap berfungsi tetapi catat peringatan.
+  if (reqOrigin) {
+    console.warn(
+      "[delete-account] ALLOWED_ORIGINS belum disetel; setel secret ALLOWED_ORIGINS untuk membatasi origin CORS.",
+    );
+  }
+  return {
+    allowed: true,
+    headers: {
+      ...BASE_CORS_HEADERS,
+      "Access-Control-Allow-Origin": reqOrigin || "*",
+    },
+  };
+}
+
+function jsonResponse(
+  body: Record<string, unknown>,
+  status: number,
+  corsHeaders: Record<string, string>,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -18,12 +71,17 @@ function jsonResponse(body: Record<string, unknown>, status: number): Response {
 }
 
 Deno.serve(async (req: Request) => {
+  const cors = resolveCors(req);
+  if (!cors.allowed) {
+    return jsonResponse({ error: "Origin permintaan tidak diizinkan." }, 403, cors.headers);
+  }
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors.headers });
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ error: "Metode tidak diizinkan." }, 405);
+    return jsonResponse({ error: "Metode tidak diizinkan." }, 405, cors.headers);
   }
 
   try {
@@ -32,6 +90,7 @@ Deno.serve(async (req: Request) => {
       return jsonResponse(
         { error: "Token otorisasi tidak ditemukan." },
         401,
+        cors.headers,
       );
     }
 
@@ -44,8 +103,9 @@ Deno.serve(async (req: Request) => {
 
     if (!supabaseUrl || !clientApiKey || !serviceRoleKey) {
       return jsonResponse(
-        { error: "Konfigurasi environment Edge Function belum lengkap." },
+        { error: "Konfigurasi layanan belum lengkap." },
         500,
+        cors.headers,
       );
     }
 
@@ -69,6 +129,7 @@ Deno.serve(async (req: Request) => {
       return jsonResponse(
         { error: "Sesi tidak valid atau telah kedaluwarsa." },
         401,
+        cors.headers,
       );
     }
 
@@ -85,19 +146,24 @@ Deno.serve(async (req: Request) => {
     );
 
     if (deleteError) {
+      console.error("[delete-account] deleteUser failed:", deleteError.status ?? "unknown");
       return jsonResponse(
-        { error: deleteError.message || "Gagal menghapus akun pengguna." },
+        { error: "Gagal menghapus akun pengguna. Silakan coba lagi." },
         400,
+        cors.headers,
       );
     }
 
     return jsonResponse(
       { deleted: true, userId: user.id },
       200,
+      cors.headers,
     );
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Terjadi galat internal server.";
-    return jsonResponse({ error: message }, 500);
+    console.error(
+      "[delete-account] unexpected error:",
+      err instanceof Error ? err.name : "unknown",
+    );
+    return jsonResponse({ error: "Terjadi galat internal server." }, 500, cors.headers);
   }
 });

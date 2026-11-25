@@ -2,17 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Icon } from "../ui";
 import { useAuthStore } from "../store/useAuthStore";
-import { getPasswordStrength } from "../lib/supabase";
-
-function extractRecoveryError(search: string, hash: string): string {
-  for (const raw of [search.replace(/^\?/, ""), hash.replace(/^#/, "")]) {
-    if (!raw) continue;
-    const params = new URLSearchParams(raw);
-    const desc = params.get("error_description") || params.get("error");
-    if (desc) return desc.replace(/\+/g, " ").trim();
-  }
-  return "";
-}
+import { extractSafeUrlAuthError, getPasswordStrength } from "../lib/supabase";
 
 export default function ResetPasswordPage() {
   const status = useAuthStore((s) => s.status);
@@ -31,7 +21,7 @@ export default function ResetPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const urlError = extractRecoveryError(location.search, location.hash);
+    const urlError = extractSafeUrlAuthError(location.search, location.hash);
     if (urlError) {
       setError(urlError);
     }
@@ -42,7 +32,7 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!strength.valid) {
-      setError("Kata sandi baru minimal terdiri dari 6 karakter.");
+      setError("Kata sandi baru minimal terdiri dari 8 karakter.");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -131,7 +121,7 @@ export default function ResetPasswordPage() {
                   setNewPassword(e.target.value);
                   if (error) setError("");
                 }}
-                placeholder="Minimal 6 karakter"
+                placeholder="Minimal 8 karakter"
                 autoComplete="new-password"
                 required
                 autoFocus

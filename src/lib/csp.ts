@@ -29,9 +29,25 @@ export function resolveSupabaseOrigin(rawUrl: string | undefined): string | null
   return parsed.origin;
 }
 
-export function injectSupabaseConnectSrc(html: string, rawUrl: string | undefined): string {
+export interface InjectCspOptions {
+  /** Izinkan `ws:` dan `wss:` hanya untuk Vite HMR di server dev, tidak pernah di build produksi. */
+  allowDevWebSockets?: boolean;
+}
+
+export function injectSupabaseConnectSrc(
+  html: string,
+  rawUrl: string | undefined,
+  options: InjectCspOptions = {},
+): string {
+  const extraTokens: string[] = [];
+  if (options.allowDevWebSockets) {
+    extraTokens.push("ws:", "wss:");
+  }
   const origin = resolveSupabaseOrigin(rawUrl);
-  if (!origin) return html;
+  if (origin) {
+    extraTokens.push(origin);
+  }
+  if (extraTokens.length === 0) return html;
 
   return html.replace(/<meta\b[^>]*>/gi, (metaTag) => {
     if (!/\bhttp-equiv\s*=\s*(?:"Content-Security-Policy"|'Content-Security-Policy')/i.test(metaTag)) {
@@ -49,10 +65,11 @@ export function injectSupabaseConnectSrc(html: string, rawUrl: string | undefine
           /((?:^|;)\s*connect-src\s+[^;]*)(;|$)/i,
           (_dirMatch, directive: string, ending: string) => {
             const tokens = directive.trim().split(/\s+/);
-            if (tokens.includes(origin)) {
+            const missing = extraTokens.filter((tok) => !tokens.includes(tok));
+            if (missing.length === 0) {
               return `${directive}${ending}`;
             }
-            return `${directive.trimEnd()} ${origin}${ending}`;
+            return `${directive.trimEnd()} ${missing.join(" ")}${ending}`;
           },
         );
         if (updated === cspContent) return attrMatch;

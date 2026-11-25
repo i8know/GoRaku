@@ -22,7 +22,7 @@ import {
 } from "../lib/reviewSession";
 import { initCard } from "../lib/srs";
 import { previewIntervals, type FsrsGrade } from "../lib/fsrsScheduler";
-import { renderJapanese } from "../lib/ankiText";
+import { renderJapanese, sanitizeInline } from "../lib/ankiText";
 import { speakJapanese } from "../lib/tts";
 
 type ReviewCard = ReviewSessionCard;
@@ -459,18 +459,18 @@ export default function ReviewPage() {
           {showAnswer && (
             <div className="review-answer">
               {media.image && <img className="rv-image" src={media.image} alt="" />}
-              {card.meaning && <p className="review-meaning" dangerouslySetInnerHTML={{ __html: card.meaning }} />}
+              {card.meaning && <p className="review-meaning" dangerouslySetInnerHTML={{ __html: sanitizeInline(card.meaning) }} />}
               {(card.sentence || card.translation) && (
                 <div className="review-context">
                   {card.sentence && (
                     <div className="rv-sentence-row">
-                      <p className="review-sentence" lang="ja" dangerouslySetInnerHTML={{ __html: renderJapanese(card.sentence, settings.furi) }} />
+                      <p className="review-sentence" lang="ja" dangerouslySetInnerHTML={{ __html: renderJapanese(sanitizeInline(card.sentence), settings.furi) }} />
                       <button className={`rv-mini-audio ${playing === "sentence" ? "rv-playing" : ""}`} onClick={() => play("sentence")} aria-label="Putar audio kalimat" title="Dengarkan kalimat">
                         <Icon name="volume" size={15} />
                       </button>
                     </div>
                   )}
-                  {card.translation && <p className="review-translation" dangerouslySetInnerHTML={{ __html: card.translation }} />}
+                  {card.translation && <p className="review-translation" dangerouslySetInnerHTML={{ __html: sanitizeInline(card.translation) }} />}
                 </div>
               )}
             </div>

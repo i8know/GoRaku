@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   adoptLegacyDataForUser,
+  clearLegacyLocalData,
   deferLegacyForSession,
   markLegacyDeclinedForUser,
   type LegacyDataSummary,
@@ -25,6 +26,7 @@ export default function LegacyAdoptionModal({
   onAdopted,
 }: LegacyAdoptionModalProps) {
   const [busy, setBusy] = useState(false);
+  const [confirmClearLegacy, setConfirmClearLegacy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,6 +70,24 @@ export default function LegacyAdoptionModal({
     if (busy) return;
     deferLegacyForSession(userId);
     onClose();
+  };
+
+  const handleClearLegacy = async () => {
+    if (busy) return;
+    if (!confirmClearLegacy) {
+      setConfirmClearLegacy(true);
+      return;
+    }
+    setBusy(true);
+    setErrorMsg(null);
+    try {
+      await clearLegacyLocalData();
+      onClose();
+    } catch {
+      setErrorMsg("Gagal menghapus data lokal lama. Silakan coba lagi.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const details: string[] = [];
@@ -123,10 +143,10 @@ export default function LegacyAdoptionModal({
               lineHeight: 1.5,
             }}
           >
-            Data lama asli tidak akan dihapus di perangkat ini dan tetap tersimpan aman sebagai
-            cadangan. Jika kamu memilih <strong>Mulai kosong</strong>, akun ini tidak akan
-            menerima data tersebut dan akun lain pada peramban yang sama tidak akan melihatnya
-            secara otomatis.
+            Jika kamu memilih <strong>Mulai kosong</strong>, akun ini tidak akan menerima data
+            tersebut. Pada perangkat bersama, kamu juga dapat memilih{" "}
+            <strong>Hapus data lama</strong> untuk membuang salinan pra-akun secara permanen dari
+            peramban ini agar tidak ditawarkan ke akun lain.
           </div>
 
           {errorMsg && (
@@ -141,29 +161,41 @@ export default function LegacyAdoptionModal({
               display: "flex",
               flexWrap: "wrap",
               gap: "10px",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
+              alignItems: "center",
               marginTop: "6px",
             }}
           >
-            <Button type="button" className="btn btn-ghost" onClick={handleDefer} disabled={busy}>
-              Nanti
-            </Button>
-            <Button type="button" className="btn btn-ghost" onClick={handleDecline} disabled={busy}>
-              Mulai kosong
-            </Button>
-            <button
+            <Button
               type="button"
-              className="btn btn-primary"
-              style={{ background: "var(--shu)", borderColor: "var(--shu)", color: "#fff" }}
-              onClick={handleAdopt}
+              className={`outline-button warn ${confirmClearLegacy ? "armed" : ""}`}
+              onClick={() => void handleClearLegacy()}
               disabled={busy}
             >
-              {busy
-                ? "Menyalin data…"
-                : errorMsg
-                  ? "Coba lagi"
-                  : "Hubungkan ke akun ini"}
-            </button>
+              <Icon name="trash" size={14} />{" "}
+              {confirmClearLegacy ? "Klik lagi untuk hapus permanen" : "Hapus data lama"}
+            </Button>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "flex-end" }}>
+              <Button type="button" className="btn btn-ghost" onClick={handleDefer} disabled={busy}>
+                Nanti
+              </Button>
+              <Button type="button" className="btn btn-ghost" onClick={handleDecline} disabled={busy}>
+                Mulai kosong
+              </Button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ background: "var(--shu)", borderColor: "var(--shu)", color: "#fff" }}
+                onClick={handleAdopt}
+                disabled={busy}
+              >
+                {busy
+                  ? "Menyalin data…"
+                  : errorMsg
+                    ? "Coba lagi"
+                    : "Hubungkan ke akun ini"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

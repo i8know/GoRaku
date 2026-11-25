@@ -53,6 +53,7 @@ export default function ProfilePage() {
   const [errorNotice, setErrorNotice] = useState("");
 
   const [passwordFormOpen, setPasswordFormOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
@@ -152,6 +153,10 @@ export default function ProfilePage() {
     e.preventDefault();
     setErrorNotice("");
     setStatusNotice("");
+    if (!currentPassword) {
+      setErrorNotice("Masukkan kata sandi saat ini untuk memverifikasi identitas Anda.");
+      return;
+    }
     if (newPassword.length < 8) {
       setErrorNotice("Kata sandi baru minimal 8 karakter.");
       return;
@@ -161,12 +166,13 @@ export default function ProfilePage() {
       return;
     }
     setSavingPassword(true);
-    const res = await updatePassword(newPassword);
+    const res = await updatePassword(newPassword, currentPassword);
     setSavingPassword(false);
     if (res.error) {
       setErrorNotice(res.error);
       return;
     }
+    setCurrentPassword("");
     setNewPassword("");
     setConfirmNewPassword("");
     setPasswordFormOpen(false);
@@ -404,6 +410,17 @@ export default function ProfilePage() {
                   noValidate
                   className="rounded-xl border border-[var(--garis)] bg-[var(--bg)] p-4 grid gap-3"
                 >
+                  <label className="grid gap-1 text-xs font-semibold">
+                    <span>Kata sandi saat ini</span>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      autoComplete="current-password"
+                      disabled={savingPassword}
+                      className="prof-input"
+                    />
+                  </label>
                   <label className="grid gap-1 text-xs font-semibold">
                     <span>Kata sandi baru (minimal 8 karakter)</span>
                     <input

@@ -134,6 +134,77 @@ export function resetLegacyAdoptionSessionForTest(): void {
   deferredLegacyUsersInSession.clear();
 }
 
+/**
+ * Menghapus seluruh data lokal warisan pra-B1 (`localStorage` tanpa namespace + 3 DB IndexedDB lama)
+ * beserta penanda adopsi/penolakan dari peramban ini agar tidak tertinggal atau bocor ke akun lain.
+ */
+export async function clearLegacyLocalData(): Promise<void> {
+  deferredLegacyUsersInSession.clear();
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      for (const baseKey of ALL_USER_SCOPED_BASE_KEYS) {
+        localStorage.removeItem(baseKey);
+      }
+      localStorage.removeItem(LEGACY_ADOPTED_BY_KEY);
+      if (typeof localStorage.length === "number" && typeof localStorage.key === "function") {
+        const declinedKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith(`${LEGACY_DECLINED_KEY_PREFIX}::`)) {
+            declinedKeys.push(k);
+          }
+        }
+        for (const k of declinedKeys) {
+          localStorage.removeItem(k);
+        }
+      }
+    }
+  } catch {
+    // Abaikan galat akses localStorage
+  }
+
+  // Tutup koneksi Dexie bila kebetulan masih menunjuk ke DB warisan
+  try {
+    if (deckDexie.name === LEGACY_DECK_DB_NAME) deckDexie.close();
+  } catch {
+    // Abaikan
+  }
+  try {
+    if (lexiconDb.name === LEGACY_LEXICON_DB_NAME) lexiconDb.close();
+  } catch {
+    // Abaikan
+  }
+  try {
+    if (questionPackDb.name === LEGACY_QUESTION_PACK_DB_NAME) questionPackDb.close();
+  } catch {
+    // Abaikan
+  }
+
+  if (typeof indexedDB !== "undefined" && typeof indexedDB.deleteDatabase === "function") {
+    const legacyDbs = [
+      LEGACY_DECK_DB_NAME,
+      LEGACY_LEXICON_DB_NAME,
+      LEGACY_QUESTION_PACK_DB_NAME,
+    ];
+    await Promise.all(
+      legacyDbs.map(
+        (name) =>
+          new Promise<void>((resolve) => {
+            try {
+              const req = indexedDB.deleteDatabase(name);
+              req.onsuccess = () => resolve();
+              req.onerror = () => resolve();
+              req.onblocked = () => resolve();
+            } catch {
+              resolve();
+            }
+          }),
+      ),
+    );
+  }
+}
+
 async function doesIndexedDbExist(dbName: string): Promise<boolean> {
   if (typeof indexedDB === "undefined") return false;
 

@@ -117,6 +117,17 @@ const RICH_BLOCK_STRIP_RE =
 const RICH_TAG_AT_START = /^<(\/?)([a-zA-Z][a-zA-Z0-9]*)(?:\s+([^<>]*?))?\s*(\/?)>/;
 const RICH_ATTR_RE = /\b(class|rowspan|colspan|lang|dir)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
 
+const DISALLOWED_RICH_CLASS_RE =
+  /^(?:!?(?:[a-z0-9-]+:)*)(?:fixed|sticky|absolute|inset(?:-[a-z0-9[\]./]+)?|top-|right-|bottom-|left-|z-|w-screen|h-screen|min-h-screen|min-h-dvh|pointer-events-)/i;
+
+function sanitizeRichClassList(rawVal: string): string {
+  if (/["<>`=]/.test(rawVal)) return "";
+  return rawVal
+    .split(/\s+/)
+    .filter((tok) => tok && !DISALLOWED_RICH_CLASS_RE.test(tok))
+    .join(" ");
+}
+
 function sanitizeRichAttrs(rawAttrs: string): string {
   if (!rawAttrs) return "";
   const safeParts: string[] = [];
@@ -125,8 +136,9 @@ function sanitizeRichAttrs(rawAttrs: string): string {
     const rawVal = (m[2] ?? m[3] ?? m[4] ?? "").trim();
     if (!rawVal) continue;
     if (name === "class") {
-      if (!/["<>`=]/.test(rawVal)) {
-        safeParts.push(`class="${rawVal}"`);
+      const cleanClasses = sanitizeRichClassList(rawVal);
+      if (cleanClasses) {
+        safeParts.push(`class="${cleanClasses}"`);
       }
     } else if (name === "rowspan" || name === "colspan") {
       if (/^\d{1,3}$/.test(rawVal)) {

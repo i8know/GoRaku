@@ -48,18 +48,43 @@ describe("Task 6 — Strict CSP Build & Injeksi Origin Supabase", () => {
       "https://demo.supabase.co",
     );
 
-    // Tanpa env -> HTML tidak berubah sama sekali
+    // Tanpa env & tanpa flag dev -> HTML tidak berubah dan tanpa ws:/wss:
     expect(injectSupabaseConnectSrc(sampleHtml, "")).toBe(sampleHtml);
+    expect(extractConnectSrcTokens(extractCspContent(sampleHtml))).toEqual([
+      "'self'",
+      "blob:",
+      "data:",
+    ]);
 
-    // Dengan env -> tepat menyuntikkan origin tanpa wildcard dan tanpa wss://<project> tambahan
+    // Mode dev -> menambahkan ws: dan wss: hanya untuk Vite HMR
+    const devInjected = injectSupabaseConnectSrc(
+      sampleHtml,
+      "https://projek123.supabase.co/rest/v1",
+      { allowDevWebSockets: true },
+    );
+    expect(extractConnectSrcTokens(extractCspContent(devInjected))).toEqual([
+      "'self'",
+      "blob:",
+      "data:",
+      "ws:",
+      "wss:",
+      "https://projek123.supabase.co",
+    ]);
+
+    // Mode produksi dengan env -> tepat menyuntikkan origin tanpa wildcard dan tanpa ws:/wss:
     const injected = injectSupabaseConnectSrc(
       sampleHtml,
       "https://projek123.supabase.co/rest/v1",
     );
     const tokens = extractConnectSrcTokens(extractCspContent(injected));
-    expect(tokens).toContain("https://projek123.supabase.co");
+    expect(tokens).toEqual([
+      "'self'",
+      "blob:",
+      "data:",
+      "https://projek123.supabase.co",
+    ]);
     expect(tokens.some((t) => t.includes("*.supabase.co"))).toBe(false);
-    expect(tokens.some((t) => t.startsWith("wss://projek123"))).toBe(false);
+    expect(tokens.some((t) => t === "ws:" || t === "wss:" || t.startsWith("wss://"))).toBe(false);
 
     // Idempoten bila dipanggil dua kali
     expect(
@@ -94,7 +119,7 @@ describe("Task 6 — Strict CSP Build & Injeksi Origin Supabase", () => {
         "utf8",
       );
       const tokensWithout = extractConnectSrcTokens(extractCspContent(htmlWithout));
-      expect(tokensWithout).toEqual(["'self'", "blob:", "data:", "ws:", "wss:"]);
+      expect(tokensWithout).toEqual(["'self'", "blob:", "data:"]);
 
       // 2. Build dengan VITE_SUPABASE_URL terpasang
       await execFileAsync(
@@ -119,10 +144,10 @@ describe("Task 6 — Strict CSP Build & Injeksi Origin Supabase", () => {
         "'self'",
         "blob:",
         "data:",
-        "ws:",
-        "wss:",
         "https://ujicobagoraku.supabase.co",
       ]);
+      expect(tokensWith).not.toContain("ws:");
+      expect(tokensWith).not.toContain("wss:");
       expect(tokensWith.some((t) => t.includes("*.supabase.co"))).toBe(false);
     } finally {
       fs.rmSync(tmpBase, { recursive: true, force: true });

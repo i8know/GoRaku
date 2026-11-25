@@ -3,24 +3,12 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Icon, Button } from "../ui";
 import { useAuthStore } from "../store/useAuthStore";
 import {
+  extractSafeUrlAuthError,
   getPasswordStrength,
   sanitizeInternalRedirect,
 } from "../lib/supabase";
 
 type AuthMode = "login" | "register" | "forgot";
-
-function extractUrlAuthError(search: string, hash: string): string {
-  const sources = [search.replace(/^\?/, ""), hash.replace(/^#/, "")];
-  for (const raw of sources) {
-    if (!raw) continue;
-    const params = new URLSearchParams(raw);
-    const desc = params.get("error_description") || params.get("error");
-    if (desc) {
-      return desc.replace(/\+/g, " ").trim();
-    }
-  }
-  return "";
-}
 
 export default function LoginPage() {
   const user = useAuthStore((s) => s.user);
@@ -53,7 +41,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const urlError = extractUrlAuthError(location.search, location.hash);
+    const urlError = extractSafeUrlAuthError(location.search, location.hash);
     if (urlError) {
       setError(urlError);
     }
@@ -147,15 +135,15 @@ export default function LoginPage() {
         return;
       }
       if (!strength.valid) {
-        setError("Kata sandi minimal terdiri dari 6 karakter.");
+        setError("Kata sandi minimal terdiri dari 8 karakter.");
         return;
       }
       if (password !== confirmPassword) {
         setError("Konfirmasi kata sandi tidak cocok.");
         return;
       }
-    } else if (!password || password.length < 6) {
-      setError("Kata sandi minimal terdiri dari 6 karakter.");
+    } else if (!password) {
+      setError("Masukkan kata sandi akun Anda.");
       return;
     }
 
@@ -355,7 +343,7 @@ export default function LoginPage() {
                     setPassword(e.target.value);
                     if (error) setError("");
                   }}
-                  placeholder="Minimal 6 karakter"
+                  placeholder={mode === "register" ? "Minimal 8 karakter" : "Kata sandi Anda"}
                   autoComplete={mode === "register" ? "new-password" : "current-password"}
                   required
                 />

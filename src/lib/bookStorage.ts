@@ -1,3 +1,4 @@
+import { MAX_EPUB_FILE_BYTES, MAX_TXT_NOVEL_BYTES } from "./archiveLimits";
 import { isJapaneseChar } from "./kana";
 import {
   lexiconDb,
@@ -275,6 +276,11 @@ export async function addNovelFile(
   const nowIso = new Date().toISOString();
 
   if (lowerName.endsWith(".txt")) {
+    if (file.size > MAX_TXT_NOVEL_BYTES) {
+      throw new Error(
+        `Ukuran berkas TXT "${file.name}" melebihi batas aman (${Math.round(MAX_TXT_NOVEL_BYTES / (1024 * 1024))} MB).`,
+      );
+    }
     const buffer = await file.arrayBuffer();
     const { text, encoding } = decodeTxtBytes(new Uint8Array(buffer));
     if (!text.trim()) {
@@ -333,7 +339,12 @@ export async function addNovelFile(
     return record;
   }
 
-  // Format EPUB -> pastikan header berkas benar-benar arsip ZIP sebelum diteruskan ke foliate-js
+  // Format EPUB -> cek batas ukuran dan pastikan header berkas benar-benar arsip ZIP sebelum diteruskan ke foliate-js
+  if (file.size > MAX_EPUB_FILE_BYTES) {
+    throw new Error(
+      `Ukuran berkas EPUB "${file.name}" melebihi batas aman (${Math.round(MAX_EPUB_FILE_BYTES / (1024 * 1024))} MB).`,
+    );
+  }
   const epubHeader = new Uint8Array(await file.slice(0, 4).arrayBuffer());
   const hasZipHeader =
     epubHeader.byteLength >= 4 &&
@@ -377,9 +388,11 @@ export async function addNovelFile(
       minedCount: 0,
     };
 
-    const epubBlob = new Blob([await file.arrayBuffer()], {
-      type: "application/epub+zip",
-    });
+    // Simpan Blob/File asli langsung ke IndexedDB tanpa menggandakan seluruh arsip ke RAM
+    const epubBlob =
+      file.type === "application/epub+zip"
+        ? file
+        : file.slice(0, file.size, "application/epub+zip");
 
     await db.transaction("rw", db.books, db.bookFiles, async () => {
       await db.books.put(record);

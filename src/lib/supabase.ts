@@ -348,6 +348,51 @@ export function hasEmailPasswordIdentity(user: User | null): boolean {
   return false;
 }
 
+export const MIN_PASSWORD_LENGTH = 8;
+
+const SAFE_URL_AUTH_ERROR_CODES: Record<string, string> = {
+  access_denied: "Akses masuk dibatalkan atau ditolak.",
+  otp_expired: "Tautan verifikasi atau pemulihan telah kedaluwarsa. Silakan minta tautan baru.",
+  otp_disabled: "Tautan verifikasi sekali pakai sedang tidak aktif.",
+  email_not_confirmed: "Email belum terverifikasi. Periksa kotak masuk atau folder spam Anda.",
+  invalid_request: "Permintaan autentikasi tidak valid. Silakan ulangi proses masuk.",
+  bad_oauth_callback: "Respons masuk pihak ketiga tidak valid. Silakan coba lagi.",
+  bad_oauth_state: "Sesi OAuth kedaluwarsa atau tidak cocok. Silakan ulangi masuk.",
+  over_request_rate_limit: "Terlalu banyak percobaan dalam waktu singkat. Tunggu beberapa saat lalu coba lagi.",
+  over_email_send_rate_limit: "Terlalu banyak permintaan email dalam waktu singkat. Tunggu beberapa saat lalu coba lagi.",
+  server_error: "Layanan autentikasi sedang bermasalah sementara. Silakan coba lagi beberapa saat.",
+  temporarily_unavailable: "Layanan autentikasi sedang tidak tersedia sementara. Silakan coba lagi.",
+};
+
+const GENERIC_URL_AUTH_ERROR =
+  "Autentikasi gagal atau tautan tidak valid. Silakan coba lagi.";
+
+/**
+ * Mengekstrak pesan kesalahan aman dari query/hash URL OAuth/recovery tanpa pernah
+ * memantulkan teks bebas `error_description` buatan pihak luar (mencegah content spoofing).
+ */
+export function extractSafeUrlAuthError(search: string, hash: string): string {
+  const sources = [search.replace(/^\?/, ""), hash.replace(/^#/, "")];
+  for (const raw of sources) {
+    if (!raw) continue;
+    const params = new URLSearchParams(raw);
+    const errorCode = (params.get("error_code") ?? "").trim().toLowerCase();
+    const errorKey = (params.get("error") ?? "").trim().toLowerCase();
+    const hasDesc = Boolean((params.get("error_description") ?? "").trim());
+
+    if (errorCode && Object.prototype.hasOwnProperty.call(SAFE_URL_AUTH_ERROR_CODES, errorCode)) {
+      return SAFE_URL_AUTH_ERROR_CODES[errorCode];
+    }
+    if (errorKey && Object.prototype.hasOwnProperty.call(SAFE_URL_AUTH_ERROR_CODES, errorKey)) {
+      return SAFE_URL_AUTH_ERROR_CODES[errorKey];
+    }
+    if (errorCode || errorKey || hasDesc) {
+      return GENERIC_URL_AUTH_ERROR;
+    }
+  }
+  return "";
+}
+
 export interface PasswordStrengthInfo {
   score: 0 | 1 | 2 | 3;
   label: string;
@@ -355,10 +400,10 @@ export interface PasswordStrengthInfo {
 }
 
 export function getPasswordStrength(password: string): PasswordStrengthInfo {
-  if (!password || password.length < 6) {
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
     return {
       score: 0,
-      label: "Minimal 6 karakter (disarankan 8+ karakter campuran huruf & angka).",
+      label: "Minimal 8 karakter (disarankan kombinasi huruf besar, kecil, dan angka).",
       valid: false,
     };
   }

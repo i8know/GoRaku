@@ -7,6 +7,11 @@ export const MAX_APKG_MEDIA_ENTRY_BYTES = 64 * 1024 * 1024;
 export const MAX_APKG_MEDIA_TOTAL_BYTES = 512 * 1024 * 1024;
 export const MAX_YOMITAN_ENTRY_BYTES = 64 * 1024 * 1024;
 export const MAX_YOMITAN_TOTAL_BYTES = 512 * 1024 * 1024;
+export const MAX_COMIC_INFO_BYTES = 2 * 1024 * 1024;
+export const MAX_MANGA_IMAGE_ENTRY_BYTES = 32 * 1024 * 1024;
+export const MAX_TXT_NOVEL_BYTES = 50 * 1024 * 1024;
+export const MAX_EPUB_FILE_BYTES = 256 * 1024 * 1024;
+export const MAX_EPUB_ENTRY_BYTES = 32 * 1024 * 1024;
 
 export function isIgnoredArchivePath(rawPath: string): boolean {
   return rawPath

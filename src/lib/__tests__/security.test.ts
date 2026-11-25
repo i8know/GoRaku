@@ -1,7 +1,11 @@
 import "fake-indexeddb/auto";
+import fs from "node:fs";
+import path from "node:path";
 import { deflateRawSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { compressSync, strToU8, zipSync } from "fflate";
+// @ts-expect-error foliate-js epub.js is a vendored JS module without type declarations
+import { sanitizeCssText, sanitizeEpubDom } from "../../vendor/foliate-js/epub.js";
 import { renderJapanese, sanitizeInline, sanitizeRichHtml } from "../ankiText";
 import {
   ArchiveLimitError,
@@ -11,6 +15,7 @@ import {
 import { extractZipEntry, indexZipEntries } from "../apkg";
 import { addNovelFile } from "../bookStorage";
 import { neutralizeCsvCell } from "../deckCards";
+import { addMangaArchiveFile } from "../mangaStorage";
 import { sanitizeQuestionPack, type QuestionPack } from "../questionPack";
 import { getQuestionPack, importQuestionPackFromJson } from "../questionPackStorage";
 import { importScheduleBackup } from "../scheduleBackup";
@@ -273,5 +278,112 @@ describe("Regresi Keamanan: Sanitasi HTML, QuestionPack, URI Kamus, dan Batas Ar
       type: "application/epub+zip",
     });
     await expect(addNovelFile(fakeMobiAsEpub)).rejects.toThrow(/bukan arsip EPUB \(ZIP\) yang valid/i);
+  });
+
+  it("10. vercel.json menyetel header keamanan HTTP anti-clickjacking & MIME sniffing", () => {
+    const raw = fs.readFileSync(path.resolve(process.cwd(), "vercel.json"), "utf8");
+    const cfg = JSON.parse(raw) as {
+      headers?: Array<{ source: string; headers: Array<{ key: string; value: string }> }>;
+    };
+    const globalRule = cfg.headers?.find((h) => h.source === "/(.*)");
+    expect(globalRule).toBeDefined();
+    const map = new Map(
+      (globalRule?.headers ?? []).map((kv) => [kv.key.toLowerCase(), kv.value]),
+    );
+    expect(map.get("content-security-policy")).toContain("frame-ancestors 'none'");
+    expect(map.get("x-frame-options")).toBe("DENY");
+    expect(map.get("x-content-type-options")).toBe("nosniff");
+    expect(map.get("referrer-policy")).toBe("strict-origin-when-cross-origin");
+    expect(map.get("permissions-policy")).toBeTruthy();
+  });
+
+  it("11. pembaca EPUB menonaktifkan allow-scripts di sandbox iframe serta memfilter XSL PI & CSS berbahaya", () => {
+    const paginatorSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/vendor/foliate-js/paginator.js"),
+      "utf8",
+    );
+    const fixedLayoutSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/vendor/foliate-js/fixed-layout.js"),
+      "utf8",
+    );
+    expect(paginatorSrc).toContain("setAttribute('sandbox', 'allow-same-origin')");
+    expect(paginatorSrc).not.toContain("allow-scripts");
+    expect(fixedLayoutSrc).toContain("setAttribute('sandbox', 'allow-same-origin')");
+    expect(fixedLayoutSrc).not.toContain("allow-scripts");
+
+    const cleanedCss = sanitizeCssText(
+      '@import url("https://evil.example/a.css"); body { width: expression(alert(1)); -moz-binding: url(x); background: url("javascript:alert(1)"); list-style: url(data:image/svg+xml,<svg/>); }',
+    );
+    expect(cleanedCss).not.toMatch(/@import/i);
+    expect(cleanedCss).not.toMatch(/expression\s*\(/i);
+    expect(cleanedCss).not.toMatch(/-moz-binding/i);
+    expect(cleanedCss).not.toMatch(/javascript:/i);
+    expect(cleanedCss).not.toMatch(/data:image\/svg\+xml/i);
+
+    // Pastikan ProcessingInstruction XSL dihapus sedangkan xml-stylesheet text/css dipertahankan
+    const removedNodes: string[] = [];
+    const xslPi = {
+      nodeType: 7,
+      target: "xml-stylesheet",
+      data: 'type="text/xsl" href="evil.xsl"',
+      nextSibling: null as unknown,
+      remove: () => removedNodes.push("xsl"),
+    };
+    const cssPi = {
+      nodeType: 7,
+      target: "xml-stylesheet",
+      data: 'type="text/css" href="style.css"',
+      nextSibling: null as unknown,
+      remove: () => removedNodes.push("css"),
+    };
+    xslPi.nextSibling = cssPi;
+    const fakeDoc = {
+      firstChild: xslPi,
+      querySelectorAll: () => [],
+    };
+    sanitizeEpubDom(fakeDoc);
+    expect(removedNodes).toEqual(["xsl"]);
+  });
+
+  it("12. sanitizeRichHtml menyaring kelas overlay (fixed/absolute/inset/z-*) namun mempertahankan kelas aman", () => {
+    const html =
+      '<div class="fixed inset-0 z-50 sm:absolute !w-screen text-sm font-bold border p-2">Wacana</div>';
+    const clean = sanitizeRichHtml(html);
+    expect(clean).not.toMatch(/\bfixed\b|\binset-0\b|\bz-50\b|\babsolute\b|w-screen/i);
+    expect(clean).toContain('class="text-sm font-bold border p-2"');
+  });
+
+  it("13. addNovelFile, addMangaArchiveFile, migrasi SQL, dan delete-account menerapkan batas aman & CORS ketat", async () => {
+    // 1. Batas ukuran berkas TXT (> 50 MB) ditolak sebelum dibaca ke RAM
+    const fakeHugeTxt = {
+      name: "huge.txt",
+      size: 51 * 1024 * 1024,
+      arrayBuffer: async () => new ArrayBuffer(0),
+    } as unknown as File;
+    await expect(addNovelFile(fakeHugeTxt)).rejects.toThrow(/melebihi batas aman/i);
+
+    // 2. Batas ukuran ComicInfo.xml (> 2 MB) di dalam CBZ ditolak
+    const hugeXmlZip = zipSync({
+      "ComicInfo.xml": strToU8(`<ComicInfo><Title>${"A".repeat(2_200_000)}</Title></ComicInfo>`),
+      "001.jpg": new Uint8Array([0xff, 0xd8, 0xff, 0xd9]),
+    });
+    const cbzFile = new File([hugeXmlZip as BlobPart], "bomb.cbz", { type: "application/zip" });
+    await expect(addMangaArchiveFile(cbzFile)).rejects.toThrow(/melebihi batas aman/i);
+
+    // 3. Migrasi constraint Postgres & Edge Function delete-account
+    const migrationSql = fs.readFileSync(
+      path.resolve(process.cwd(), "supabase/migrations/202611240001_harden_constraints.sql"),
+      "utf8",
+    );
+    expect(migrationSql).toContain("pg_column_size(data) <= 65536");
+    expect(migrationSql).toContain("rating between 1 and 4");
+
+    const fnSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "supabase/functions/delete-account/index.ts"),
+      "utf8",
+    );
+    expect(fnSrc).toContain("ALLOWED_ORIGINS");
+    expect(fnSrc).not.toContain("npm:@supabase/supabase-js@2/cors");
+    expect(fnSrc).not.toContain("deleteError.message");
   });
 });

@@ -27,15 +27,31 @@ const isFBZ = ({ name, type }) =>
     type === 'application/x-zip-compressed-fb2'
     || name.endsWith('.fb2.zip') || name.endsWith('.fbz')
 
+const MAX_EPUB_ZIP_ENTRIES = 100_000
+const MAX_EPUB_ENTRY_UNCOMPRESSED_BYTES = 32 * 1024 * 1024
+
 const makeZipLoader = async file => {
     const { configure, ZipReader, BlobReader, TextWriter, BlobWriter } =
         await import('./vendor/zip.js')
     configure({ useWebWorkers: false })
     const reader = new ZipReader(new BlobReader(file))
     const entries = await reader.getEntries()
+    if (entries.length > MAX_EPUB_ZIP_ENTRIES) {
+        await reader.close?.().catch(() => {})
+        throw new Error('Jumlah entri dalam arsip EPUB melebihi batas aman.')
+    }
     const map = new Map(entries.map(entry => [entry.filename, entry]))
-    const load = f => (name, ...args) =>
-        map.has(name) ? f(map.get(name), ...args) : null
+    const assertSafeEntry = (entry, name) => {
+        if ((entry?.uncompressedSize ?? 0) > MAX_EPUB_ENTRY_UNCOMPRESSED_BYTES) {
+            throw new Error(`Ukuran entri EPUB "${name}" melebihi batas aman (32 MB).`)
+        }
+    }
+    const load = f => (name, ...args) => {
+        if (!map.has(name)) return null
+        const entry = map.get(name)
+        assertSafeEntry(entry, name)
+        return f(entry, ...args)
+    }
     const loadText = load(entry => entry.getData(new TextWriter()))
     const loadBlob = load((entry, type) => entry.getData(new BlobWriter(type)))
     const getSize = name => map.get(name)?.uncompressedSize ?? 0

@@ -3,9 +3,28 @@ import { Link } from "react-router-dom";
 import { CURRENT_CONSENT_VERSION, type ProfileRecord } from "../lib/supabase";
 import { Button, Icon } from "../ui";
 
-export function needsConsentUpdate(profile: ProfileRecord | null): boolean {
-  if (!profile) return false;
-  return profile.consent_version !== CURRENT_CONSENT_VERSION;
+import type { ProfileLoadState } from "../store/useAuthStore";
+
+export interface ConsentCheckOptions {
+  profileLoadState?: ProfileLoadState;
+  userMetadataConsentVersion?: unknown;
+}
+
+export function needsConsentUpdate(
+  profile: ProfileRecord | null,
+  options?: ConsentCheckOptions,
+): boolean {
+  if (profile) {
+    return profile.consent_version !== CURRENT_CONSENT_VERSION;
+  }
+  const loadState = options?.profileLoadState;
+  if (loadState === "loaded") {
+    return true;
+  }
+  if (loadState === "error") {
+    return options?.userMetadataConsentVersion !== CURRENT_CONSENT_VERSION;
+  }
+  return false;
 }
 
 export interface ConsentUpdateModalProps {
