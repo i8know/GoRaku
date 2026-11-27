@@ -13,8 +13,10 @@ import './decks.css'
 import { useToastStore } from './store/useToastStore'
 import { useAuthStore } from './store/useAuthStore'
 import { initUserStorageScopeSync } from './lib/userScopeCoordinator'
+import { initSyncController } from './lib/sync/syncController'
 
 initUserStorageScopeSync()
+initSyncController()
 
 const ProtectedLayout = lazy(() => import('./components/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))

@@ -35,6 +35,7 @@ export const LEGACY_READER_FLOW_KEY = "ma-reader-flow";
 export const LEGACY_SIDEBAR_COLLAPSED_KEY = "goraku_sidebar_collapsed";
 
 export const DEVICE_ID_KEY_PREFIX = "goraku-device-id";
+export const SYNC_PAUSED_KEY_PREFIX = "goraku-sync-paused";
 
 let activeUserId: string | null = null;
 let persistWriteSuppressionCount = 0;
@@ -216,6 +217,7 @@ export const ALL_USER_SCOPED_BASE_KEYS = [
   LEGACY_READER_FLOW_KEY,
   LEGACY_SIDEBAR_COLLAPSED_KEY,
   DEVICE_ID_KEY_PREFIX,
+  SYNC_PAUSED_KEY_PREFIX,
 ] as const;
 
 export const USER_DB_CLOSE_CHANNEL = "goraku-close-dbs";

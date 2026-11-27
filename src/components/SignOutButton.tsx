@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "../ui";
 import { useAuthStore, type AuthActionResult } from "../store/useAuthStore";
 import { useToastStore } from "../store/useToastStore";
+import { flushSyncBeforeSignOut } from "../lib/sync/syncController";
 
 export type SignOutButtonVariant = "label" | "icon";
 
@@ -46,11 +47,13 @@ export interface SignOutFlowControllerDeps {
   navigateToLogin: () => void;
   onBeforeSignOut?: () => void;
   onPendingChange: (pending: boolean) => void;
+  flushBeforeSignOut?: () => Promise<{ remainingPending: number }>;
 }
 
 /**
  * Menjalankan alur keluar akun dengan proteksi klik ganda sinkron,
- * status proses ("Keluar…"), notifikasi toast bila terjadi galat,
+ * flush best-effort antrean sinkronisasi, status proses ("Keluar…"),
+ * notifikasi toast bila masih ada perubahan belum tersinkron atau galat,
  * dan pengalihan akhir ke layar masuk (`/login`).
  */
 export function createSignOutFlowHandler(
@@ -65,6 +68,14 @@ export function createSignOutFlowHandler(
 
     try {
       deps.onBeforeSignOut?.();
+      if (deps.flushBeforeSignOut) {
+        const flushRes = await deps.flushBeforeSignOut().catch(() => ({ remainingPending: 0 }));
+        if (flushRes.remainingPending > 0) {
+          deps.notify(
+            `${flushRes.remainingPending} perubahan belum tersinkron. Datamu tetap aman di perangkat ini.`,
+          );
+        }
+      }
       const res = await deps.signOut();
       if (res?.error) {
         deps.notify(res.error);
@@ -161,6 +172,7 @@ export default function SignOutButton({
       signOut,
       notify,
       onBeforeSignOut,
+      flushBeforeSignOut: () => flushSyncBeforeSignOut(3_000),
       navigateToLogin: () => {
         if (onAfterSignOut) {
           onAfterSignOut();
