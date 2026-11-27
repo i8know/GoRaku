@@ -1,6 +1,6 @@
-# Entity Relationship Diagram (ERD) — GoRaku Fase B1
+# Entity Relationship Diagram (ERD) — GoRaku Fase B1 & B2
 
-Diagram di bawah memodelkan seluruh tabel PostgreSQL pada schema `public` (dengan `ENABLE` + `FORCE ROW LEVEL SECURITY`) beserta relasinya terhadap `auth.users` milik Supabase Auth. Tabel `decks`, `cards`, `srs_cards`, `review_logs`, dan `daily_counters` disiapkan sekarang agar skema ditinjau satu kali sebelum sinkronisasi studi diaktifkan pada **Fase B2**.
+Diagram di bawah memodelkan seluruh tabel PostgreSQL pada schema `public` (dengan `ENABLE` + `FORCE ROW LEVEL SECURITY`) beserta kolom sinkronisasi Fase B2 (`client_updated_at`, `srs_cards.deleted_at`, `daily_counters.reset_at`) dan relasinya terhadap `auth.users` milik Supabase Auth.
 
 ```mermaid
 erDiagram
@@ -31,6 +31,7 @@ erDiagram
   USER_SETTINGS {
     uuid user_id PK,FK
     jsonb data
+    bigint client_updated_at
     timestamptz created_at
     timestamptz updated_at
   }
@@ -44,6 +45,7 @@ erDiagram
     text category
     jsonb meta
     timestamptz deleted_at
+    bigint client_updated_at
     timestamptz created_at
     timestamptz updated_at
   }
@@ -54,6 +56,7 @@ erDiagram
     text id PK
     jsonb data
     timestamptz deleted_at
+    bigint client_updated_at
     timestamptz created_at
     timestamptz updated_at
   }
@@ -65,6 +68,7 @@ erDiagram
     jsonb data
     bigint last_review
     int reps
+    bigint deleted_at
     timestamptz created_at
     timestamptz updated_at
   }
@@ -95,7 +99,21 @@ erDiagram
     int extra_new
     int reviewed_count
     bigint last_activity
+    bigint reset_at
     timestamptz created_at
     timestamptz updated_at
   }
 ```
+
+## Ringkasan RPC Merge Atomik (Fase B2)
+
+Seluruh fungsi pada migrasi `202611270001_sync_b2.sql` berjalan dengan `SECURITY INVOKER`, `SET search_path = public`, hak eksekusi hanya untuk `authenticated` (dicabut dari `public` dan `anon`), selalu memaksa `user_id = (select auth.uid())`, serta mengembalikan `{ applied, skipped, rejected[] }` agar satu baris tidak valid (CHECK/FK) tidak menggagalkan seluruh batch:
+
+| RPC | Aturan Merge Per Baris | Indeks Keyset Pull |
+| :--- | :--- | :--- |
+| `sync_upsert_settings(jsonb)` | LWW ketat pada `client_updated_at` (`>` menang; seri pertahankan server) | `(user_id, updated_at desc)` |
+| `sync_upsert_decks(jsonb)` | LWW ketat pada `client_updated_at`, termasuk tombstone `deleted_at` | `(user_id, updated_at asc, id asc)` |
+| `sync_upsert_cards(jsonb)` | LWW ketat pada `client_updated_at`; pelanggaran FK deck hanya menolak baris terkait | `(user_id, updated_at asc, deck_id asc, id asc)` |
+| `sync_upsert_srs(jsonb)` | `last_review` lebih besar menang, seri → `reps` lebih besar; hidup hanya bila `deleted_at IS NULL` atau `last_review > deleted_at` | `(user_id, updated_at asc, deck_id asc, card_id asc)` |
+| `sync_upsert_counters(jsonb)` | `reset_at` lebih besar mereset counter ke epoch baru; `reset_at` sama → `GREATEST(...)` | `(user_id, updated_at asc, deck_id asc, study_day asc)` |
+| `sync_insert_review_logs(jsonb)` | Append-only `ON CONFLICT (user_id, device_id, card_id, reviewed_at) DO NOTHING` | `(user_id, id asc)` |
