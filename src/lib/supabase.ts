@@ -6,7 +6,7 @@ import {
 } from "@supabase/supabase-js";
 import { normalizeBasePath, resolveBaseAssetHref } from "./basePath";
 
-export const CURRENT_CONSENT_VERSION = "2026-11-19-b1";
+export const CURRENT_CONSENT_VERSION = "2026-11-27-b2";
 
 const VALID_JLPT_LEVELS = new Set(["N5", "N4", "N3", "N2", "N1"]);
 

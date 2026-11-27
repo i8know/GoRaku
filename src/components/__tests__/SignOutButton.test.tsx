@@ -202,7 +202,7 @@ describe("SignOutButton & jalur keluar di seluruh aplikasi", () => {
         display_name: "Hana",
         jlpt_level: "N3",
         consented_at: "2026-11-19T00:00:00.000Z",
-        consent_version: "2026-11-19-b1",
+        consent_version: "2026-11-27-b2",
       };
 
       // 1. Sidebar penuh (tidak diciutkan)
@@ -261,7 +261,7 @@ describe("SignOutButton & jalur keluar di seluruh aplikasi", () => {
       expect(settingsHtml).toContain("outline-button signout-btn");
       expect(settingsHtml).toContain("<span>Keluar</span>");
       expect(settingsHtml).toContain(
-        "Data belajarmu tetap tersimpan di perangkat ini. Sinkronisasi antar perangkat belum aktif.",
+        "Data belajarmu tetap tersimpan lokal di perangkat ini dan disinkronkan ke akunmu secara otomatis saat terhubung.",
       );
 
       // 5. Render komponen SignOutButton langsung untuk kedua varian
@@ -318,7 +318,7 @@ describe("SignOutButton & jalur keluar di seluruh aplikasi", () => {
                 display_name: "Hana",
                 jlpt_level: "N3",
                 consented_at: "2026-11-19T00:00:00.000Z",
-                consent_version: "2026-11-19-b1",
+                consent_version: "2026-11-27-b2",
               },
               error: null,
             })),

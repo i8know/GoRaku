@@ -18,6 +18,7 @@ import { clearScopedLocalDataForUser } from "./userStorageScope";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
+import { useSyncStore } from "../store/useSyncStore";
 
 export const DELETE_ACCOUNT_CONFIRMATION_WORD = "HAPUS";
 
@@ -245,6 +246,7 @@ export async function deleteCurrentUserAccount(options?: {
 
   // Penghapusan di server berhasil -> bersihkan seluruh data lokal milik user ini tanpa menghapus data akun lain
   const adoptedLegacyByThisUser = getLegacyAdoptedBy() === userId;
+  useSyncStore.getState().resetSyncState();
   await Promise.allSettled([flushReviewStorageWrites()]);
   await switchUserStorageScope(null);
   await clearScopedLocalDataForUser(userId);

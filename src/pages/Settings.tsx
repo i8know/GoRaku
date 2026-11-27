@@ -1,29 +1,88 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Icon, Button, PageHead, Toggle } from "../ui";
 import SignOutButton from "../components/SignOutButton";
+import { deriveSyncPresentation } from "../components/SyncStatusBadge";
 import { useAppStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useReviewStore } from "../store/useReviewStore";
-import { normalizeJlptLevel } from "../lib/supabase";
+import { useSyncStore } from "../store/useSyncStore";
+import { CURRENT_CONSENT_VERSION, isSupabaseConfigured, normalizeJlptLevel } from "../lib/supabase";
 import { listDictionaries, type DictionaryRecord } from "../lib/lexiconDb";
-import { clearAllReviewLogs } from "../lib/deckDb";
+import { clearAllReviewLogs, type SyncEntity } from "../lib/deckDb";
 import { flushReviewStorageWrites } from "../lib/reviewStorage";
 import {
   downloadScheduleBackupJson,
   importScheduleBackup,
 } from "../lib/scheduleBackup";
+import {
+  dismissQuarantinedItem,
+  retryQuarantinedItem,
+  setSyncPausedOnDevice,
+  syncNow,
+} from "../lib/sync/syncController";
+
+const SYNC_ENTITY_LABELS: Record<SyncEntity, string> = {
+  settings: "Pengaturan",
+  decks: "Deck",
+  cards: "Kartu",
+  srs_cards: "Jadwal SRS",
+  daily_counters: "Counter Harian",
+  review_logs: "Riwayat Ulasan",
+};
+
+function formatSyncTimestamp(ts: number | null): string {
+  if (!ts || !Number.isFinite(ts)) return "Belum pernah";
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(ts));
+  } catch {
+    return new Date(ts).toLocaleString("id-ID");
+  }
+}
 
 const DictionaryManagerModal = lazy(() => import("../components/DictionaryManagerModal"));
 
 export default function SettingsPage({ notify }: { notify: (m: string) => void }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAppStore((s) => s.user);
   const updateUser = useAppStore((s) => s.updateUser);
   const authUser = useAuthStore((s) => s.user);
+  const authStatus = useAuthStore((s) => s.status);
+  const authConfigured = useAuthStore((s) => s.isConfigured);
+  const authProfile = useAuthStore((s) => s.profile);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
+
+  const syncStatus = useSyncStore((s) => s.status);
+  const syncPendingCount = useSyncStore((s) => s.pendingCount);
+  const syncQuarantined = useSyncStore((s) => s.quarantined);
+  const syncLastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  const syncLastError = useSyncStore((s) => s.lastError);
+  const syncPausedOnDevice = useSyncStore((s) => s.pausedOnDevice);
+  const syncProgress = useSyncStore((s) => s.progress);
+
+  const syncAvailable = authStatus === "signedIn" && (authConfigured || isSupabaseConfigured);
+  const syncConsentPending = authProfile?.consent_version !== CURRENT_CONSENT_VERSION;
+  const syncView = deriveSyncPresentation({
+    status: syncStatus,
+    pendingCount: syncPendingCount,
+    quarantinedCount: syncQuarantined.length,
+    pausedOnDevice: syncPausedOnDevice,
+    progress: syncProgress,
+    consentPending: syncConsentPending,
+    lastError: syncLastError,
+  });
+
+  useEffect(() => {
+    if (location.hash === "#sinkronisasi" && typeof document !== "undefined") {
+      document.getElementById("sinkronisasi")?.scrollIntoView({ behavior: "auto", block: "start" });
+    }
+  }, [location.hash]);
 
   const [name, setName] = useState(user?.name || "");
   const [level, setLevel] = useState(user?.level || "N4");
@@ -155,8 +214,138 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
             <SignOutButton variant="label" />
           </div>
           <p className="st-note mt-3">
-            Data belajarmu tetap tersimpan di perangkat ini. Sinkronisasi antar perangkat belum aktif.
+            Data belajarmu tetap tersimpan lokal di perangkat ini dan disinkronkan ke akunmu secara otomatis saat terhubung.
           </p>
+        </section>
+
+        <section className="st-card" id="sinkronisasi" aria-labelledby="settings-sync-heading">
+          <div className="st-title">
+            <span><Icon name="refresh" size={18} /></span>
+            <div>
+              <h2 id="settings-sync-heading">Sinkronisasi</h2>
+              <p>Sinkronisasi data belajar lintas perangkat (local-first)</p>
+            </div>
+          </div>
+
+          {!syncAvailable ? (
+            <p className="st-note">
+              Masuk ke akun GoRaku dengan layanan Supabase aktif untuk menyinkronkan deck, kartu, jadwal FSRS, dan pengaturan antar perangkat.
+            </p>
+          ) : (
+            <>
+              <div className="st-row">
+                <div>
+                  <strong>Status saat ini</strong>
+                  <small aria-live="polite">
+                    <span className={`sync-inline-status sync-tone--${syncView.tone}`}>
+                      <Icon name={syncView.icon} size={13} /> {syncView.label}
+                    </span>
+                  </small>
+                </div>
+                <Button
+                  className="outline-button"
+                  disabled={syncStatus === "syncing" || syncPausedOnDevice || syncConsentPending}
+                  onClick={async () => {
+                    const res = await syncNow({ manual: true });
+                    if (res?.ok) {
+                      notify("Sinkronisasi selesai");
+                    } else if (res?.error) {
+                      notify(res.error.message);
+                    }
+                  }}
+                >
+                  <Icon name="refresh" size={15} />{" "}
+                  {syncStatus === "syncing" ? "Menyinkronkan…" : "Sinkronkan sekarang"}
+                </Button>
+              </div>
+
+              <div className="st-row">
+                <div>
+                  <strong>Terakhir tersinkron</strong>
+                  <small>{formatSyncTimestamp(syncLastSyncAt)}</small>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <strong>Perubahan tertunda</strong>
+                  <small>{syncPendingCount.toLocaleString("id-ID")} perubahan</small>
+                </div>
+              </div>
+
+              <div className="st-row">
+                <div>
+                  <strong>Jeda sinkronisasi di perangkat ini</strong>
+                  <small>Perubahan tetap disimpan secara lokal sampai diaktifkan lagi</small>
+                </div>
+                <Toggle
+                  on={syncPausedOnDevice}
+                  onChange={(paused) => {
+                    setSyncPausedOnDevice(paused);
+                    notify(
+                      paused
+                        ? "Sinkronisasi dijeda di perangkat ini"
+                        : "Sinkronisasi diaktifkan kembali",
+                    );
+                  }}
+                  label="Jeda sinkronisasi di perangkat ini"
+                />
+              </div>
+
+              {syncLastError && (
+                <div className="sync-alert" role="alert">
+                  <Icon name="alert" size={15} />
+                  <span>{syncLastError}</span>
+                </div>
+              )}
+
+              {syncQuarantined.length > 0 && (
+                <div className="sync-quarantine" aria-label="Daftar perubahan yang perlu ditinjau">
+                  <p className="sync-quarantine-head">
+                    <Icon name="alert" size={14} />{" "}
+                    <strong>{syncQuarantined.length} perubahan ditolak server</strong> — data lain tetap tersinkron.
+                  </p>
+                  <ul className="sync-quarantine-list">
+                    {syncQuarantined.map((row) => (
+                      <li key={row.id ?? `${row.entity}:${row.key}`} className="sync-quarantine-item">
+                        <div className="sync-quarantine-meta">
+                          <strong>
+                            {SYNC_ENTITY_LABELS[row.entity] ?? row.entity} · <code>{row.key}</code>
+                          </strong>
+                          <small>{row.error || "Ditolak oleh aturan validasi server."}</small>
+                        </div>
+                        <div className="sync-quarantine-actions">
+                          <Button
+                            className="outline-button"
+                            onClick={async () => {
+                              if (row.id !== undefined) {
+                                await retryQuarantinedItem(row.id);
+                                notify("Mencoba menyinkronkan ulang baris yang tertahan");
+                              }
+                            }}
+                          >
+                            Coba lagi
+                          </Button>
+                          <Button
+                            className="outline-button warn"
+                            onClick={async () => {
+                              if (row.id !== undefined) {
+                                await dismissQuarantinedItem(row.id);
+                                notify("Baris yang tertahan dihapus dari antrean sinkronisasi");
+                              }
+                            }}
+                          >
+                            Abaikan
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <p className="st-note mt-2">
+                Media kartu (audio/gambar), buku/novel, manga, dan kamus Yomitan tetap disimpan lokal di perangkat masing-masing.
+              </p>
+            </>
+          )}
         </section>
 
         <section className="st-card">

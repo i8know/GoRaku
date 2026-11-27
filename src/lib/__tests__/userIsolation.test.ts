@@ -121,7 +121,7 @@ function createSwitchableAuthMock(usersByEmail: Record<string, { id: string; nam
                   display_name: String(currentSession.user.user_metadata?.full_name ?? "Pengguna"),
                   jlpt_level: "N4",
                   consented_at: "2026-11-19T00:00:00.000Z",
-                  consent_version: "2026-11-19-b1",
+                  consent_version: "2026-11-27-b2",
                 }
               : null,
             error: null,

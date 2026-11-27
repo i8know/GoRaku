@@ -235,7 +235,7 @@ describe("Task 2 — Validasi Kunci Supabase, useAuthStore, Helper & Route Guard
         display_name: "Hana Profiles",
         jlpt_level: "N1",
         consented_at: "2026-11-19T00:00:00Z",
-        consent_version: "2026-11-19-b1",
+        consent_version: "2026-11-27-b2",
       },
     });
 

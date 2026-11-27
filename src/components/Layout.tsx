@@ -18,6 +18,7 @@ import SignOutButton, {
   markIntentionalSignOut,
   scheduleIntentionalSignOutReset,
 } from "./SignOutButton";
+import SyncStatusBadge from "./SyncStatusBadge";
 import {
   shouldPromptLegacyAdoption,
   type LegacyDataSummary,
@@ -1130,6 +1131,10 @@ export default function ProtectedLayout() {
             </div>
           </div>
 
+          <div className="mt-2">
+            <SyncStatusBadge variant="sidebar" collapsed={effectiveCollapsed} />
+          </div>
+
           <div className="user-profile mt-2 flex items-center justify-between gap-2 pt-2 border-t border-white/10">
             <Link
               to="/profile"
@@ -1190,6 +1195,7 @@ export default function ProtectedLayout() {
           </button>
 
           <div className="top-actions">
+            <SyncStatusBadge variant="topbar" />
             {totalDue > 0 && (
               <button
                 type="button"
