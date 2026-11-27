@@ -319,7 +319,7 @@ function handleAuthStoreChange(): void {
   useSyncStore.getState().loadPausedPreference(auth.user.id);
   void refreshSyncCounters();
 
-  if (auth.profile?.consent_version === CURRENT_CONSENT_VERSION) {
+  if (auth.profile?.consent_version === CURRENT_CONSENT_VERSION && isTabVisible()) {
     void syncNow({ manual: false });
   }
 }
