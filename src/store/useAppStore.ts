@@ -7,6 +7,7 @@ import {
   isBlockedUnauthenticatedStorageAccess,
   isPersistWriteSuppressed,
 } from "../lib/userStorageScope";
+import { newDeckId, newMinedCardId } from "../lib/stableId";
 
 export type NewCardOrder = "urutan" | "acak";
 
@@ -343,7 +344,7 @@ export const useAppStore = create<AppState>()(
         })),
       decks: createInitialDecks(),
       addDeck: (newDeck) => {
-        const id = Date.now().toString();
+        const id = newDeckId();
         set((state) => ({
           decks: [
             {
@@ -410,7 +411,7 @@ export const useAppStore = create<AppState>()(
       minedQueue: createInitialMinedQueue(),
       addMinedCard: (card) =>
         set((state) => ({
-          minedQueue: [{ ...card, id: Date.now().toString() }, ...state.minedQueue],
+          minedQueue: [{ ...card, id: newMinedCardId() }, ...state.minedQueue],
         })),
       removeMinedCard: (id) =>
         set((state) => ({

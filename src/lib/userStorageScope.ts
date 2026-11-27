@@ -14,6 +14,8 @@
  *   diblokir sehingga data warisan tidak pernah bocor ke sesi keluar atau akun baru tanpa persetujuan eksplisit.
  */
 
+import { generateSecureUuid } from "./stableId";
+
 export const LEGACY_APP_STORAGE_KEY = "japanese-learning-storage";
 export const LEGACY_REVIEW_STORAGE_KEY = "japanese-review-storage";
 export const LEGACY_REVIEW_MIGRATION_DONE_KEY = "japanese-review-storage::migrated-v1";
@@ -162,21 +164,6 @@ export function removeScopedStorageItem(
   }
 }
 
-function generateUuidFallback(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
-    return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
-  }
-  return `dev-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
 /**
  * Menghasilkan atau mengambil ID perangkat lokal unik milik pengguna ini (`goraku-device-id::<userId>`).
  * Mengembalikan `null` jika tidak ada pengguna aktif agar ID perangkat tidak pernah terbagi lintas akun.
@@ -201,7 +188,7 @@ export function getOrCreateDeviceId(userId: string | null = activeUserId): strin
   const cached = deviceIdMemoryFallback.get(uid);
   if (cached) return cached;
 
-  const generated = generateUuidFallback();
+  const generated = generateSecureUuid();
   deviceIdMemoryFallback.set(uid, generated);
 
   try {

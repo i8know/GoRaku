@@ -23,11 +23,13 @@ import {
   extractSounds,
   furiToKana,
   furiToKanji,
+  guessMapping,
   hasFurigana,
   sanitizeInline,
   toPlain,
   type FieldMapping,
 } from "./ankiText";
+import { assignContentHashIds } from "./stableId";
 import type { StoredCard } from "./deckDb";
 import type { SRSCard } from "./srs";
 
@@ -920,8 +922,32 @@ export function parseDelimitedText(text: string, fileName: string, fileSize: num
     throw new ApkgError("File hanya memiliki baris header tanpa baris data kartu.", "EMPTY_DECK");
   }
 
+  const guessed = guessMapping(fields, dataRows.slice(0, 25));
+  const wordIdx = guessed.word >= 0 ? guessed.word : 0;
+  const meaningIdx =
+    guessed.meaning >= 0
+      ? guessed.meaning
+      : fields.length >= 2 && wordIdx !== 1
+        ? 1
+        : -1;
+  const readingIdx =
+    guessed.reading >= 0
+      ? guessed.reading
+      : fields.length >= 3 && wordIdx === 0 && meaningIdx === 2
+        ? 1
+        : -1;
+
+  const rowIds = assignContentHashIds(
+    "csv",
+    dataRows.map((row) => ({
+      word: wordIdx >= 0 ? (row[wordIdx] ?? "") : "",
+      reading: readingIdx >= 0 ? (row[readingIdx] ?? "") : "",
+      meaning: meaningIdx >= 0 ? (row[meaningIdx] ?? "") : "",
+    })),
+  );
+
   const notes: ApkgNote[] = dataRows.map((row, idx) => ({
-    id: `csv-${idx + 1}`,
+    id: rowIds[idx],
     noteTypeId: "csv-type",
     deckId: "csv-deck",
     fields: fields.map((_, i) => row[i] ?? ""),
@@ -981,10 +1007,18 @@ export function parseJsonDeck(text: string, fileName: string, fileSize: number):
   }
 
   const fields = ["Kata", "Bacaan", "Arti", "Kalimat", "Terjemahan", "Tag"];
+  const rowIds = assignContentHashIds(
+    "json",
+    cards.map((c) => ({
+      word: c.word || "",
+      reading: c.reading || "",
+      meaning: c.meaning || "",
+    })),
+  );
   const notes: ApkgNote[] = cards.map((c, i) => {
     const tags = Array.isArray(c.tags) ? c.tags : [];
     return {
-      id: `json-${i + 1}`,
+      id: rowIds[i],
       noteTypeId: "json-type",
       deckId: "json-deck",
       fields: [

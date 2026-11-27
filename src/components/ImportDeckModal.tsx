@@ -18,6 +18,7 @@ import { renderJapanese, ROLE_LABELS, ROLES, toPlain, type FieldMapping, type Ro
 import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
 import { speakJapanese } from "../lib/tts";
 import { getActiveStorageUserId } from "../lib/userStorageScope";
+import { newDeckId } from "../lib/stableId";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -516,7 +517,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
 
     const isNew = destMode === "new";
     const chosenExisting = decks.find((d) => d.id === existingDeckId);
-    const deckId = isNew ? `deck-${Date.now()}` : existingDeckId;
+    const deckId = isNew ? newDeckId("deck-") : existingDeckId;
     const finalTitle = isNew ? title.trim() : (chosenExisting?.title ?? "Deck");
 
     activeCommitRef.current = {

@@ -9,6 +9,7 @@ import { compressBubbleImageForCard } from "./mangaCoordinates";
 import { SEED_TOTALS, useAppStore } from "../store/useAppStore";
 import { useReviewStore, waitForReviewStoreHydration } from "../store/useReviewStore";
 import { setScopedStorageItem } from "./userStorageScope";
+import { newCardId } from "./stableId";
 
 export const DECK_LEVELS = ["N5", "N4", "N3", "N2", "N1", "Campuran"] as const;
 export const DECK_KINDS = ["Core", "Anime", "Novel", "Manga", "YouTube"] as const;
@@ -440,8 +441,6 @@ export interface CardDraft {
   tags: string[];
 }
 
-const newId = () => `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-
 async function syncTotal(deckId: string) {
   const directCards = await getCards(deckId);
   const decks = useAppStore.getState().decks;
@@ -473,7 +472,7 @@ async function syncTotal(deckId: string) {
 
 export async function addCards(deckId: string, drafts: CardDraft[]): Promise<StoredCard[]> {
   const cards: StoredCard[] = drafts.map((d) => ({
-    id: newId() + Math.random().toString(36).slice(2, 4),
+    id: newCardId(),
     deckId,
     word: d.word.trim(),
     reading: d.reading.trim(),
@@ -524,7 +523,7 @@ export async function addMinedCardToDeck(
   deckId: string,
   draft: CardDraft & { subdeck?: string; imageBlob?: Blob },
 ): Promise<StoredCard> {
-  const cardId = newId() + Math.random().toString(36).slice(2, 4);
+  const cardId = newCardId();
   let imageMediaName: string | undefined;
 
   if (draft.imageBlob && draft.imageBlob.size > 0) {
