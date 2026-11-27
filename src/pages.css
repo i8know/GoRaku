@@ -223,3 +223,18 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .pg-primary { min-height: 44px; }
   .lb-save { width: 40px; height: 40px; }
 }
+
+/* Task 5: petunjuk netral saat media kartu tidak tersedia lokal (belum disinkronkan) */
+.rv-missing-media {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px auto 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--garis);
+  background: var(--kertas-2);
+  color: var(--teks-redup);
+  font-size: 11px;
+  line-height: 1.4;
+}

@@ -68,6 +68,7 @@ export default function ReviewPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [history, setHistory] = useState<UndoHistoryItem[]>([]);
   const [media, setMedia] = useState<{ audio?: string; sentenceAudio?: string; image?: string }>({});
+  const [missingMedia, setMissingMedia] = useState<{ audio?: boolean; sentenceAudio?: boolean; image?: boolean }>({});
   const [playing, setPlaying] = useState<"word" | "sentence" | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const drillSeqRef = useRef(0);
@@ -106,22 +107,32 @@ export default function ReviewPage() {
   // Resolve media blobs for the current card (supports both .apkg media and manga bubble crops).
   useEffect(() => {
     setMedia({});
+    setMissingMedia({});
     if (!card || !deck) return;
     let alive = true;
     const urls: string[] = [];
+    const lookupDeckId = card.deckId || deck.id;
     (async () => {
       const out: typeof media = {};
+      const missing: typeof missingMedia = {};
       for (const k of ["audio", "sentenceAudio", "image"] as const) {
         const name = card[k];
         if (!name) continue;
-        const blob = await getMedia(deck.id, name).catch(() => undefined);
-        if (!blob) continue;
+        const blob = await getMedia(lookupDeckId, name).catch(() => undefined);
+        if (!blob) {
+          missing[k] = true;
+          continue;
+        }
         const url = URL.createObjectURL(blob);
         urls.push(url);
         out[k] = url;
       }
-      if (alive) setMedia(out);
-      else urls.forEach((u) => URL.revokeObjectURL(u));
+      if (alive) {
+        setMedia(out);
+        setMissingMedia(missing);
+      } else {
+        urls.forEach((u) => URL.revokeObjectURL(u));
+      }
     })();
     return () => {
       alive = false;
@@ -452,23 +463,57 @@ export default function ReviewPage() {
           {(settings.furi || showAnswer) && card.reading && <small className="review-reading" lang="ja">{card.reading}</small>}
           <div className="review-word-row">
             <h1 className="review-word" lang="ja">{card.word}</h1>
-            <button className={`review-audio-btn ${playing === "word" ? "rv-playing" : ""}`} onClick={() => (playing === "word" ? stopAudio() : play("word"))} aria-label="Putar audio" title="Putar pengucapan kata (R)">
+            <button
+              className={`review-audio-btn ${playing === "word" ? "rv-playing" : ""}`}
+              onClick={() => (playing === "word" ? stopAudio() : play("word"))}
+              aria-label={missingMedia.audio ? "Putar pengucapan kata (suara sistem)" : "Putar audio"}
+              title={
+                missingMedia.audio
+                  ? "Audio asli belum tersinkron di perangkat ini · memakai suara sistem (R)"
+                  : "Putar pengucapan kata (R)"
+              }
+            >
               <Icon name="volume" size={22} />
             </button>
           </div>
+          {missingMedia.audio && (
+            <p className="rv-missing-media" role="note">
+              Audio asli hanya di perangkat sumber · memakai suara sistem.
+            </p>
+          )}
           {showAnswer && (
             <div className="review-answer">
-              {media.image && <img className="rv-image" src={media.image} alt="" />}
+              {media.image ? (
+                <img className="rv-image" src={media.image} alt="" />
+              ) : missingMedia.image ? (
+                <p className="rv-missing-media" role="note">
+                  <Icon name="eye" size={13} /> Gambar hanya tersimpan di perangkat sumber (media belum disinkronkan).
+                </p>
+              ) : null}
               {card.meaning && <p className="review-meaning" dangerouslySetInnerHTML={{ __html: sanitizeInline(card.meaning) }} />}
               {(card.sentence || card.translation) && (
                 <div className="review-context">
                   {card.sentence && (
                     <div className="rv-sentence-row">
                       <p className="review-sentence" lang="ja" dangerouslySetInnerHTML={{ __html: renderJapanese(sanitizeInline(card.sentence), settings.furi) }} />
-                      <button className={`rv-mini-audio ${playing === "sentence" ? "rv-playing" : ""}`} onClick={() => play("sentence")} aria-label="Putar audio kalimat" title="Dengarkan kalimat">
+                      <button
+                        className={`rv-mini-audio ${playing === "sentence" ? "rv-playing" : ""}`}
+                        onClick={() => play("sentence")}
+                        aria-label="Putar audio kalimat"
+                        title={
+                          missingMedia.sentenceAudio
+                            ? "Audio kalimat asli belum tersedia di perangkat ini · memakai suara sistem"
+                            : "Dengarkan kalimat"
+                        }
+                      >
                         <Icon name="volume" size={15} />
                       </button>
                     </div>
+                  )}
+                  {missingMedia.sentenceAudio && (
+                    <p className="rv-missing-media" role="note">
+                      Audio kalimat asli hanya di perangkat sumber · memakai suara sistem.
+                    </p>
                   )}
                   {card.translation && <p className="review-translation" dangerouslySetInnerHTML={{ __html: sanitizeInline(card.translation) }} />}
                 </div>

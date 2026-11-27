@@ -18,6 +18,7 @@ import { addCards, exportDeck, loadDeckCards, removeCards, splitLevel, updateCar
 import { deleteDeckData, getMedia, type StoredCard } from "../lib/deckDb";
 import { aggregateParentStats, getLeafDescendantDecks, extractLevelCode } from "../lib/deckSubdecks";
 import { toPlain } from "../lib/ankiText";
+import { speakJapanese } from "../lib/tts";
 import CardEditorModal from "../components/CardEditorModal";
 import DeckIdentityFields, { type DeckIdentity } from "../components/DeckIdentityFields";
 
@@ -122,8 +123,16 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
     async (c: StoredCard) => {
       stopRowAudio();
       if (!c.audio) return;
-      const blob = await getMedia(deckId, c.audio).catch(() => undefined);
-      if (!blob) return;
+      const blob = await getMedia(c.deckId || deckId, c.audio).catch(() => undefined);
+      if (!blob) {
+        const spoken = speakJapanese(c.reading || c.word);
+        notify(
+          spoken
+            ? "Audio asli belum ada di perangkat ini · memutar suara sistem"
+            : "Audio asli hanya tersimpan di perangkat sumber (media tidak disinkronkan)",
+        );
+        return;
+      }
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       activeAudioRef.current = { audio, url };
@@ -135,7 +144,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
       audio.addEventListener("error", cleanup, { once: true });
       void audio.play().catch(cleanup);
     },
-    [deckId, stopRowAudio],
+    [deckId, notify, stopRowAudio],
   );
 
   const setTab = (t: Tab) => {
@@ -657,7 +666,11 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                               <Icon name="volume" size={12} />
                             </button>
                           )}
-                          {c.image && <Icon name="eye" size={12} />}
+                          {c.image && (
+                            <span title="Kartu memiliki gambar (tersimpan lokal di perangkat sumber)">
+                              <Icon name="eye" size={12} />
+                            </span>
+                          )}
                         </span>
                       )}
                     </strong>

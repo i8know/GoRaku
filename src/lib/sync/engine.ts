@@ -31,7 +31,7 @@ import {
 } from "../deckDb";
 import { flushReviewStorageWrites } from "../reviewStorage";
 import { normalizeStudyDayKey } from "../studyDay";
-import { getOrCreateDeviceId, LEGACY_SEED_FLAG, setScopedStorageItem } from "../userStorageScope";
+import { getOrCreateDeviceId } from "../userStorageScope";
 import { createInitialSettings, useAppStore, type DeckItem } from "../../store/useAppStore";
 import { useReviewStore, type DeckActivity, type NewIntroducedEntry } from "../../store/useReviewStore";
 import type { SRSCard } from "../srs";
@@ -76,6 +76,8 @@ const META_SETTINGS_CLIENT_TS = "settingsClientTs";
 const META_DECK_TIMESTAMPS = "deckTimestamps";
 const META_CARD_TIMESTAMPS = "cardTimestamps";
 const META_SRS_TOMBSTONES = "srsTombstones";
+const META_DELETED_DECK_IDS = "deletedDeckIds";
+const META_DELETED_CARD_KEYS = "deletedCardKeys";
 
 const RPC_BY_ENTITY: Record<SyncEntity, string> = {
   settings: "sync_upsert_settings",
@@ -115,6 +117,7 @@ export interface SyncCycleResult {
   pendingRemaining: number;
   malformedSkipped: number;
   requestCount: number;
+  pushRequestCount?: number;
   error?: ClassifiedSyncError;
 }
 
@@ -424,9 +427,23 @@ async function pushOutbox(
     }
 
     const rpcName = RPC_BY_ENTITY[entity];
+    const pushedTsMap =
+      entity === "decks"
+        ? { ...((await getSyncMeta<Record<string, number>>(META_DECK_TIMESTAMPS)) ?? {}) }
+        : entity === "cards"
+          ? { ...((await getSyncMeta<Record<string, number>>(META_CARD_TIMESTAMPS)) ?? {}) }
+          : null;
+    let pushedTsDirty = false;
+    let pushedSettingsTs: number | null = null;
 
     for (let i = 0; i < pendingRows.length; i += batchSize) {
       if (isAbortRequested(opts)) {
+        if (pushedTsMap && pushedTsDirty) {
+          await setSyncMeta(entity === "decks" ? META_DECK_TIMESTAMPS : META_CARD_TIMESTAMPS, pushedTsMap);
+        }
+        if (pushedSettingsTs !== null) {
+          await setSyncMeta(META_SETTINGS_CLIENT_TS, pushedSettingsTs);
+        }
         return { pushed: totalPushed, aborted: true };
       }
 
@@ -451,6 +468,12 @@ async function pushOutbox(
       );
 
       if (res.error) {
+        if (pushedTsMap && pushedTsDirty) {
+          await setSyncMeta(entity === "decks" ? META_DECK_TIMESTAMPS : META_CARD_TIMESTAMPS, pushedTsMap);
+        }
+        if (pushedSettingsTs !== null) {
+          await setSyncMeta(META_SETTINGS_CLIENT_TS, pushedSettingsTs);
+        }
         const classified = classifySyncError(res.error);
         if (classified.kind === "constraint") {
           // Fallback karantina bila seluruh batch ditolak dengan 23514/23503/22xxx
@@ -490,13 +513,25 @@ async function pushOutbox(
         await markOutboxKeysQuarantined(entity, toQuarantine);
       }
 
-      const succeededIds = batch
-        .filter((r) => !rejectedKeySet.has(r.key) && r.id !== undefined)
-        .map((r) => r.id!);
+      const succeededRows = batch.filter((r) => !rejectedKeySet.has(r.key) && r.id !== undefined);
+      const succeededIds = succeededRows.map((r) => r.id!);
 
       if (succeededIds.length > 0) {
         await markOutboxIdsDone(succeededIds);
         totalPushed += succeededIds.length;
+        // Catat timestamp client yang baru saja berhasil dikirim agar pull gema langsung seri (skip tulis ulang)
+        for (const r of succeededRows) {
+          const ts = Number(r.payload.client_updated_at ?? r.clientTs ?? 0);
+          if (!Number.isFinite(ts) || ts < 0) continue;
+          if (pushedTsMap) {
+            if (ts > (pushedTsMap[r.key] ?? -1)) {
+              pushedTsMap[r.key] = ts;
+              pushedTsDirty = true;
+            }
+          } else if (entity === "settings") {
+            pushedSettingsTs = Math.max(pushedSettingsTs ?? 0, ts);
+          }
+        }
       }
 
       processedSoFar += batch.length;
@@ -510,6 +545,13 @@ async function pushOutbox(
       if (i + batchSize < pendingRows.length) {
         await yieldToEventLoop();
       }
+    }
+
+    if (pushedTsMap && pushedTsDirty) {
+      await setSyncMeta(entity === "decks" ? META_DECK_TIMESTAMPS : META_CARD_TIMESTAMPS, pushedTsMap);
+    }
+    if (pushedSettingsTs !== null) {
+      await setSyncMeta(META_SETTINGS_CLIENT_TS, pushedSettingsTs);
     }
   }
 
@@ -596,7 +638,6 @@ async function pullIncremental(
   let totalPulled = 0;
   let malformedSkipped = 0;
   let decksOrCardsChanged = false;
-  let serverHadDecks = false;
 
   await loadCounterResetEpochs();
 
@@ -662,11 +703,16 @@ async function pullIncremental(
     const deckTsMap: Record<string, number> = {
       ...((await getSyncMeta<Record<string, number>>(META_DECK_TIMESTAMPS)) ?? {}),
     };
+    const deletedDeckSet = new Set<string>(
+      (await getSyncMeta<string[]>(META_DELETED_DECK_IDS)) ?? [],
+    );
     let deckTsDirty = false;
+    let deletedDecksDirty = false;
 
     while (true) {
       if (isAbortRequested(opts)) {
         if (deckTsDirty) await setSyncMeta(META_DECK_TIMESTAMPS, deckTsMap);
+        if (deletedDecksDirty) await setSyncMeta(META_DELETED_DECK_IDS, [...deletedDeckSet]);
         return { pulled: totalPulled, malformedSkipped, aborted: true };
       }
 
@@ -696,12 +742,12 @@ async function pullIncremental(
 
       if (res.error) {
         if (deckTsDirty) await setSyncMeta(META_DECK_TIMESTAMPS, deckTsMap);
+        if (deletedDecksDirty) await setSyncMeta(META_DELETED_DECK_IDS, [...deletedDeckSet]);
         return { pulled: totalPulled, malformedSkipped, aborted: false, error: classifySyncError(res.error) };
       }
 
       const rows = Array.isArray(res.data) ? res.data : [];
       if (rows.length === 0) break;
-      serverHadDecks = true;
 
       await withSyncCaptureSuppressed(async () => {
         const curDecks = [...useAppStore.getState().decks];
@@ -717,8 +763,10 @@ async function pullIncremental(
           }
 
           const existingIdx = deckIdxById.get(id);
-          const existingLocalTs =
-            deckTsMap[id] ?? (existingIdx !== undefined ? (curDecks[existingIdx].updatedAt ?? 0) : -1);
+          const existingLocalTs = Math.max(
+            deckTsMap[id] ?? -1,
+            existingIdx !== undefined ? (curDecks[existingIdx].updatedAt ?? 0) : -1,
+          );
 
           const lww = mergeLwwRecord(
             existingLocalTs >= 0 ? { client_updated_at: existingLocalTs } : null,
@@ -731,7 +779,13 @@ async function pullIncremental(
           if (deletedMs !== null) {
             deckTsMap[id] = incomingTs;
             deckTsDirty = true;
+            if (!deletedDeckSet.has(id)) {
+              deletedDeckSet.add(id);
+              deletedDecksDirty = true;
+            }
             if (existingIdx !== undefined) {
+              // Pastikan deck baru yang sudah masuk `curDecks` di halaman ini tersimpan sebelum removeDeck membaca store
+              useAppStore.setState({ decks: curDecks });
               useAppStore.getState().removeDeck(id);
               useReviewStore.getState().removeDeck(id);
               await deleteDeckData(id).catch(() => undefined);
@@ -756,6 +810,9 @@ async function pullIncremental(
 
           deckTsMap[id] = incomingTs;
           deckTsDirty = true;
+          if (deletedDeckSet.delete(id)) {
+            deletedDecksDirty = true;
+          }
           if (existingIdx !== undefined) {
             curDecks[existingIdx] = mapped;
           } else {
@@ -782,6 +839,10 @@ async function pullIncremental(
         await setSyncMeta(META_DECK_TIMESTAMPS, deckTsMap);
         deckTsDirty = false;
       }
+      if (deletedDecksDirty) {
+        await setSyncMeta(META_DELETED_DECK_IDS, [...deletedDeckSet]);
+        deletedDecksDirty = false;
+      }
 
       opts.onProgress?.({ phase: "pull", entity: "decks", done: totalPulled, total: totalPulled });
       if (rows.length < pageSize) break;
@@ -797,11 +858,16 @@ async function pullIncremental(
     const cardTsMap: Record<string, number> = {
       ...((await getSyncMeta<Record<string, number>>(META_CARD_TIMESTAMPS)) ?? {}),
     };
+    const deletedCardSet = new Set<string>(
+      (await getSyncMeta<string[]>(META_DELETED_CARD_KEYS)) ?? [],
+    );
     let cardTsDirty = false;
+    let deletedCardsDirty = false;
 
     while (true) {
       if (isAbortRequested(opts)) {
         if (cardTsDirty) await setSyncMeta(META_CARD_TIMESTAMPS, cardTsMap);
+        if (deletedCardsDirty) await setSyncMeta(META_DELETED_CARD_KEYS, [...deletedCardSet]);
         return { pulled: totalPulled, malformedSkipped, aborted: true };
       }
 
@@ -836,6 +902,7 @@ async function pullIncremental(
 
       if (res.error) {
         if (cardTsDirty) await setSyncMeta(META_CARD_TIMESTAMPS, cardTsMap);
+        if (deletedCardsDirty) await setSyncMeta(META_DELETED_CARD_KEYS, [...deletedCardSet]);
         return { pulled: totalPulled, malformedSkipped, aborted: false, error: classifySyncError(res.error) };
       }
 
@@ -865,6 +932,10 @@ async function pullIncremental(
         if (deletedMs !== null) {
           cardTsMap[key] = incomingTs;
           cardTsDirty = true;
+          if (!deletedCardSet.has(key)) {
+            deletedCardSet.add(key);
+            deletedCardsDirty = true;
+          }
           const arr = deletesByDeck.get(deckId) ?? [];
           arr.push(id);
           deletesByDeck.set(deckId, arr);
@@ -880,6 +951,9 @@ async function pullIncremental(
         }
         cardTsMap[key] = incomingTs;
         cardTsDirty = true;
+        if (deletedCardSet.delete(key)) {
+          deletedCardsDirty = true;
+        }
         cardsToPut.push(sanitized);
         decksOrCardsChanged = true;
         totalPulled += 1;
@@ -906,6 +980,10 @@ async function pullIncremental(
       if (cardTsDirty) {
         await setSyncMeta(META_CARD_TIMESTAMPS, cardTsMap);
         cardTsDirty = false;
+      }
+      if (deletedCardsDirty) {
+        await setSyncMeta(META_DELETED_CARD_KEYS, [...deletedCardSet]);
+        deletedCardsDirty = false;
       }
 
       opts.onProgress?.({ phase: "pull", entity: "cards", done: totalPulled, total: totalPulled });
@@ -1274,9 +1352,6 @@ async function pullIncremental(
     if (decksOrCardsChanged) {
       await recomputeAllDeckTotalsLocally();
     }
-    if (serverHadDecks) {
-      setScopedStorageItem(LEGACY_SEED_FLAG, "1", opts.userId);
-    }
     refreshCaptureSnapshots();
   });
   await flushReviewStorageWrites();
@@ -1299,6 +1374,7 @@ export async function runSyncCycle(opts: SyncCycleOptions): Promise<SyncCycleRes
     }
 
     const pushRes = await pushOutbox(opts, deviceId, authState);
+    const pushRequestCount = authState.requestCount;
     if (pushRes.error || pushRes.aborted) {
       const [pendingRemaining, quarantined] = await Promise.all([
         getPendingOutboxCount(),
@@ -1313,6 +1389,7 @@ export async function runSyncCycle(opts: SyncCycleOptions): Promise<SyncCycleRes
         pendingRemaining,
         malformedSkipped: 0,
         requestCount: authState.requestCount,
+        pushRequestCount,
         error: pushRes.error,
       };
     }
@@ -1337,6 +1414,7 @@ export async function runSyncCycle(opts: SyncCycleOptions): Promise<SyncCycleRes
           pendingRemaining,
           malformedSkipped,
           requestCount: authState.requestCount,
+          pushRequestCount,
           error: pullRes.error,
         };
       }
@@ -1357,6 +1435,7 @@ export async function runSyncCycle(opts: SyncCycleOptions): Promise<SyncCycleRes
       pendingRemaining,
       malformedSkipped,
       requestCount: authState.requestCount,
+      pushRequestCount,
     };
   } catch (err) {
     const classified = classifySyncError(err);

@@ -2,7 +2,7 @@
 // and the SRS store (schedules) in sync. UI code should go through these helpers
 // instead of calling deckDb directly.
 
-import { deleteCards, getCards, getDeckMediaCount, listStoredDeckIds, putCards, putMedia, type StoredCard } from "./deckDb";
+import { deleteCards, getCards, getDeckMediaCount, getSyncMeta, listStoredDeckIds, putCards, putMedia, type StoredCard } from "./deckDb";
 import { sanitizeInline, toPlain } from "./ankiText";
 import { toHiragana } from "./kana";
 import { compressBubbleImageForCard } from "./mangaCoordinates";
@@ -159,11 +159,20 @@ async function seedStarterDecks(): Promise<void> {
   if (getScopedStorageItem(SEED_FLAG) === "1") return;
 
   await withSyncCaptureSuppressed(async () => {
+    const [deletedDecksArr, deletedCardsArr, srsTombstones] = await Promise.all([
+      getSyncMeta<string[]>("deletedDeckIds").catch(() => undefined),
+      getSyncMeta<string[]>("deletedCardKeys").catch(() => undefined),
+      getSyncMeta<Record<string, number>>("srsTombstones").catch(() => undefined),
+    ]);
+    const deletedDeckIds = new Set(deletedDecksArr ?? []);
+    const deletedCardKeys = new Set(deletedCardsArr ?? []);
+    const tombstonedSrs = srsTombstones ?? {};
+
     const store = useAppStore.getState();
     const currentDecks = store.decks;
 
     // If Philia Space root deck is missing in state (e.g. from existing older localStorage), inject the hierarchy
-    if (!currentDecks.some((d) => d.id === "ps-root")) {
+    if (!deletedDeckIds.has("ps-root") && !currentDecks.some((d) => d.id === "ps-root")) {
       const philiaBundle: import("../store/useAppStore").DeckItem[] = [
         {
           id: "ps-root",
@@ -302,33 +311,61 @@ async function seedStarterDecks(): Promise<void> {
           source: "manual",
         },
       ];
-      store.importDecksBatch(philiaBundle);
+      const existingIds = new Set(currentDecks.map((d) => d.id));
+      const aliveBundle = philiaBundle
+        .filter((d) => !deletedDeckIds.has(d.id) && !existingIds.has(d.id))
+        .map((d) =>
+          d.subdeckIds
+            ? { ...d, subdeckIds: d.subdeckIds.filter((sid) => !deletedDeckIds.has(sid)) }
+            : d,
+        );
+      if (aliveBundle.length > 0) {
+        store.importDecksBatch(aliveBundle);
+      }
     }
 
-    // Seed cards into IndexedDB for all seed keys (tanpa masuk outbox sinkronisasi)
+    const aliveDeckIds = new Set(useAppStore.getState().decks.map((d) => d.id));
+
+    // Seed cards into IndexedDB for all alive seed keys (tanpa masuk outbox sinkronisasi & menghormati tombstone)
     for (const [deckId, rows] of Object.entries(SEEDS)) {
+      if (deletedDeckIds.has(deckId) || !aliveDeckIds.has(deckId)) continue;
       const existing = await getCards(deckId);
-      if (existing.length > 0) continue;
-      const cards: StoredCard[] = rows.map(([word, reading, meaning, sentence, translation], i) => ({
-        id: `s${deckId}-${String(i + 1).padStart(2, "0")}`,
-        deckId,
-        word,
-        reading,
-        meaning,
-        sentence,
-        translation,
-        subdeck: "",
-        tags: [],
-      }));
-      await putCards(cards, { suppressSync: true });
+      const existingCardIds = new Set(existing.map((c) => c.id));
+      const missingCards: StoredCard[] = [];
+      for (let i = 0; i < rows.length; i++) {
+        const cardId = `s${deckId}-${String(i + 1).padStart(2, "0")}`;
+        if (existingCardIds.has(cardId) || deletedCardKeys.has(`${deckId}::${cardId}`)) {
+          continue;
+        }
+        const [word, reading, meaning, sentence, translation] = rows[i];
+        missingCards.push({
+          id: cardId,
+          deckId,
+          word,
+          reading,
+          meaning,
+          sentence,
+          translation,
+          subdeck: "",
+          tags: [],
+        });
+      }
+      if (missingCards.length > 0) {
+        await putCards(missingCards, { suppressSync: true });
+      }
 
       // Seed demo SRS dengan epok deterministik rendah (lastReview = 1, nextReview = 1)
       // agar perangkat baru tidak pernah mengalahkan ulasan nyata atau reset dari perangkat lain.
       if (["ps-n5", "ps-n4", "ps-n3", "ps-n2", "ps-ankidrone"].includes(deckId)) {
         await waitForReviewStoreHydration();
-        const existingDeckSrs = useReviewStore.getState().srsCards[deckId];
-        if (!existingDeckSrs || Object.keys(existingDeckSrs).length === 0) {
-          const srsList = cards.map((c, idx) => ({
+        const existingDeckSrs = useReviewStore.getState().srsCards[deckId] ?? {};
+        const srsList = missingCards
+          .filter(
+            (c) =>
+              !existingDeckSrs[c.id] &&
+              tombstonedSrs[`${deckId}::${c.id}`] === undefined,
+          )
+          .map((c, idx) => ({
             id: c.id,
             repetitions: 2 + (idx % 3),
             interval: 1 + (idx % 4),
@@ -337,6 +374,7 @@ async function seedStarterDecks(): Promise<void> {
             lastReview: 1,
             lapses: 0,
           }));
+        if (srsList.length > 0) {
           useReviewStore.getState().importSchedule(deckId, srsList);
         }
       }
