@@ -630,6 +630,54 @@ export async function removeCards(deckId: string, ids: string[]): Promise<void> 
   await syncTotal(deckId);
 }
 
+/**
+ * Memindahkan kartu dari `fromDeckId` ke `toDeckId` secara aman untuk sinkronisasi B2:
+ * karena kunci primer kartu di server adalah `(user_id, deck_id, id)`, perpindahan memancarkan
+ * tombstone di kunci lama + upsert di kunci baru sekaligus memindahkan status SRS kartu tersebut
+ * tanpa kehilangan jadwal maupun menggandakan kartu.
+ */
+export async function moveCardsBetweenDecks(
+  fromDeckId: string,
+  toDeckId: string,
+  cardIds: string[],
+): Promise<StoredCard[]> {
+  if (!fromDeckId || !toDeckId || fromDeckId === toDeckId || cardIds.length === 0) {
+    return [];
+  }
+  const idSet = new Set(cardIds);
+  const sourceCards = await getCards(fromDeckId);
+  const toMove = sourceCards.filter((c) => idSet.has(c.id));
+  if (toMove.length === 0) return [];
+
+  const movedIds = toMove.map((c) => c.id);
+  const movedCards: StoredCard[] = toMove.map((c) => ({ ...c, deckId: toDeckId }));
+
+  await ensureSeedDeckChainQueued(toDeckId);
+  await ensureSeedDeckChainQueued(fromDeckId);
+
+  const now = Date.now();
+  await putCards(movedCards, { clientTs: now });
+
+  // Pindahkan status SRS kartu agar jadwal FSRS tidak hilang di perangkat lokal maupun server
+  const revState = useReviewStore.getState();
+  const prevSrsMap = revState.srsCards[fromDeckId] ?? {};
+  const movedSrsList = movedIds
+    .map((id) => prevSrsMap[id])
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+  if (movedSrsList.length > 0) {
+    revState.importSchedule(toDeckId, movedSrsList);
+  }
+
+  await deleteCards(fromDeckId, movedIds, { clientTs: now });
+  if (movedSrsList.length > 0) {
+    useReviewStore.getState().forgetCards(fromDeckId, movedIds);
+  }
+
+  await syncTotal(fromDeckId);
+  await syncTotal(toDeckId);
+  return movedCards;
+}
+
 export function draftFromCard(c?: StoredCard): CardDraft {
   if (!c) return { word: "", reading: "", meaning: "", sentence: "", translation: "", tags: [] };
   return {

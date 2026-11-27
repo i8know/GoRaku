@@ -66,7 +66,7 @@ export default function SettingsPage({ notify }: { notify: (m: string) => void }
     try {
       const text = await file.text();
       const { cardsCount, logsCount } = await importScheduleBackup(text);
-      notify(`Jadwal berhasil diimpor (${cardsCount} kartu, ${logsCount} log review)`);
+      notify(`Jadwal berhasil digabungkan (${cardsCount} kartu diproses, ${logsCount} log baru)`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Berkas jadwal tidak valid";
       notify(msg);

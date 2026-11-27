@@ -10,7 +10,7 @@ import {
   setSyncMeta,
   type NewSyncOutboxItem,
 } from "../deckDb";
-import { normalizeStudyDayKey } from "../studyDay";
+import { normalizeStudyDayKey, studyDayKey } from "../studyDay";
 import {
   getOrCreateDeviceId,
   isBlockedUnauthenticatedStorageAccess,
@@ -265,6 +265,7 @@ function handleReviewStoreUpdate(state: ReturnType<typeof useReviewStore.getStat
   const outboxItems: NewSyncOutboxItem[] = [];
 
   // 1. Diff srsCards (per deckId + cardId, fast-path referensi objek)
+  const fullyResetDeckIds: string[] = [];
   if (state.srsCards !== prevSrsRef) {
     const allDeckIds = new Set<string>([
       ...Object.keys(prevSrsRef ?? {}),
@@ -277,6 +278,9 @@ function handleReviewStoreUpdate(state: ReturnType<typeof useReviewStore.getStat
 
       const prevKeys = prevDeck ? Object.keys(prevDeck) : [];
       const nextKeys = nextDeck ? Object.keys(nextDeck) : [];
+      if (prevKeys.length > 0 && nextKeys.length === 0) {
+        fullyResetDeckIds.push(deckId);
+      }
 
       for (const cardId of nextKeys) {
         const nextCard = nextDeck![cardId];
@@ -294,12 +298,15 @@ function handleReviewStoreUpdate(state: ReturnType<typeof useReviewStore.getStat
 
       for (const cardId of prevKeys) {
         if (!nextDeck || !Object.prototype.hasOwnProperty.call(nextDeck, cardId)) {
+          const prevCard = prevDeck?.[cardId];
+          // Pastikan deleted_at selalu > lastReview kartu yang baru dilihat & direset (tahan clock skew antar perangkat)
+          const tombstoneTs = Math.max(now, (prevCard?.lastReview ?? 0) + 1);
           outboxItems.push({
             entity: "srs_cards",
             key: `${deckId}::${cardId}`,
             op: "delete",
-            payload: srsCardToServerPayload(deckId, cardId, null, now) as unknown as Record<string, unknown>,
-            clientTs: now,
+            payload: srsCardToServerPayload(deckId, cardId, null, tombstoneTs) as unknown as Record<string, unknown>,
+            clientTs: tombstoneTs,
           });
         }
       }
@@ -348,6 +355,34 @@ function handleReviewStoreUpdate(state: ReturnType<typeof useReviewStore.getStat
         }) as unknown as Record<string, unknown>,
         clientTs: now,
       });
+    }
+  }
+  // Jika seluruh SRS suatu deck direset hari ini padahal perangkat ini belum punya counter hari ini,
+  // tetap pancarkan reset_at untuk studyDay hari ini agar counter perangkat lain ikut direset.
+  if (fullyResetDeckIds.length > 0) {
+    const dayStartHour = useAppStore.getState()?.settings?.dayStartHour ?? 4;
+    const today = studyDayKey(now, dayStartHour);
+    for (const deckId of fullyResetDeckIds) {
+      const key = `${deckId}::${today}`;
+      if (!nextCountersMap.has(key) && !prevCountersMap.has(key)) {
+        setCounterResetEpochInMemory(key, now);
+        touchedResetScopes.push(key);
+        outboxItems.push({
+          entity: "daily_counters",
+          key,
+          op: "upsert",
+          payload: dailyCounterToServerPayload({
+            deckId,
+            studyDay: today,
+            newIntroduced: 0,
+            extraNew: 0,
+            reviewedCount: 0,
+            lastActivity: null,
+            resetAt: now,
+          }) as unknown as Record<string, unknown>,
+          clientTs: now,
+        });
+      }
     }
   }
   prevCountersMap = nextCountersMap;

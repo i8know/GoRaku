@@ -433,7 +433,12 @@ async function pushOutbox(
         : entity === "cards"
           ? { ...((await getSyncMeta<Record<string, number>>(META_CARD_TIMESTAMPS)) ?? {}) }
           : null;
+    const pushedSrsTombstones =
+      entity === "srs_cards"
+        ? { ...((await getSyncMeta<Record<string, number>>(META_SRS_TOMBSTONES)) ?? {}) }
+        : null;
     let pushedTsDirty = false;
+    let pushedSrsTombstonesDirty = false;
     let pushedSettingsTs: number | null = null;
 
     for (let i = 0; i < pendingRows.length; i += batchSize) {
@@ -519,8 +524,16 @@ async function pushOutbox(
       if (succeededIds.length > 0) {
         await markOutboxIdsDone(succeededIds);
         totalPushed += succeededIds.length;
-        // Catat timestamp client yang baru saja berhasil dikirim agar pull gema langsung seri (skip tulis ulang)
+        // Catat timestamp client & tombstone SRS yang baru berhasil dikirim agar pull gema konsisten
         for (const r of succeededRows) {
+          if (pushedSrsTombstones) {
+            const delAt = r.payload.deleted_at;
+            if (typeof delAt === "number" && Number.isFinite(delAt) && delAt > (pushedSrsTombstones[r.key] ?? -1)) {
+              pushedSrsTombstones[r.key] = delAt;
+              pushedSrsTombstonesDirty = true;
+            }
+            continue;
+          }
           const ts = Number(r.payload.client_updated_at ?? r.clientTs ?? 0);
           if (!Number.isFinite(ts) || ts < 0) continue;
           if (pushedTsMap) {
@@ -549,6 +562,9 @@ async function pushOutbox(
 
     if (pushedTsMap && pushedTsDirty) {
       await setSyncMeta(entity === "decks" ? META_DECK_TIMESTAMPS : META_CARD_TIMESTAMPS, pushedTsMap);
+    }
+    if (pushedSrsTombstones && pushedSrsTombstonesDirty) {
+      await setSyncMeta(META_SRS_TOMBSTONES, pushedSrsTombstones);
     }
     if (pushedSettingsTs !== null) {
       await setSyncMeta(META_SETTINGS_CLIENT_TS, pushedSettingsTs);
@@ -775,7 +791,7 @@ async function pullIncremental(
           if (lww.winner !== "incoming" && existingIdx !== undefined) {
             continue;
           }
-          // Jika lokal belum punya deck dan incoming adalah tombstone -> tetap catat timestamp agar tidak dibangkitkan
+          // Jika lokal belum punya deck dan incoming adalah tombstone -> tetap catat timestamp & bersihkan sisa kartu/SRS
           if (deletedMs !== null) {
             deckTsMap[id] = incomingTs;
             deckTsDirty = true;
@@ -783,13 +799,22 @@ async function pullIncremental(
               deletedDeckSet.add(id);
               deletedDecksDirty = true;
             }
+            const removedIds = new Set<string>([id]);
             if (existingIdx !== undefined) {
+              // Kumpulkan seluruh keturunan lokal sebelum removeDeck menghapusnya dari store
+              const queue = [id];
+              while (queue.length > 0) {
+                const curId = queue.shift()!;
+                for (const d of curDecks) {
+                  if (d.parentId === curId && !removedIds.has(d.id)) {
+                    removedIds.add(d.id);
+                    queue.push(d.id);
+                  }
+                }
+              }
               // Pastikan deck baru yang sudah masuk `curDecks` di halaman ini tersimpan sebelum removeDeck membaca store
               useAppStore.setState({ decks: curDecks });
               useAppStore.getState().removeDeck(id);
-              useReviewStore.getState().removeDeck(id);
-              await deleteDeckData(id).catch(() => undefined);
-              decksOrCardsChanged = true;
               // Refresh array lokal setelah removeDeck
               const refreshed = useAppStore.getState().decks;
               curDecks.length = 0;
@@ -797,6 +822,11 @@ async function pullIncremental(
               deckIdxById.clear();
               curDecks.forEach((d, idx) => deckIdxById.set(d.id, idx));
             }
+            for (const rid of removedIds) {
+              useReviewStore.getState().removeDeck(rid);
+              await deleteDeckData(rid).catch(() => undefined);
+            }
+            decksOrCardsChanged = true;
             totalPulled += 1;
             continue;
           }

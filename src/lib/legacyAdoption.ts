@@ -12,6 +12,7 @@ import {
   type TermRecord,
 } from "./lexiconDb";
 import {
+  deleteSyncMeta,
   ensureDeckDbOpen,
   flushReviewLogs,
   deckDexie,
@@ -19,6 +20,8 @@ import {
   type ReviewLogEntry,
 } from "./deckDb";
 import { resetDeckCardsSeedState } from "./deckCards";
+import { notifyOutboxDirty } from "./sync/captureControl";
+import { refreshCaptureSnapshots } from "./sync/storeCapture";
 import {
   questionPackDb,
   switchQuestionPackDatabaseScope,
@@ -803,6 +806,13 @@ export async function adoptLegacyDataForUser(
     useAppStore.persist.rehydrate(),
     useReviewStore.persist.rehydrate(),
   ]);
+  // Reset penanda enqueue awal agar seluruh data hasil adopsi ikut diunggah pada siklus sinkronisasi berikutnya
+  await Promise.allSettled([
+    deleteSyncMeta("initialLocalEnqueued"),
+    deleteSyncMeta("preB2LogsQueued"),
+  ]);
+  refreshCaptureSnapshots();
+  notifyOutboxDirty();
 
   return {
     summary,

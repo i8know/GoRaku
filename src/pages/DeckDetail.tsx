@@ -287,14 +287,15 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
   };
 
   const deleteCard = async (card: StoredCard) => {
-    await removeCards(deck.id, [card.id]);
-    setCards((cs) => cs?.filter((c) => c.id !== card.id) ?? cs);
+    const targetDeckId = card.deckId || deck.id;
+    await removeCards(targetDeckId, [card.id]);
+    setCards((cs) => cs?.filter((c) => !(c.id === card.id && (c.deckId || deck.id) === targetDeckId)) ?? cs);
     setEditor(null);
     notify(`Kartu “${card.word}” dihapus`);
   };
 
   const resetCard = (card: StoredCard) => {
-    forgetCards(deck.id, [card.id]);
+    forgetCards(card.deckId || deck.id, [card.id]);
     notify(`Progres “${card.word}” direset`);
   };
 
@@ -679,7 +680,7 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
                     <em className={`dk-state ${st.key}`}>{st.label}</em>
                     <span className="dd-row-actions">
                       <button type="button" aria-label={`Edit ${c.word}`} title="Edit" onClick={() => setEditor({ mode: "edit", card: c })}><Icon name="edit" size={14} /></button>
-                      <button type="button" aria-label={`Reset progres ${c.word}`} title="Reset progres" disabled={!srsDeck?.[c.id]} onClick={() => resetCard(c)}><Icon name="refresh" size={14} /></button>
+                      <button type="button" aria-label={`Reset progres ${c.word}`} title="Reset progres" disabled={!getCardSrs(c)} onClick={() => resetCard(c)}><Icon name="refresh" size={14} /></button>
                       <button type="button" aria-label={`Hapus ${c.word}`} title="Hapus" className="danger" onClick={() => void deleteCard(c)}><Icon name="trash" size={14} /></button>
                     </span>
                   </div>
@@ -729,13 +730,19 @@ export default function DeckDetailPage({ notify }: { notify: (m: string) => void
             notify(`${n} kartu diekspor ke ${fmt.toUpperCase()}`);
           }}
           onReset={() => {
-            resetSrs(deck.id);
+            const idsToReset = [deck.id, ...allDescendants.map((d) => d.id)];
+            for (const id of idsToReset) {
+              resetSrs(id);
+            }
             notify(`Progres “${deck.title}” direset`);
           }}
           onDelete={async () => {
+            const idsToDelete = [deck.id, ...allDescendants.map((d) => d.id)];
             removeDeck(deck.id);
-            resetSrs(deck.id);
-            await deleteDeckData(deck.id).catch(() => undefined);
+            for (const id of idsToDelete) {
+              resetSrs(id);
+              await deleteDeckData(id).catch(() => undefined);
+            }
             notify(`Deck “${deck.title}” dihapus`);
             navigate("/deck");
           }}

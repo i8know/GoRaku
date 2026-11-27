@@ -1,7 +1,10 @@
 import {
+  deckDexie,
+  enqueueOutboxBatch,
   flushReviewLogs,
+  flushSyncOutboxWrites,
   getAllReviewLogs,
-  replaceAllReviewLogs,
+  type NewSyncOutboxItem,
   type ReviewLogEntry as ReviewLogRecord,
 } from "./deckDb";
 import {
@@ -11,6 +14,15 @@ import {
 import { isSafeObjectKey } from "./archiveLimits";
 import type { SRSCard } from "./srs";
 import { normalizeStudyDayKey } from "./studyDay";
+import {
+  getOrCreateDeviceId,
+  isBlockedUnauthenticatedStorageAccess,
+  isPersistWriteSuppressed,
+} from "./userStorageScope";
+import { isSyncCaptureSuppressed } from "./sync/captureControl";
+import { reviewLogToServerPayload } from "./sync/mappers";
+import { mergeCounterRecord, mergeSrsRecord } from "./sync/merge";
+import { getCounterResetEpoch } from "./sync/storeCapture";
 import {
   useReviewStore,
   type DeckActivity,
@@ -277,21 +289,153 @@ export async function importScheduleBackup(
     }
   }
 
-  // Semua validasi lulus -> terapkan secara atomik ke store dan Dexie
+  // Semua validasi lulus -> gabungkan secara konservatif (tanpa menimpa progres lebih baru)
+  // mengikuti aturan merge B2 yang sama (`mergeSrsRecord`, `mergeCounterRecord`, log append-only).
+  const current = useReviewStore.getState();
+
+  const mergedSrsCards: Record<string, Record<string, SRSCard>> = {};
+  for (const [deckId, deckMap] of Object.entries(current.srsCards ?? {})) {
+    mergedSrsCards[deckId] = { ...deckMap };
+  }
+  for (const [deckId, incomingDeckMap] of Object.entries(nextSrsCards)) {
+    const targetDeck = { ...(mergedSrsCards[deckId] ?? {}) };
+    for (const [cardId, incomingCard] of Object.entries(incomingDeckMap)) {
+      const localCard = targetDeck[cardId] ?? null;
+      const { merged, alive } = mergeSrsRecord(
+        localCard
+          ? {
+              card: localCard,
+              lastReview: localCard.lastReview ?? null,
+              reps: localCard.reps ?? localCard.repetitions ?? 0,
+              deletedAt: null,
+            }
+          : null,
+        {
+          card: incomingCard,
+          lastReview: incomingCard.lastReview ?? null,
+          reps: incomingCard.reps ?? incomingCard.repetitions ?? 0,
+          deletedAt: null,
+        },
+      );
+      if (alive && merged.card) {
+        targetDeck[cardId] = merged.card;
+      }
+    }
+    mergedSrsCards[deckId] = targetDeck;
+  }
+
+  const mergedNewIntroduced: Record<string, NewIntroducedEntry> = { ...current.newIntroduced };
+  const mergedActivity: Record<string, DeckActivity> = { ...current.activity };
+  const counterDeckIds = new Set<string>([
+    ...Object.keys(nextNewIntroduced),
+    ...Object.keys(nextActivity),
+  ]);
+
+  for (const deckId of counterDeckIds) {
+    const incIntro = nextNewIntroduced[deckId];
+    const incAct = nextActivity[deckId];
+    const incDay = incIntro?.date ?? incAct?.date;
+    if (!incDay) continue;
+
+    const curIntro = mergedNewIntroduced[deckId];
+    const curAct = mergedActivity[deckId];
+    const curDay =
+      [curIntro?.date, curAct?.date]
+        .filter((d): d is string => Boolean(d))
+        .map(normalizeStudyDayKey)
+        .sort()
+        .pop() ?? "";
+
+    // Jangan timpa hari belajar lokal yang lebih baru dengan cadangan dari hari lebih lama
+    if (curDay && incDay < curDay) continue;
+
+    const sameDayIntro = curIntro && normalizeStudyDayKey(curIntro.date) === incDay;
+    const sameDayAct = curAct && normalizeStudyDayKey(curAct.date) === incDay;
+    const localResetAt = getCounterResetEpoch(deckId, incDay);
+
+    const { merged } = mergeCounterRecord(
+      sameDayIntro || sameDayAct
+        ? {
+            newIntroduced: sameDayIntro ? Math.max(0, curIntro.count) : 0,
+            extraNew: sameDayIntro ? Math.max(0, curIntro.extraNew ?? 0) : 0,
+            reviewedCount: sameDayAct ? Math.max(0, curAct.count) : 0,
+            lastActivity: sameDayAct ? curAct.last : null,
+            resetAt: localResetAt,
+          }
+        : null,
+      {
+        newIntroduced: incIntro ? Math.max(0, incIntro.count) : 0,
+        extraNew: incIntro ? Math.max(0, incIntro.extraNew ?? 0) : 0,
+        reviewedCount: incAct ? Math.max(0, incAct.count) : 0,
+        lastActivity: incAct ? incAct.last : null,
+        resetAt: localResetAt,
+      },
+    );
+
+    if (incIntro || sameDayIntro) {
+      mergedNewIntroduced[deckId] = {
+        date: incDay,
+        count: merged.newIntroduced,
+        ...(merged.extraNew > 0 ? { extraNew: merged.extraNew } : {}),
+      };
+    }
+    if (incAct || sameDayAct) {
+      mergedActivity[deckId] = {
+        date: incDay,
+        count: merged.reviewedCount,
+        last: merged.lastActivity ?? incAct?.last ?? Date.now(),
+      };
+    }
+  }
+
   useReviewStore.setState({
-    srsCards: nextSrsCards,
-    newIntroduced: nextNewIntroduced,
-    activity: nextActivity,
+    srsCards: mergedSrsCards,
+    newIntroduced: mergedNewIntroduced,
+    activity: mergedActivity,
   });
 
+  let addedLogsCount = 0;
   if (validatedLogs !== undefined) {
-    await replaceAllReviewLogs(validatedLogs);
+    const existingLogs = await getAllReviewLogs();
+    const seenSigs = new Set(
+      existingLogs.map((l) => `${l.deckId}::${l.cardId}::${l.reviewedAt}::${l.rating}::${l.state}`),
+    );
+    const toAppend: Array<Omit<ReviewLogRecord, "id">> = [];
+    for (const log of validatedLogs) {
+      const sig = `${log.deckId}::${log.cardId}::${log.reviewedAt}::${log.rating}::${log.state}`;
+      if (seenSigs.has(sig)) continue;
+      seenSigs.add(sig);
+      toAppend.push(log);
+    }
+
+    if (toAppend.length > 0) {
+      await deckDexie.reviewLogs.bulkAdd(toAppend);
+      if (
+        !isSyncCaptureSuppressed() &&
+        !isPersistWriteSuppressed() &&
+        !isBlockedUnauthenticatedStorageAccess()
+      ) {
+        const deviceId = getOrCreateDeviceId() ?? "local";
+        const outboxItems: NewSyncOutboxItem[] = toAppend.map((log) => {
+          const payload = reviewLogToServerPayload(log, deviceId);
+          return {
+            entity: "review_logs",
+            key: `${payload.device_id}::${payload.card_id}::${payload.reviewed_at}`,
+            op: "upsert",
+            payload: payload as unknown as Record<string, unknown>,
+            clientTs: payload.reviewed_at,
+          };
+        });
+        await enqueueOutboxBatch(outboxItems);
+      }
+      addedLogsCount = toAppend.length;
+    }
     await flushReviewLogs();
   }
-  await flushReviewStorageWrites();
+  await Promise.allSettled([flushReviewStorageWrites(), flushSyncOutboxWrites()]);
 
   return {
     cardsCount,
-    logsCount: validatedLogs ? validatedLogs.length : 0,
+    logsCount: addedLogsCount,
   };
 }
