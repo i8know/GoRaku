@@ -5,7 +5,14 @@
 
 import Dexie, { type Table } from "dexie";
 import type { ReviewLogEntry } from "./fsrsScheduler";
-import { getDeckDbName } from "./userStorageScope";
+import {
+  getDeckDbName,
+  getOrCreateDeviceId,
+  isBlockedUnauthenticatedStorageAccess,
+  isPersistWriteSuppressed,
+} from "./userStorageScope";
+import { isSyncCaptureSuppressed, notifyOutboxDirty } from "./sync/captureControl";
+import { cardToServerPayload, reviewLogToServerPayload } from "./sync/mappers";
 
 export type { ReviewLogEntry };
 
@@ -41,9 +48,74 @@ export interface KVRecord {
   updatedAt: number;
 }
 
+export type SyncEntity =
+  | "settings"
+  | "decks"
+  | "cards"
+  | "srs_cards"
+  | "daily_counters"
+  | "review_logs";
+
+export const SYNC_ENTITY_ORDER: readonly SyncEntity[] = [
+  "settings",
+  "decks",
+  "cards",
+  "srs_cards",
+  "daily_counters",
+  "review_logs",
+];
+
+export type SyncOutboxOp = "upsert" | "delete";
+export type SyncOutboxStatus = "pending" | "quarantined";
+
+export interface SyncOutboxRow {
+  id?: number;
+  entity: SyncEntity;
+  key: string;
+  op: SyncOutboxOp;
+  payload: Record<string, unknown>;
+  clientTs: number;
+  attempts: number;
+  status: SyncOutboxStatus;
+  error?: string;
+}
+
+export interface NewSyncOutboxItem {
+  entity: SyncEntity;
+  key: string;
+  op: SyncOutboxOp;
+  payload: Record<string, unknown>;
+  clientTs?: number;
+}
+
+export interface SyncMetaRecord {
+  key: string;
+  value: unknown;
+  updatedAt: number;
+}
+
+export interface CardWriteSyncOptions {
+  suppressSync?: boolean;
+  clientTs?: number;
+}
+
+export interface CardDeleteSyncOptions {
+  suppressSync?: boolean;
+  /** True untuk rollback/batal impor: hapus outbox yang belum terkirim tanpa mengirim tombstone. */
+  rollbackOnly?: boolean;
+  clientTs?: number;
+}
+
+export interface ReviewLogWriteOptions {
+  suppressSync?: boolean;
+  deviceId?: string;
+}
+
 export class DeckDatabase extends Dexie {
   reviewLogs!: Table<ReviewLogEntry, number>;
   kv!: Table<KVRecord, string>;
+  syncOutbox!: Table<SyncOutboxRow, number>;
+  syncMeta!: Table<SyncMetaRecord, string>;
 
   constructor(dbName = DB_NAME) {
     super(dbName);
@@ -79,6 +151,20 @@ export class DeckDatabase extends Dexie {
       .upgrade(() => {
         // Safe upgrade: existing cards, media, and reviewLogs remain intact while adding kv store.
       });
+
+    this.version(4)
+      .stores({
+        cards: "",
+        media: "",
+        reviewLogs: "++id, deckId, cardId, reviewedAt, [deckId+cardId]",
+        kv: "key",
+        syncOutbox: "++id, [entity+key], entity, status, clientTs",
+        syncMeta: "key",
+      })
+      .upgrade(() => {
+        // Safe upgrade: existing cards, media, reviewLogs, and kv stores remain intact
+        // while adding per-user syncOutbox and syncMeta tables for Phase B2.
+      });
   }
 }
 
@@ -88,8 +174,205 @@ export let deckDexie = new DeckDatabase(getDeckDbName());
  * Mengganti instance Dexie deck agar mengarah ke basis data terisolasi milik pengguna aktif.
  * Menunggu antrean log review selesai sebelum menutup koneksi lama.
  */
+function shouldCaptureSync(explicitSuppress?: boolean): boolean {
+  if (explicitSuppress) return false;
+  if (isSyncCaptureSuppressed() || isPersistWriteSuppressed() || isBlockedUnauthenticatedStorageAccess()) {
+    return false;
+  }
+  return true;
+}
+
+// Antrean serial outbox agar operasi batch & coalescing antar aksi sinkron/asinkron tetap berurutan.
+let outboxWriteQueue: Promise<unknown> = Promise.resolve();
+
+function enqueueOutboxOp<T>(fn: () => Promise<T>): Promise<T> {
+  const next = outboxWriteQueue.then(fn, fn);
+  outboxWriteQueue = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
+
+export function flushSyncOutboxWrites(): Promise<void> {
+  return outboxWriteQueue.then(() => undefined);
+}
+
+/**
+ * Mengantrekan batch perubahan ke `syncOutbox` dengan coalescing per `(entity, key)`.
+ * Banyak suntingan pada kunci yang sama menyatu menjadi 1 baris, dan impor 5.000 kartu
+ * dijalankan dalam transaksi `bulkPut` per batch (bukan 5.000 transaksi satuan).
+ */
+export function enqueueOutboxBatch(items: readonly NewSyncOutboxItem[]): Promise<number> {
+  if (items.length === 0) return Promise.resolve(0);
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    const now = Date.now();
+    // 1. Coalesce duplikat (entity, key) di memori terlebih dahulu
+    const coalesced = new Map<string, SyncOutboxRow>();
+    for (const item of items) {
+      const composite = `${item.entity}\0${item.key}`;
+      coalesced.set(composite, {
+        entity: item.entity,
+        key: item.key,
+        op: item.op,
+        payload: item.payload,
+        clientTs: item.clientTs ?? now,
+        attempts: 0,
+        status: "pending",
+        error: undefined,
+      });
+    }
+
+    const deduped = [...coalesced.values()];
+    if (deduped.length === 0) return 0;
+
+    // 2. Satu transaksi rw Dexie untuk lookup kunci eksisting + bulkPut terkoalesensi
+    await deckDexie.transaction("rw", deckDexie.syncOutbox, async () => {
+      const existingByPair = new Map<string, number>();
+      const extraDuplicateIds: number[] = [];
+
+      const LOOKUP_CHUNK = 500;
+      for (let i = 0; i < deduped.length; i += LOOKUP_CHUNK) {
+        const chunk = deduped.slice(i, i + LOOKUP_CHUNK);
+        const pairs = chunk.map((r) => [r.entity, r.key] as [SyncEntity, string]);
+        const found = await deckDexie.syncOutbox.where("[entity+key]").anyOf(pairs).toArray();
+        for (const row of found) {
+          if (row.id === undefined) continue;
+          const comp = `${row.entity}\0${row.key}`;
+          if (!existingByPair.has(comp)) {
+            existingByPair.set(comp, row.id);
+          } else {
+            extraDuplicateIds.push(row.id);
+          }
+        }
+      }
+
+      if (extraDuplicateIds.length > 0) {
+        await deckDexie.syncOutbox.bulkDelete(extraDuplicateIds);
+      }
+
+      const toPut: SyncOutboxRow[] = deduped.map((row) => {
+        const existingId = existingByPair.get(`${row.entity}\0${row.key}`);
+        return existingId !== undefined ? { ...row, id: existingId } : row;
+      });
+      await deckDexie.syncOutbox.bulkPut(toPut);
+    });
+
+    notifyOutboxDirty();
+    return deduped.length;
+  });
+}
+
+export function removeOutboxKeys(entity: SyncEntity, keys: readonly string[]): Promise<number> {
+  if (keys.length === 0) return Promise.resolve(0);
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    let deleted = 0;
+    const CHUNK = 500;
+    for (let i = 0; i < keys.length; i += CHUNK) {
+      const pairs = keys.slice(i, i + CHUNK).map((k) => [entity, k] as [SyncEntity, string]);
+      deleted += await deckDexie.syncOutbox.where("[entity+key]").anyOf(pairs).delete();
+    }
+    return deleted;
+  });
+}
+
+export async function getPendingOutboxByEntity(
+  entity: SyncEntity,
+  limit = 250,
+): Promise<SyncOutboxRow[]> {
+  await flushSyncOutboxWrites();
+  await ensureDeckDbOpen();
+  const rows = await deckDexie.syncOutbox
+    .where("entity")
+    .equals(entity)
+    .filter((r) => r.status === "pending")
+    .sortBy("id");
+  return limit > 0 ? rows.slice(0, limit) : rows;
+}
+
+export async function getPendingOutboxCount(): Promise<number> {
+  await flushSyncOutboxWrites();
+  await ensureDeckDbOpen();
+  return deckDexie.syncOutbox.where("status").equals("pending").count();
+}
+
+export async function getQuarantinedOutboxRows(): Promise<SyncOutboxRow[]> {
+  await flushSyncOutboxWrites();
+  await ensureDeckDbOpen();
+  return deckDexie.syncOutbox.where("status").equals("quarantined").sortBy("id");
+}
+
+export function markOutboxIdsDone(ids: readonly number[]): Promise<void> {
+  if (ids.length === 0) return Promise.resolve();
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    await deckDexie.syncOutbox.bulkDelete([...ids]);
+  });
+}
+
+export function markOutboxKeysQuarantined(
+  entity: SyncEntity,
+  rejected: ReadonlyArray<{ key: string; reason: string }>,
+): Promise<void> {
+  if (rejected.length === 0) return Promise.resolve();
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    const reasonByKey = new Map(rejected.map((r) => [r.key, r.reason]));
+    const pairs = rejected.map((r) => [entity, r.key] as [SyncEntity, string]);
+    await deckDexie.transaction("rw", deckDexie.syncOutbox, async () => {
+      const rows = await deckDexie.syncOutbox.where("[entity+key]").anyOf(pairs).toArray();
+      const updated = rows.map((row) => ({
+        ...row,
+        status: "quarantined" as const,
+        attempts: (row.attempts ?? 0) + 1,
+        error: reasonByKey.get(row.key) ?? row.error ?? "Ditolak oleh server",
+      }));
+      if (updated.length > 0) {
+        await deckDexie.syncOutbox.bulkPut(updated);
+      }
+    });
+  });
+}
+
+export function retryQuarantinedOutboxRow(id: number): Promise<void> {
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    await deckDexie.syncOutbox.update(id, { status: "pending", error: undefined });
+    notifyOutboxDirty();
+  });
+}
+
+export function dismissQuarantinedOutboxRow(id: number): Promise<void> {
+  return enqueueOutboxOp(async () => {
+    await ensureDeckDbOpen();
+    await deckDexie.syncOutbox.delete(id);
+  });
+}
+
+export async function getSyncMeta<T = unknown>(keyName: string): Promise<T | undefined> {
+  await ensureDeckDbOpen();
+  const row = await deckDexie.syncMeta.get(keyName);
+  return row?.value as T | undefined;
+}
+
+export async function setSyncMeta(keyName: string, value: unknown): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.syncMeta.put({
+    key: keyName,
+    value,
+    updatedAt: Date.now(),
+  });
+}
+
+export async function deleteSyncMeta(keyName: string): Promise<void> {
+  await ensureDeckDbOpen();
+  await deckDexie.syncMeta.delete(keyName);
+}
+
 export async function switchDeckDatabaseScope(userId: string | null): Promise<void> {
-  await flushReviewLogs();
+  await Promise.allSettled([flushReviewLogs(), flushSyncOutboxWrites()]);
   const targetName = getDeckDbName(userId);
   if (deckDexie.name === targetName) return;
   try {
@@ -197,13 +480,34 @@ export function flushReviewLogs(): Promise<void> {
   return reviewLogQueue.then(() => undefined);
 }
 
-export function appendReviewLog(entry: Omit<ReviewLogEntry, "id">): Promise<number> {
+export function appendReviewLog(
+  entry: Omit<ReviewLogEntry, "id">,
+  opts?: ReviewLogWriteOptions,
+): Promise<number> {
   return enqueueLogOp(async () => {
-    return deckDexie.reviewLogs.add({ ...entry });
+    const id = await deckDexie.reviewLogs.add({ ...entry });
+    if (shouldCaptureSync(opts?.suppressSync)) {
+      const deviceId = opts?.deviceId ?? getOrCreateDeviceId() ?? "local";
+      const payload = reviewLogToServerPayload(entry, deviceId);
+      await enqueueOutboxBatch([
+        {
+          entity: "review_logs",
+          key: `${payload.device_id}::${payload.card_id}::${payload.reviewed_at}`,
+          op: "upsert",
+          payload: payload as unknown as Record<string, unknown>,
+          clientTs: payload.reviewed_at,
+        },
+      ]);
+    }
+    return id;
   });
 }
 
-export function removeLatestReviewLog(deckId: string, cardId: string): Promise<void> {
+export function removeLatestReviewLog(
+  deckId: string,
+  cardId: string,
+  opts?: ReviewLogWriteOptions,
+): Promise<void> {
   return enqueueLogOp(async () => {
     const matches = await deckDexie.reviewLogs
       .where("[deckId+cardId]")
@@ -214,6 +518,13 @@ export function removeLatestReviewLog(deckId: string, cardId: string): Promise<v
     const latest = matches[matches.length - 1];
     if (latest?.id !== undefined) {
       await deckDexie.reviewLogs.delete(latest.id);
+      if (shouldCaptureSync(opts?.suppressSync)) {
+        const deviceId = opts?.deviceId ?? getOrCreateDeviceId() ?? "local";
+        await removeOutboxKeys("review_logs", [
+          `${deviceId}::${latest.cardId}::${latest.reviewedAt}`,
+          `local::${latest.cardId}::${latest.reviewedAt}`,
+        ]);
+      }
     }
   });
 }
@@ -281,13 +592,25 @@ export function isQuotaError(err: unknown): boolean {
 }
 
 /** Write a batch of cards in a single IndexedDB readwrite transaction without awaiting per row. */
-export async function putCards(cards: StoredCard[]): Promise<void> {
+export async function putCards(cards: StoredCard[], opts?: CardWriteSyncOptions): Promise<void> {
   if (cards.length === 0) return;
   const db = await openDb();
   const tx = db.transaction(CARDS, "readwrite");
   const store = tx.objectStore(CARDS);
   for (const c of cards) store.put(c, key(c.deckId, c.id));
   await done(tx);
+
+  if (shouldCaptureSync(opts?.suppressSync)) {
+    const ts = opts?.clientTs ?? Date.now();
+    const outboxItems: NewSyncOutboxItem[] = cards.map((c) => ({
+      entity: "cards",
+      key: `${c.deckId}::${c.id}`,
+      op: "upsert",
+      payload: cardToServerPayload(c, ts, null) as unknown as Record<string, unknown>,
+      clientTs: ts,
+    }));
+    await enqueueOutboxBatch(outboxItems);
+  }
 }
 
 /** Fetch existing card IDs (note IDs) for a deck using getAllKeys without loading full card payloads. */
@@ -412,13 +735,43 @@ export async function getMedia(deckId: string, name: string): Promise<Blob | und
   return undefined;
 }
 
-export async function deleteCards(deckId: string, ids: string[]): Promise<void> {
+export async function deleteCards(
+  deckId: string,
+  ids: string[],
+  opts?: CardDeleteSyncOptions,
+): Promise<void> {
   if (ids.length === 0) return;
   const db = await openDb();
   const tx = db.transaction(CARDS, "readwrite");
   const store = tx.objectStore(CARDS);
   for (const id of ids) store.delete(key(deckId, id));
   await done(tx);
+
+  if (opts?.rollbackOnly) {
+    await removeOutboxKeys(
+      "cards",
+      ids.map((id) => `${deckId}::${id}`),
+    );
+    return;
+  }
+
+  if (shouldCaptureSync(opts?.suppressSync)) {
+    const ts = opts?.clientTs ?? Date.now();
+    const outboxItems: NewSyncOutboxItem[] = ids.map((id) => ({
+      entity: "cards",
+      key: `${deckId}::${id}`,
+      op: "delete",
+      payload: {
+        deck_id: deckId,
+        id,
+        data: {},
+        deleted_at: ts,
+        client_updated_at: ts,
+      },
+      clientTs: ts,
+    }));
+    await enqueueOutboxBatch(outboxItems);
+  }
 }
 
 export async function deleteMedia(deckId: string, names: string[]): Promise<void> {

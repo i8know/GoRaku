@@ -19,6 +19,7 @@ import { deleteCards, deleteDeckData, deleteMedia } from "../lib/deckDb";
 import { speakJapanese } from "../lib/tts";
 import { getActiveStorageUserId } from "../lib/userStorageScope";
 import { newDeckId } from "../lib/stableId";
+import { ensureSeedDeckChainQueued } from "../lib/sync/storeCapture";
 import { useAppStore } from "../store/useAppStore";
 import { useReviewStore } from "../store/useReviewStore";
 
@@ -286,6 +287,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
                 }
               }
             } else {
+              void ensureSeedDeckChainQueued(res.deckId);
               useAppStore.getState().updateDeck(res.deckId, {
                 total: res.finalDeckTotal,
                 updatedAt: Date.now(),
@@ -361,7 +363,7 @@ export default function ImportDeckModal({ initialFile, onClose, onImported, onSt
           await deleteDeckData(commitMeta.deckId);
         } else {
           if (commitMeta.writtenCardIds.length > 0) {
-            await deleteCards(commitMeta.deckId, commitMeta.writtenCardIds);
+            await deleteCards(commitMeta.deckId, commitMeta.writtenCardIds, { rollbackOnly: true });
           }
           if (commitMeta.writtenMediaNames.length > 0) {
             await deleteMedia(commitMeta.deckId, commitMeta.writtenMediaNames);

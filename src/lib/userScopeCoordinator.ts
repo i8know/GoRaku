@@ -1,4 +1,4 @@
-import { flushReviewLogs, switchDeckDatabaseScope } from "./deckDb";
+import { flushReviewLogs, flushSyncOutboxWrites, switchDeckDatabaseScope } from "./deckDb";
 import { resetDeckCardsSeedState } from "./deckCards";
 import { switchLexiconDatabaseScope } from "./lexiconDb";
 import { switchQuestionPackDatabaseScope } from "./questionPackStorage";
@@ -7,6 +7,12 @@ import {
   resetReviewStorageForScopeChange,
 } from "./reviewStorage";
 import { isSupabaseConfigured } from "./supabase";
+import { withSyncCaptureSuppressed } from "./sync/captureControl";
+import {
+  loadCounterResetEpochs,
+  refreshCaptureSnapshots,
+  startSyncStoreCapture,
+} from "./sync/storeCapture";
 import {
   getActiveStorageUserId,
   getOrCreateDeviceId,
@@ -41,27 +47,31 @@ export function switchUserStorageScope(userId: string | null): Promise<void> {
     }
 
     // Pastikan tidak ada tulis balik dari sesi sebelumnya yang tertinggal saat DB ditutup.
-    await Promise.allSettled([flushReviewStorageWrites(), flushReviewLogs()]);
+    await Promise.allSettled([flushReviewStorageWrites(), flushReviewLogs(), flushSyncOutboxWrites()]);
     await resetReviewStorageForScopeChange();
 
-    await withPersistWriteSuppressed(async () => {
-      setActiveStorageUserId(nextUserId);
-      await switchDeckDatabaseScope(nextUserId);
-      switchLexiconDatabaseScope(nextUserId);
-      switchQuestionPackDatabaseScope(nextUserId);
+    await withSyncCaptureSuppressed(async () => {
+      await withPersistWriteSuppressed(async () => {
+        setActiveStorageUserId(nextUserId);
+        await switchDeckDatabaseScope(nextUserId);
+        switchLexiconDatabaseScope(nextUserId);
+        switchQuestionPackDatabaseScope(nextUserId);
 
-      resetDeckCardsSeedState();
-      useAppStore.getState().resetUserData();
-      useReviewStore.getState().resetReviewState();
+        resetDeckCardsSeedState();
+        useAppStore.getState().resetUserData();
+        useReviewStore.getState().resetReviewState();
+      });
+
+      if (nextUserId !== null) {
+        getOrCreateDeviceId(nextUserId);
+        await Promise.all([
+          useAppStore.persist.rehydrate(),
+          useReviewStore.persist.rehydrate(),
+          loadCounterResetEpochs(),
+        ]);
+      }
+      refreshCaptureSnapshots();
     });
-
-    if (nextUserId !== null) {
-      getOrCreateDeviceId(nextUserId);
-      await Promise.all([
-        useAppStore.persist.rehydrate(),
-        useReviewStore.persist.rehydrate(),
-      ]);
-    }
 
     appliedScopeUserId = nextUserId;
     hasAppliedInitialScope = true;
@@ -85,6 +95,7 @@ export function initUserStorageScopeSync(
 ): void {
   const shouldLock = options.lockUnauthenticated ?? isSupabaseConfigured;
   setUnauthenticatedScopeLocked(shouldLock);
+  startSyncStoreCapture();
   registerAuthScopeChangeHandler(switchUserStorageScope);
 
   if (!closeChannel && typeof BroadcastChannel === "function") {

@@ -554,7 +554,7 @@ async function handleCommitImport(options: WorkerCommitOptions) {
           }
         }
       } else {
-        await deleteCards(deckId, newlyAddedCardIds);
+        await deleteCards(deckId, newlyAddedCardIds, { rollbackOnly: true });
         await deleteMedia(deckId, writtenMediaNames);
       }
     } catch {

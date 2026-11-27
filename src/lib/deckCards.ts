@@ -8,8 +8,10 @@ import { toHiragana } from "./kana";
 import { compressBubbleImageForCard } from "./mangaCoordinates";
 import { SEED_TOTALS, useAppStore } from "../store/useAppStore";
 import { useReviewStore, waitForReviewStoreHydration } from "../store/useReviewStore";
-import { setScopedStorageItem } from "./userStorageScope";
+import { getScopedStorageItem, setScopedStorageItem } from "./userStorageScope";
 import { newCardId } from "./stableId";
+import { withSyncCaptureSuppressed } from "./sync/captureControl";
+import { ensureSeedDeckChainQueued, refreshCaptureSnapshots } from "./sync/storeCapture";
 
 export const DECK_LEVELS = ["N5", "N4", "N3", "N2", "N1", "Campuran"] as const;
 export const DECK_KINDS = ["Core", "Anime", "Novel", "Manga", "YouTube"] as const;
@@ -153,190 +155,196 @@ const SEEDS: Record<string, Seed[]> = {
 const SEED_FLAG = "ma-seed-v2-philia";
 
 async function seedStarterDecks(): Promise<void> {
-  const store = useAppStore.getState();
-  const currentDecks = store.decks;
+  // Jika ruang pengguna sudah pernah di-seed atau disinkronkan/diadopsi, jangan tanam ulang deck/kartu bawaan
+  if (getScopedStorageItem(SEED_FLAG) === "1") return;
 
-  // If Philia Space root deck is missing in state (e.g. from existing older localStorage), inject the hierarchy
-  if (!currentDecks.some((d) => d.id === "ps-root")) {
-    const philiaBundle: import("../store/useAppStore").DeckItem[] = [
-      {
-        id: "ps-root",
-        title: "Philia Space",
-        level: "Campuran • Core",
-        kind: "Core",
-        due: 0,
-        total: 52,
-        progress: 0,
-        kanji: "宙",
-        color: "indigo",
-        updated: "Hari ini",
-        source: "manual",
-        subdeckIds: ["ps-bi"],
-      },
-      {
-        id: "ps-bi",
-        parentId: "ps-root",
-        title: "Bahasa Indonesia",
-        subdeckName: "Bahasa Indonesia",
-        level: "Campuran • Core",
-        kind: "Core",
-        due: 0,
-        total: 52,
-        progress: 0,
-        kanji: "印",
-        color: "slate",
-        updated: "Hari ini",
-        source: "manual",
-        subdeckIds: ["ps-ankidrone", "ps-kotoba"],
-      },
-      {
-        id: "ps-ankidrone",
-        parentId: "ps-bi",
-        title: "Ankidrone Core 10K",
-        subdeckName: "Ankidrone Core 10K",
-        level: "Core 10K",
-        kind: "Core",
-        due: 0,
-        total: 10,
-        progress: 0,
-        kanji: "単",
-        color: "plum",
-        updated: "Hari ini",
-        source: "manual",
-      },
-      {
-        id: "ps-kotoba",
-        parentId: "ps-bi",
-        title: "Kotoba N5-N1",
-        subdeckName: "Kotoba N5-N1",
-        level: "N5-N1 • Core",
-        kind: "Core",
-        due: 0,
-        total: 42,
-        progress: 0,
-        kanji: "語",
-        color: "ochre",
-        updated: "Hari ini",
-        source: "manual",
-        subdeckIds: ["ps-n1", "ps-n2", "ps-n3", "ps-n4", "ps-n5"],
-      },
-      {
-        id: "ps-n1",
-        parentId: "ps-kotoba",
-        title: "N1",
-        subdeckName: "N1",
-        level: "N1 • Core",
-        kind: "Core",
-        due: 0,
-        total: 8,
-        progress: 0,
-        kanji: "極",
-        color: "plum",
-        updated: "Hari ini",
-        source: "manual",
-      },
-      {
-        id: "ps-n2",
-        parentId: "ps-kotoba",
-        title: "N2",
-        subdeckName: "N2",
-        level: "N2 • Core",
-        kind: "Core",
-        due: 0,
-        total: 8,
-        progress: 0,
-        kanji: "上",
-        color: "ochre",
-        updated: "Hari ini",
-        source: "manual",
-      },
-      {
-        id: "ps-n3",
-        parentId: "ps-kotoba",
-        title: "N3",
-        subdeckName: "N3",
-        level: "N3 • Core",
-        kind: "Core",
-        due: 0,
-        total: 8,
-        progress: 0,
-        kanji: "中",
-        color: "indigo",
-        updated: "Hari ini",
-        source: "manual",
-      },
-      {
-        id: "ps-n4",
-        parentId: "ps-kotoba",
-        title: "N4",
-        subdeckName: "N4",
-        level: "N4 • Core",
-        kind: "Core",
-        due: 0,
-        total: 8,
-        progress: 0,
-        kanji: "基",
-        color: "sage",
-        updated: "Hari ini",
-        source: "manual",
-      },
-      {
-        id: "ps-n5",
-        parentId: "ps-kotoba",
-        title: "N5",
-        subdeckName: "N5",
-        level: "N5 • Core",
-        kind: "Core",
-        due: 0,
-        total: 10,
-        progress: 0,
-        kanji: "初",
-        color: "coral",
-        updated: "Hari ini",
-        source: "manual",
-      },
-    ];
-    store.importDecksBatch(philiaBundle);
-  }
+  await withSyncCaptureSuppressed(async () => {
+    const store = useAppStore.getState();
+    const currentDecks = store.decks;
 
-  // Seed cards into IndexedDB for all seed keys
-  for (const [deckId, rows] of Object.entries(SEEDS)) {
-    const existing = await getCards(deckId);
-    if (existing.length > 0) continue;
-    const cards: StoredCard[] = rows.map(([word, reading, meaning, sentence, translation], i) => ({
-      id: `s${deckId}-${String(i + 1).padStart(2, "0")}`,
-      deckId,
-      word,
-      reading,
-      meaning,
-      sentence,
-      translation,
-      subdeck: "",
-      tags: [],
-    }));
-    await putCards(cards);
+    // If Philia Space root deck is missing in state (e.g. from existing older localStorage), inject the hierarchy
+    if (!currentDecks.some((d) => d.id === "ps-root")) {
+      const philiaBundle: import("../store/useAppStore").DeckItem[] = [
+        {
+          id: "ps-root",
+          title: "Philia Space",
+          level: "Campuran • Core",
+          kind: "Core",
+          due: 0,
+          total: 52,
+          progress: 0,
+          kanji: "宙",
+          color: "indigo",
+          updated: "Hari ini",
+          source: "manual",
+          subdeckIds: ["ps-bi"],
+        },
+        {
+          id: "ps-bi",
+          parentId: "ps-root",
+          title: "Bahasa Indonesia",
+          subdeckName: "Bahasa Indonesia",
+          level: "Campuran • Core",
+          kind: "Core",
+          due: 0,
+          total: 52,
+          progress: 0,
+          kanji: "印",
+          color: "slate",
+          updated: "Hari ini",
+          source: "manual",
+          subdeckIds: ["ps-ankidrone", "ps-kotoba"],
+        },
+        {
+          id: "ps-ankidrone",
+          parentId: "ps-bi",
+          title: "Ankidrone Core 10K",
+          subdeckName: "Ankidrone Core 10K",
+          level: "Core 10K",
+          kind: "Core",
+          due: 0,
+          total: 10,
+          progress: 0,
+          kanji: "単",
+          color: "plum",
+          updated: "Hari ini",
+          source: "manual",
+        },
+        {
+          id: "ps-kotoba",
+          parentId: "ps-bi",
+          title: "Kotoba N5-N1",
+          subdeckName: "Kotoba N5-N1",
+          level: "N5-N1 • Core",
+          kind: "Core",
+          due: 0,
+          total: 42,
+          progress: 0,
+          kanji: "語",
+          color: "ochre",
+          updated: "Hari ini",
+          source: "manual",
+          subdeckIds: ["ps-n1", "ps-n2", "ps-n3", "ps-n4", "ps-n5"],
+        },
+        {
+          id: "ps-n1",
+          parentId: "ps-kotoba",
+          title: "N1",
+          subdeckName: "N1",
+          level: "N1 • Core",
+          kind: "Core",
+          due: 0,
+          total: 8,
+          progress: 0,
+          kanji: "極",
+          color: "plum",
+          updated: "Hari ini",
+          source: "manual",
+        },
+        {
+          id: "ps-n2",
+          parentId: "ps-kotoba",
+          title: "N2",
+          subdeckName: "N2",
+          level: "N2 • Core",
+          kind: "Core",
+          due: 0,
+          total: 8,
+          progress: 0,
+          kanji: "上",
+          color: "ochre",
+          updated: "Hari ini",
+          source: "manual",
+        },
+        {
+          id: "ps-n3",
+          parentId: "ps-kotoba",
+          title: "N3",
+          subdeckName: "N3",
+          level: "N3 • Core",
+          kind: "Core",
+          due: 0,
+          total: 8,
+          progress: 0,
+          kanji: "中",
+          color: "indigo",
+          updated: "Hari ini",
+          source: "manual",
+        },
+        {
+          id: "ps-n4",
+          parentId: "ps-kotoba",
+          title: "N4",
+          subdeckName: "N4",
+          level: "N4 • Core",
+          kind: "Core",
+          due: 0,
+          total: 8,
+          progress: 0,
+          kanji: "基",
+          color: "sage",
+          updated: "Hari ini",
+          source: "manual",
+        },
+        {
+          id: "ps-n5",
+          parentId: "ps-kotoba",
+          title: "N5",
+          subdeckName: "N5",
+          level: "N5 • Core",
+          kind: "Core",
+          due: 0,
+          total: 10,
+          progress: 0,
+          kanji: "初",
+          color: "coral",
+          updated: "Hari ini",
+          source: "manual",
+        },
+      ];
+      store.importDecksBatch(philiaBundle);
+    }
 
-    // Seed realistic due SRS schedules for demo subdecks (wait for review hydration first)
-    if (["ps-n5", "ps-n4", "ps-n3", "ps-n2", "ps-ankidrone"].includes(deckId)) {
-      await waitForReviewStoreHydration();
-      const existingDeckSrs = useReviewStore.getState().srsCards[deckId];
-      if (!existingDeckSrs || Object.keys(existingDeckSrs).length === 0) {
-        const now = Date.now();
-        const srsList = cards.map((c, idx) => ({
-          id: c.id,
-          repetitions: 2 + (idx % 3),
-          interval: 1 + (idx % 4),
-          easeFactor: 2.5,
-          nextReview: now - (idx + 1) * 3600 * 1000, // already due
-          lastReview: now - 86400 * 1000,
-          lapses: 0,
-        }));
-        useReviewStore.getState().importSchedule(deckId, srsList);
+    // Seed cards into IndexedDB for all seed keys (tanpa masuk outbox sinkronisasi)
+    for (const [deckId, rows] of Object.entries(SEEDS)) {
+      const existing = await getCards(deckId);
+      if (existing.length > 0) continue;
+      const cards: StoredCard[] = rows.map(([word, reading, meaning, sentence, translation], i) => ({
+        id: `s${deckId}-${String(i + 1).padStart(2, "0")}`,
+        deckId,
+        word,
+        reading,
+        meaning,
+        sentence,
+        translation,
+        subdeck: "",
+        tags: [],
+      }));
+      await putCards(cards, { suppressSync: true });
+
+      // Seed demo SRS dengan epok deterministik rendah (lastReview = 1, nextReview = 1)
+      // agar perangkat baru tidak pernah mengalahkan ulasan nyata atau reset dari perangkat lain.
+      if (["ps-n5", "ps-n4", "ps-n3", "ps-n2", "ps-ankidrone"].includes(deckId)) {
+        await waitForReviewStoreHydration();
+        const existingDeckSrs = useReviewStore.getState().srsCards[deckId];
+        if (!existingDeckSrs || Object.keys(existingDeckSrs).length === 0) {
+          const srsList = cards.map((c, idx) => ({
+            id: c.id,
+            repetitions: 2 + (idx % 3),
+            interval: 1 + (idx % 4),
+            easeFactor: 2.5,
+            nextReview: 1, // langsung jatuh tempo tanpa bergantung Date.now()
+            lastReview: 1,
+            lapses: 0,
+          }));
+          useReviewStore.getState().importSchedule(deckId, srsList);
+        }
       }
     }
-  }
 
-  setScopedStorageItem(SEED_FLAG, "1");
+    setScopedStorageItem(SEED_FLAG, "1");
+    refreshCaptureSnapshots();
+  });
 }
 
 function commonSubdeckRoot(subdecks: string[]): string {
@@ -482,6 +490,7 @@ export async function addCards(deckId: string, drafts: CardDraft[]): Promise<Sto
     subdeck: "",
     tags: d.tags,
   }));
+  await ensureSeedDeckChainQueued(deckId);
   await putCards(cards);
   await syncTotal(deckId);
   return cards;
@@ -548,6 +557,7 @@ export async function addMinedCardToDeck(
     subdeck: draft.subdeck?.trim() ?? "",
     tags: draft.tags,
   };
+  await ensureSeedDeckChainQueued(deckId);
   await putCards([card]);
   await syncTotal(deckId);
   return card;
@@ -569,12 +579,14 @@ export async function updateCard(card: StoredCard, draft: CardDraft): Promise<St
     translation: pick("translation"),
     tags: draft.tags,
   };
+  await ensureSeedDeckChainQueued(card.deckId);
   await putCards([next]);
   useAppStore.getState().updateDeck(card.deckId, {});
   return next;
 }
 
 export async function removeCards(deckId: string, ids: string[]): Promise<void> {
+  await ensureSeedDeckChainQueued(deckId);
   await deleteCards(deckId, ids);
   useReviewStore.getState().forgetCards(deckId, ids);
   await syncTotal(deckId);
